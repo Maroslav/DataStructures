@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace _1ExternalSort.DataStructures
+namespace Utils.DataStructures
 {
     public class AsyncBuffer<T> : IDisposable
     {

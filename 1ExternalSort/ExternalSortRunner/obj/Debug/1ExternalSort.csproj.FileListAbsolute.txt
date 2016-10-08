@@ -1,1 +1,2 @@
 M:\OneDrive\MFF\Dev\VS\Datovky\1ExternalSort\1ExternalSort\bin\Debug\1ExternalSort.exe.config
+M:\!MFF\Dev\VS\DataStructures\1ExternalSort\1ExternalSort\bin\Debug\1ExternalSort.exe.config

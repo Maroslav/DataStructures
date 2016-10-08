@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace _1ExternalSort.ExternalSorter
+namespace ExternalSorter
 {
     public class ExternalSorter
     {
