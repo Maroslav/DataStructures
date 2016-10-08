@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="ExternalSorter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Utils\Utils.csproj">
