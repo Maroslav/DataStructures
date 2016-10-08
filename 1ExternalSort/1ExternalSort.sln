@@ -11,22 +11,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalSortRunner", "Exter
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2183C918-C58F-41F6-969B-869F216C441D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2183C918-C58F-41F6-969B-869F216C441D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2183C918-C58F-41F6-969B-869F216C441D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2183C918-C58F-41F6-969B-869F216C441D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2183C918-C58F-41F6-969B-869F216C441D}.Debug|x64.ActiveCfg = Debug|x64
+		{2183C918-C58F-41F6-969B-869F216C441D}.Debug|x64.Build.0 = Debug|x64
+		{2183C918-C58F-41F6-969B-869F216C441D}.Release|x64.ActiveCfg = Release|x64
+		{2183C918-C58F-41F6-969B-869F216C441D}.Release|x64.Build.0 = Release|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|x64.ActiveCfg = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|x64.Build.0 = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.ActiveCfg = Release|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.Build.0 = Release|x64
+		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|x64.ActiveCfg = Debug|x64
+		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|x64.Build.0 = Debug|x64
+		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|x64.ActiveCfg = Release|x64
+		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

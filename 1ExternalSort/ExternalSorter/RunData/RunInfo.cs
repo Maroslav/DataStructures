@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace ExternalSorter
 {
-    internal struct RunInfo
+    public struct RunInfo
     {
         #region Nested class
         
@@ -52,7 +52,7 @@ namespace ExternalSorter
         }
 
 
-        public RunInfo(string runName, int runSize)
+        private RunInfo(string runName, int runSize)
         {
             m_runName = runName;
             m_runSize = runSize;
