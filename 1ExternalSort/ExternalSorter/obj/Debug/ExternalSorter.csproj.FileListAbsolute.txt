@@ -1,7 +1,0 @@
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\bin\Debug\ExternalSorter.dll
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\bin\Debug\ExternalSorter.pdb
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\bin\Debug\Utils.dll
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\bin\Debug\Utils.pdb
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\obj\Debug\ExternalSorter.csprojResolveAssemblyReference.cache
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\obj\Debug\ExternalSorter.dll
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\ExternalSorter\obj\Debug\ExternalSorter.pdb

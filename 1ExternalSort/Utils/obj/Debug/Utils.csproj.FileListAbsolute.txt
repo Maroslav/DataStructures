@@ -1,5 +1,0 @@
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\Utils\bin\Debug\Utils.dll
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\Utils\bin\Debug\Utils.pdb
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\Utils\obj\Debug\Utils.csprojResolveAssemblyReference.cache
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\Utils\obj\Debug\Utils.dll
-M:\!MFF\Dev\VS\DataStructures\1ExternalSort\Utils\obj\Debug\Utils.pdb
