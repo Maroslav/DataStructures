@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +33,7 @@ namespace Utils.DataStructures
 
             #region IDisposable overrides and clearing
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Clear()
             {
                 Value = default(TValue);
@@ -129,6 +131,7 @@ namespace Utils.DataStructures
             public NodeTraversalAction InAction;
             public NodeTraversalAction PostAction;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetActions(NodeTraversalAction preAction = null, NodeTraversalAction inAction = null, NodeTraversalAction postAction = null)
             {
                 PreAction = preAction;
@@ -136,16 +139,19 @@ namespace Utils.DataStructures
                 PostAction = postAction;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool InvokePreAction(Node node)
             {
                 return PreAction == null || PreAction(node);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool InvokeInAction(Node node)
             {
                 return InAction == null || InAction(node);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool InvokePostAction(Node node)
             {
                 return PostAction == null || PostAction(node);
