@@ -60,7 +60,6 @@
     <Compile Include="DataStructures\AsyncBuffer.cs" />
     <Compile Include="DataStructures\BufferedStreamReader.cs" />
     <Compile Include="DataStructures\Heap.cs" />
-    <Compile Include="DataStructures\ICollection.cs" />
     <Compile Include="DataStructures\SplayTree.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
