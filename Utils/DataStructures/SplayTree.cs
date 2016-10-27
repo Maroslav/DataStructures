@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Utils.DataStructures
 {
     public class SplayTree<TKey, TValue>
-        : IDictionary<TKey, TValue>
+        : DictionaryBase<TKey, TValue>
         where TKey : struct
         where TValue : IEquatable<TValue>
     {
@@ -226,65 +226,71 @@ namespace Utils.DataStructures
         #region Genesis
 
         public SplayTree()
-        {
-            _root = new Node();
-        }
+        { }
 
         #endregion
 
         #region IDictionary<> overrides
 
-        public int Count { get; private set; }
-        public bool IsReadOnly { get { return false; } }
+        public override int Count { get; protected set; }
+        public override bool IsReadOnly { get { return false; } }
 
-        public ICollection<TKey> Keys { get; }
-        public ICollection<TValue> Values { get; }
+        // TODO: implement these:
+
+        public override ICollection<TKey> Keys { get; }
+        public override ICollection<TValue> Values { get; }
 
 
-        #region Enumeration
-
-        private IEnumerable<KeyValuePair<TKey, TValue>> GetEnumerable()
+        public override void Add(TKey key, TValue value)
         {
-            return Keys.Select(k => new KeyValuePair<TKey, TValue>(k, this[k]));
+            // 1. Find the parent of the place in the tree, where the key should be inserted
+            Node near = FindNear(key);
+
+            // If the tree is empty, insert new root
+            if (near == null)
+            {
+                Debug.Assert(Count == 0);
+
+                _root = new Node
+                {
+                    Key = key,
+                    Value = value,
+                };
+
+                Count++;
+                return;
+            }
+
+            // 2. Insert the key/value
+            int comp = Comparer<TKey>.Default.Compare(key, near.Key);
+
+            // If we found an exact key match, just alter the node's value
+            if (comp == 0)
+            {
+                near.Value = value;
+                return;
+            }
+
+            // The key is not present in the tree, create a new node for it
+            Node newNode = new Node
+            {
+                Key = key,
+                Value = value,
+                Parent = near,
+            };
+
+            if (comp < 0)
+                near.LeftChild = newNode;
+            else
+                near.RightChild = newNode;
+
+            Count++;
+
+            // 3. Splay the newly inserted node to the root
+            newNode.Splay();
         }
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return GetEnumerable().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-
-
-        public void Add(KeyValuePair<TKey, TValue> item)
-        {
-            Add(item.Key, item.Value);
-        }
-
-        public void Add(TKey key, TValue value)
-        {
-        }
-
-
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            TValue val;
-            if (!TryGetValue(item.Key, out val))
-                return false;
-
-            if (!val.Equals(item.Value))
-                return false;
-
-            Remove(item.Key);
-            return true;
-        }
-
-        public bool Remove(TKey key)
+        public override bool Remove(TKey key)
         {
             if (!Splay(key))
                 return false;
@@ -294,7 +300,7 @@ namespace Utils.DataStructures
 
             Node leftTree = _root.LeftChild;
 
-            // 1. If the left subtree is empty, the root will start with the right subtree
+            // 1. If the root's left subtree is empty, the root will start with the right subtree
             if (leftTree == null)
             {
                 Node root = _root;
@@ -302,6 +308,7 @@ namespace Utils.DataStructures
                 if (_root != null)
                     _root.Parent = null;
                 root.Dispose();
+                Count--;
                 return true;
             }
 
@@ -315,16 +322,16 @@ namespace Utils.DataStructures
             });
 
             leftTree.SiftRight(_traversalActions);
-            Debug.Assert(rightMost != null);
+            Debug.Assert(rightMost != null); // Count > 0: there should be at least the root
 
             // 3. Splay the right-most node
             // Remove the parent of root's left child to not splay up to root
             leftTree.Parent = null;
-            Splay(rightMost);
+            rightMost.Splay();
 
             // 4. Right-most is now root of the left tree (and has no right subtree); merge it with Root
             leftTree = rightMost;
-            Debug.Assert(leftTree.RightChild == null);
+            Debug.Assert(leftTree.RightChild == null); // Splay on the right-most node should make it have no right (larger) children
 
             leftTree.RightChild = _root.RightChild;
             if (leftTree.RightChild != null)
@@ -332,12 +339,13 @@ namespace Utils.DataStructures
 
             _root.Clear();
             _root = leftTree;
+            Count--;
 
             return true;
         }
 
 
-        public bool TryGetValue(TKey key, out TValue value)
+        public override bool TryGetValue(TKey key, out TValue value)
         {
             value = default(TValue);
 
@@ -348,7 +356,7 @@ namespace Utils.DataStructures
             return true;
         }
 
-        public TValue this[TKey key]
+        public override TValue this[TKey key]
         {
             get
             {
@@ -367,21 +375,11 @@ namespace Utils.DataStructures
         }
 
 
-        public bool Contains(KeyValuePair<TKey, TValue> item)
+        public override void Clear()
         {
-            TValue val;
+            if (Count == 0)
+                return;
 
-            return TryGetValue(item.Key, out val) && val.Equals(item.Value);
-        }
-
-        public bool ContainsKey(TKey key)
-        {
-            return Splay(key);
-        }
-
-
-        public void Clear()
-        {
             _traversalActions.SetActions(postAction: n =>
             {
                 n.Dispose();
@@ -389,21 +387,9 @@ namespace Utils.DataStructures
             });
 
             _root.SiftLeft(_traversalActions);
-        }
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            if (array == null)
-                throw new ArgumentNullException("array");
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException("arrayIndex", "The arrayIndex must not be negative.");
-            if (array.Length - arrayIndex < Count)
-                throw new ArgumentException("Not enough space in the array.", "array");
-
-            int i = arrayIndex;
-
-            foreach (var keyValuePair in GetEnumerable())
-                array[i++] = keyValuePair;
+            _root = null;
+            Count = 0;
         }
 
         #endregion
@@ -412,7 +398,32 @@ namespace Utils.DataStructures
 
         Node Find(TKey key)
         {
+            if (Count == 0)
+                return null;
+
             return _root.Sift(key);
+        }
+
+        Node FindNear(TKey key)
+        {
+            if (Count == 0)
+                return null;
+
+            // Find the place in the tree, where the key should be inserted
+            // Traverse the tree and store a reference to the last encountered node
+            Node lastNode = null;
+
+            _traversalActions.SetKeyActions(keyPreAction: (n, searchKey) =>
+            {
+                lastNode = n;
+                return true;
+            });
+
+            Node nearest = _root.Sift(key, _traversalActions);
+            Debug.Assert(lastNode != null); // Count > 0: there must be at least root
+            Debug.Assert(nearest == null || nearest == lastNode); // If we found an exact key match; it should be equal to lastNode
+
+            return lastNode;
         }
 
         private bool Splay(TKey key)
@@ -422,13 +433,8 @@ namespace Utils.DataStructures
             if (node == null)
                 return false;
 
-            Splay(node);
+            node.Splay();
             return true;
-        }
-
-        private void Splay(Node node)
-        {
-
         }
 
         #endregion
