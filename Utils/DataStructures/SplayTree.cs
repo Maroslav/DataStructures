@@ -49,11 +49,25 @@ namespace Utils.DataStructures
 
             #endregion
 
+            #region Rotations
+
+            public void Splay()
+            {
+
+            }
+
+            #endregion
+
             #region Tree traversal
 
-            public Node Sift(TKey key)
+            /// <summary>
+            /// Traverses the binary search tree looking for the searchKey.
+            /// If no exact match is found in the tree, returns null.
+            /// </summary>
+            /// <returns></returns>
+            public Node Sift(TKey searchKey)
             {
-                int comp = Comparer<TKey>.Default.Compare(key, Key);
+                int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
 
                 if (comp == 0)
                     return this;
@@ -62,12 +76,33 @@ namespace Utils.DataStructures
                 {
                     if (LeftChild == null)
                         return null;
-                    return LeftChild.Sift(key);
+                    return LeftChild.Sift(searchKey);
                 }
 
                 if (RightChild == null)
                     return null;
-                return RightChild.Sift(key);
+                return RightChild.Sift(searchKey);
+            }
+
+            public Node Sift(TKey searchKey, NodeTraversalActions nodeActions)
+            {
+                int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
+
+                if (comp == 0)
+                    return this;
+
+                nodeActions.InvokeKeyPreAction(this, searchKey);
+
+                if (comp < 0)
+                {
+                    if (LeftChild == null)
+                        return null;
+                    return LeftChild.Sift(searchKey);
+                }
+
+                if (RightChild == null)
+                    return null;
+                return RightChild.Sift(searchKey);
             }
 
             /// <summary>
@@ -126,10 +161,15 @@ namespace Utils.DataStructures
         class NodeTraversalActions
         {
             public delegate bool NodeTraversalAction(Node node);
+            public delegate bool NodeKeyTraversalAction(Node node, TKey searchKey);
+
 
             public NodeTraversalAction PreAction;
             public NodeTraversalAction InAction;
             public NodeTraversalAction PostAction;
+
+            public NodeKeyTraversalAction KeyPreAction;
+
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetActions(NodeTraversalAction preAction = null, NodeTraversalAction inAction = null, NodeTraversalAction postAction = null)
@@ -138,6 +178,13 @@ namespace Utils.DataStructures
                 InAction = inAction;
                 PostAction = postAction;
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetKeyActions(NodeKeyTraversalAction keyPreAction = null)
+            {
+                KeyPreAction = keyPreAction;
+            }
+
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool InvokePreAction(Node node)
@@ -155,6 +202,13 @@ namespace Utils.DataStructures
             public bool InvokePostAction(Node node)
             {
                 return PostAction == null || PostAction(node);
+            }
+
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool InvokeKeyPreAction(Node node, TKey searchKey)
+            {
+                return KeyPreAction == null || KeyPreAction(node, searchKey);
             }
         }
 
