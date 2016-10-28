@@ -191,13 +191,13 @@ namespace Utils.DataStructures
                 if (nodeActions.InvokePreAction(this))
                     return false;
 
-                if (RightChild != null && !RightChild.SiftLeft(nodeActions))
+                if (RightChild != null && !RightChild.SiftRight(nodeActions))
                     return false;
 
                 if (nodeActions.InvokeInAction(this))
                     return false;
 
-                if (LeftChild != null && !LeftChild.SiftLeft(nodeActions))
+                if (LeftChild != null && !LeftChild.SiftRight(nodeActions))
                     return false;
 
                 if (nodeActions.InvokePostAction(this))
@@ -448,7 +448,7 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            _root.SiftLeft(_traversalActions);
+            _root.SiftRight(_traversalActions);
 
             _root = null;
             Count = 0;
@@ -481,12 +481,13 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            Node nearest = _root.Sift(key, _traversalActions);
+            Node near = _root.Sift(key, _traversalActions);
             Debug.Assert(lastNode != null); // Count > 0: there must be at least root
-            Debug.Assert(nearest == null || nearest == lastNode); // If we found an exact key match; it should be equal to lastNode
+            Debug.Assert(near == null || near == lastNode); // If we found an exact key match; it should be equal to lastNode
 
             return lastNode;
         }
+
 
         private bool Splay(TKey key)
         {
