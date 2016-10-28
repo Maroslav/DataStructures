@@ -41,7 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\AsyncBuffer.cs" />
-    <Compile Include="DataStructures\BufferedStreamReader.cs" />
     <Compile Include="DataStructures\DictionaryBase.cs" />
     <Compile Include="DataStructures\Heap.cs" />
     <Compile Include="DataStructures\SplayTree.cs" />
