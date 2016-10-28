@@ -16,18 +16,30 @@ namespace Utils.DataStructures
     {
         #region Nested classes
 
-        class Node
-            : IDisposable
+        private class Node
+            : NodeItem, IDisposable
         {
             #region Fields
 
-            public TKey Key;
-            public TValue Value;
+            public Node Parent;
 
-            public Node Parent { get; set; }
+            public Node LeftChild;
+            public Node RightChild;
 
-            public Node LeftChild { get; set; }
-            public Node RightChild { get; set; }
+            #endregion
+
+            #region Genesis
+
+            public Node(TKey key, TValue value)
+                : base(key, value)
+            { }
+
+            #endregion
+
+            #region Properties
+
+            private bool IsLeftChild { get { return Parent != null && Parent.LeftChild == this; } }
+            private bool IsRightChild { get { return Parent != null && Parent.RightChild == this; } }
 
             #endregion
 
@@ -230,15 +242,34 @@ namespace Utils.DataStructures
 
         #endregion
 
+        #region Enumeration
+
+        public override ItemCollection<NodeItem> Items()
+        {
+            NodeItem[] items = new NodeItem[Count];
+
+            if (Count == 0)
+                return new ItemCollection<NodeItem>(items, 0);
+
+            int i = 0;
+
+            _traversalActions.SetActions(preAction: n =>
+            {
+                items[i++] = n;
+                return true;
+            });
+
+            _root.SiftLeft(_traversalActions);
+
+            return new ItemCollection<NodeItem>(items, Count);
+        }
+
+        #endregion
+
         #region IDictionary<> overrides
 
         public override int Count { get; protected set; }
         public override bool IsReadOnly { get { return false; } }
-
-        // TODO: implement these:
-
-        public override ICollection<TKey> Keys { get; }
-        public override ICollection<TValue> Values { get; }
 
 
         public override void Add(TKey key, TValue value)
@@ -250,13 +281,7 @@ namespace Utils.DataStructures
             if (near == null)
             {
                 Debug.Assert(Count == 0);
-
-                _root = new Node
-                {
-                    Key = key,
-                    Value = value,
-                };
-
+                _root = new Node(key, value);
                 Count++;
                 return;
             }
@@ -272,10 +297,8 @@ namespace Utils.DataStructures
             }
 
             // The key is not present in the tree, create a new node for it
-            Node newNode = new Node
+            Node newNode = new Node(key, value)
             {
-                Key = key,
-                Value = value,
                 Parent = near,
             };
 
