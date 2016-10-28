@@ -68,6 +68,45 @@ namespace Utils.DataStructures
 
             }
 
+            protected void Zig()
+            {
+                if (Parent == null)
+                    return;
+
+                Node parent = Parent;
+                Node grandParent = parent.Parent;
+
+                if (IsLeftChild)
+                {
+                    Node rightTree = RightChild;
+
+                    RightChild = parent;
+                    RightChild.Parent = this;
+                    Debug.Assert(RightChild.LeftChild == this);
+                    RightChild.LeftChild = rightTree;
+
+                    Parent = grandParent;
+                }
+                else if (IsRightChild)
+                {
+                    Node leftTree = LeftChild;
+
+                    LeftChild = parent;
+                    LeftChild.Parent = this;
+                    Debug.Assert(LeftChild.RightChild == this);
+                    LeftChild.RightChild = leftTree;
+
+                    Parent = grandParent;
+                }
+                else
+                    Debug.Fail("Node is not both the left and the right child of its parent.... ?");
+            }
+
+            void ZigZag()
+            {
+
+            }
+
             #endregion
 
             #region Tree traversal
