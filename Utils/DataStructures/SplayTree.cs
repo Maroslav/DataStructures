@@ -198,6 +198,8 @@ namespace Utils.DataStructures
                     Zig<NoFlip>();
                 else if (IsRightChild())
                     Zig<DoFlip>();
+                else
+                    Debug.Fail("This node is neither left nor the right child.... ?");
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -565,10 +567,7 @@ namespace Utils.DataStructures
             }
             set
             {
-                if (Splay(key))
-                    _root.Value = value;
-                else
-                    Add(key, value);
+                Add(key, value);
             }
         }
 
