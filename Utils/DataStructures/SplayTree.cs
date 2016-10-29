@@ -57,6 +57,9 @@ namespace Utils.DataStructures
 
             #region Properties
 
+            // Flipping of accessors adds one check for every access but enables us
+            // to avoid duplication (mirroring) of code (tree traversal and rotations)
+
             #region Children getters and setters
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -178,9 +181,9 @@ namespace Utils.DataStructures
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected void Zig()
             {
-                if (IsLeftChild<NoFlip>())
+                if (IsLeftChild())
                     Zig<NoFlip>();
-                else if (IsRightChild<NoFlip>())
+                else if (IsRightChild())
                     Zig<DoFlip>();
                 else
                     Debug.Fail("Node is not both the left and the right child of its parent.... ?");
