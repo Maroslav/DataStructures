@@ -292,7 +292,8 @@ namespace Utils.DataStructures
                 if (comp == 0)
                     return this;
 
-                nodeActions.InvokeKeyPreAction(this, searchKey);
+                if (!nodeActions.InvokeKeyPreAction(this, searchKey))
+                    return null;
 
                 if (comp < 0)
                 {
