@@ -50,8 +50,8 @@ namespace Utils.DataStructures
 
             public Node Parent;
 
-            public Node LeftChild { get; set; }
-            public Node RightChild { get; set; }
+            public Node LeftChild;
+            public Node RightChild;
 
             #endregion
 
@@ -108,6 +108,15 @@ namespace Utils.DataStructures
             #region Family getters
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Node GetGrandParent()
+            {
+                if (Parent == null)
+                    return null;
+
+                return Parent.Parent;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool IsLeftChild()
             {
                 return IsLeftChild<NoFlip>();
@@ -143,10 +152,6 @@ namespace Utils.DataStructures
                 : base(key, value)
             { }
 
-            #endregion
-
-            #region IDisposable overrides and clearing
-
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Clear()
             {
@@ -176,7 +181,15 @@ namespace Utils.DataStructures
 
             public void Splay()
             {
+                while (Parent != null)
+                {
+                    if (GetGrandParent() == null)
+                        Zig();
+                    else
+                        ZigZxg();
+                }
             }
+
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected void Zig()
@@ -185,8 +198,6 @@ namespace Utils.DataStructures
                     Zig<NoFlip>();
                 else if (IsRightChild())
                     Zig<DoFlip>();
-                else
-                    Debug.Fail("Node is not both the left and the right child of its parent.... ?");
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,9 +219,40 @@ namespace Utils.DataStructures
                 Parent = grandParent;
             }
 
-            void ZigZag()
-            {
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            protected void ZigZxg()
+            {
+                if (Parent.IsLeftChild())
+                    ZigZxg<NoFlip>();
+                else
+                    ZigZxg<DoFlip>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void ZigZxg<T>()
+                where T : FlipBase<T>
+            {
+                Debug.Assert(Parent.IsLeftChild<T>());
+
+                if (IsLeftChild<T>())
+                    ZigZig();
+                else
+                    ZigZag();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void ZigZag()
+            {
+                Zig();
+                Zig();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void ZigZig()
+            {
+                Parent.Zig();
+                Zig();
             }
 
             #endregion
@@ -242,7 +284,7 @@ namespace Utils.DataStructures
                 return RightChild.Find(searchKey);
             }
 
-            // The other overload with nearly the same body is there to reduce the recursion cost.
+            // The other overload with nearly the same body is there just to reduce the recursion cost.
             public Node Find(TKey searchKey, NodeTraversalActions nodeActions)
             {
                 int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
@@ -429,9 +471,15 @@ namespace Utils.DataStructures
             };
 
             if (comp < 0)
+            {
+                Debug.Assert(near.LeftChild == null);
                 near.LeftChild = newNode;
+            }
             else
+            {
+                Debug.Assert(near.RightChild == null);
                 near.RightChild = newNode;
+            }
 
             Count++;
 
@@ -452,11 +500,11 @@ namespace Utils.DataStructures
             // 1. If the root's left subtree is empty, the root will start with the right subtree
             if (leftTree == null)
             {
-                Node root = _root;
-                _root = root.RightChild;
+                Node oldRoot = _root;
+                _root = oldRoot.RightChild;
                 if (_root != null)
                     _root.Parent = null;
-                root.Dispose();
+                oldRoot.Dispose();
                 Count--;
                 return true;
             }
