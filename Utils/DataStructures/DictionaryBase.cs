@@ -136,12 +136,12 @@ namespace Utils.DataStructures
 
         #region Enumeration
 
-        IEnumerator<NodeItem> IEnumerable<NodeItem>.GetEnumerator()
+        public virtual IEnumerator<NodeItem> GetEnumerator()
         {
             return Items().GetEnumerator();
         }
 
-        public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
             return Items().Select(node => new KeyValuePair<TKey, TValue>(node.Key, node.Value)).GetEnumerator();
         }
