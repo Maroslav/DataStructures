@@ -16,6 +16,33 @@ namespace Utils.DataStructures
     {
         #region Nested classes
 
+        #region Node family access flipping classes
+
+        private class FlipBase<TDoFlipTrait>
+        {
+            public static bool FlipChildren;
+
+            static FlipBase()
+            {
+                if (typeof(TDoFlipTrait) == typeof(NoFlip))
+                    FlipChildren = false;
+                else if (typeof(TDoFlipTrait) == typeof(DoFlip))
+                    FlipChildren = true;
+                else
+                    throw new TypeLoadException(string.Format("Invalid type parameter {0} for the FlipBase class.", typeof(TDoFlipTrait).Name));
+            }
+        }
+
+        sealed class NoFlip
+            : FlipBase<NoFlip>
+        { }
+
+        sealed class DoFlip
+            : FlipBase<DoFlip>
+        { }
+
+        #endregion
+
         private class Node
             : NodeItem, IDisposable
         {
@@ -23,8 +50,87 @@ namespace Utils.DataStructures
 
             public Node Parent;
 
-            public Node LeftChild;
-            public Node RightChild;
+            public Node LeftChild { get; set; }
+            public Node RightChild { get; set; }
+
+            #endregion
+
+            #region Properties
+
+            #region Children getters and setters
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Node GetLeftChild<TFlip>()
+                where TFlip : FlipBase<TFlip>
+            {
+                if (FlipBase<TFlip>.FlipChildren)
+                    return RightChild;
+
+                return LeftChild;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Node GetRightChild<TFlip>()
+                where TFlip : FlipBase<TFlip>
+            {
+                if (FlipBase<TFlip>.FlipChildren)
+                    return LeftChild;
+
+                return RightChild;
+            }
+
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetLeftChild<TFlip>(Node node)
+                where TFlip : FlipBase<TFlip>
+            {
+                if (FlipBase<TFlip>.FlipChildren)
+                    RightChild = node;
+                else
+                    LeftChild = node;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetRightChild<TFlip>(Node node)
+                where TFlip : FlipBase<TFlip>
+            {
+                if (FlipBase<TFlip>.FlipChildren)
+                    LeftChild = node;
+                else
+                    RightChild = node;
+            }
+
+            #endregion
+
+            #region Family getters
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsLeftChild()
+            {
+                return IsLeftChild<NoFlip>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsLeftChild<TFlip>()
+                where TFlip : FlipBase<TFlip>
+            {
+                return Parent != null && Parent.GetLeftChild<TFlip>() == this;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsRightChild()
+            {
+                return IsRightChild<NoFlip>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsRightChild<TFlip>()
+                where TFlip : FlipBase<TFlip>
+            {
+                return Parent != null && Parent.GetRightChild<TFlip>() == this;
+            }
+
+            #endregion
 
             #endregion
 
@@ -36,19 +142,21 @@ namespace Utils.DataStructures
 
             #endregion
 
-            #region Properties
-
-            private bool IsLeftChild { get { return Parent != null && Parent.LeftChild == this; } }
-            private bool IsRightChild { get { return Parent != null && Parent.RightChild == this; } }
-
-            #endregion
-
             #region IDisposable overrides and clearing
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Clear()
             {
+                var disp = Key as IDisposable;
+                if (disp != null)
+                    disp.Dispose();
+                Key = default(TKey);
+
+                disp = Value as IDisposable;
+                if (disp != null)
+                    disp.Dispose();
                 Value = default(TValue);
+
                 Parent = null;
                 LeftChild = null;
                 RightChild = null;
@@ -65,41 +173,36 @@ namespace Utils.DataStructures
 
             public void Splay()
             {
-
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected void Zig()
+            {
+                if (IsLeftChild<NoFlip>())
+                    Zig<NoFlip>();
+                else if (IsRightChild<NoFlip>())
+                    Zig<DoFlip>();
+                else
+                    Debug.Fail("Node is not both the left and the right child of its parent.... ?");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void Zig<T>()
+                where T : FlipBase<T>
             {
                 if (Parent == null)
                     return;
 
                 Node parent = Parent;
                 Node grandParent = parent.Parent;
+                Node rightTree = GetRightChild<T>();
 
-                if (IsLeftChild)
-                {
-                    Node rightTree = RightChild;
+                SetRightChild<T>(parent);
+                GetRightChild<T>().Parent = this;
+                Debug.Assert(GetRightChild<T>().GetLeftChild<T>() == this);
+                GetRightChild<T>().SetLeftChild<T>(rightTree);
 
-                    RightChild = parent;
-                    RightChild.Parent = this;
-                    Debug.Assert(RightChild.LeftChild == this);
-                    RightChild.LeftChild = rightTree;
-
-                    Parent = grandParent;
-                }
-                else if (IsRightChild)
-                {
-                    Node leftTree = LeftChild;
-
-                    LeftChild = parent;
-                    LeftChild.Parent = this;
-                    Debug.Assert(LeftChild.RightChild == this);
-                    LeftChild.RightChild = leftTree;
-
-                    Parent = grandParent;
-                }
-                else
-                    Debug.Fail("Node is not both the left and the right child of its parent.... ?");
+                Parent = grandParent;
             }
 
             void ZigZag()
@@ -115,8 +218,9 @@ namespace Utils.DataStructures
             /// Traverses the binary search tree looking for the searchKey.
             /// If no exact match is found in the tree, returns null.
             /// </summary>
-            /// <returns></returns>
-            public Node Sift(TKey searchKey)
+            /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
+            /// is not present in the data structure.</returns>
+            public Node Find(TKey searchKey)
             {
                 int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
 
@@ -127,15 +231,16 @@ namespace Utils.DataStructures
                 {
                     if (LeftChild == null)
                         return null;
-                    return LeftChild.Sift(searchKey);
+                    return LeftChild.Find(searchKey);
                 }
 
                 if (RightChild == null)
                     return null;
-                return RightChild.Sift(searchKey);
+                return RightChild.Find(searchKey);
             }
 
-            public Node Sift(TKey searchKey, NodeTraversalActions nodeActions)
+            // The other overload with nearly the same body is there to reduce the recursion cost.
+            public Node Find(TKey searchKey, NodeTraversalActions nodeActions)
             {
                 int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
 
@@ -148,56 +253,35 @@ namespace Utils.DataStructures
                 {
                     if (LeftChild == null)
                         return null;
-                    return LeftChild.Sift(searchKey);
+                    return LeftChild.Find(searchKey, nodeActions);
                 }
 
                 if (RightChild == null)
                     return null;
-                return RightChild.Sift(searchKey);
+                return RightChild.Find(searchKey, nodeActions);
             }
 
             /// <summary>
-            /// Left DFS traversal of the binary search tree.
+            /// DFS traversal of the binary search tree.
+            /// If the type parameter is <see cref="NoFlip"/>, nodes are iterated from the smallest
+            /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
+            /// nodes are iterated from the largest to the smallest key (right to left).
             /// The False return value of the action functions will result in early termination of the traversal.
             /// </summary>
             /// <returns>False if an early termination of the recursion is requested.</returns>
-            public bool SiftLeft(NodeTraversalActions nodeActions)
+            public bool Sift<T>(NodeTraversalActions nodeActions)
+                where T : FlipBase<T>
             {
                 if (nodeActions.InvokePreAction(this))
                     return false;
 
-                if (LeftChild != null && !LeftChild.SiftLeft(nodeActions))
+                if (GetLeftChild<T>() != null && !GetLeftChild<T>().Sift<T>(nodeActions))
                     return false;
 
                 if (nodeActions.InvokeInAction(this))
                     return false;
 
-                if (RightChild != null && !RightChild.SiftLeft(nodeActions))
-                    return false;
-
-                if (nodeActions.InvokePostAction(this))
-                    return false;
-
-                return true;
-            }
-
-            /// <summary>
-            /// Right DFS traversal of the binary search tree.
-            /// The False return value of the action functions will result in early termination of the traversal.
-            /// </summary>
-            /// <returns>False if an early termination of the recursion is requested.</returns>
-            public bool SiftRight(NodeTraversalActions nodeActions)
-            {
-                if (nodeActions.InvokePreAction(this))
-                    return false;
-
-                if (RightChild != null && !RightChild.SiftRight(nodeActions))
-                    return false;
-
-                if (nodeActions.InvokeInAction(this))
-                    return false;
-
-                if (LeftChild != null && !LeftChild.SiftRight(nodeActions))
+                if (GetRightChild<T>() != null && !GetRightChild<T>().Sift<T>(nodeActions))
                     return false;
 
                 if (nodeActions.InvokePostAction(this))
@@ -298,7 +382,7 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            _root.SiftLeft(_traversalActions);
+            _root.Sift<NoFlip>(_traversalActions);
 
             return new ItemCollection<NodeItem>(items, Count);
         }
@@ -383,7 +467,7 @@ namespace Utils.DataStructures
                 return false; // Terminate the DFS when we find the first node
             });
 
-            leftTree.SiftRight(_traversalActions);
+            leftTree.Sift<DoFlip>(_traversalActions);
             Debug.Assert(rightMost != null); // Count > 0: there should be at least the root
 
             // 3. Splay the right-most node
@@ -448,7 +532,8 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            _root.SiftRight(_traversalActions);
+            // Start Dispose from the last node
+            _root.Sift<DoFlip>(_traversalActions);
 
             _root = null;
             Count = 0;
@@ -463,7 +548,7 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return null;
 
-            return _root.Sift(key);
+            return _root.Find(key);
         }
 
         Node FindNear(TKey key)
@@ -481,7 +566,7 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            Node near = _root.Sift(key, _traversalActions);
+            Node near = _root.Find(key, _traversalActions);
             Debug.Assert(lastNode != null); // Count > 0: there must be at least root
             Debug.Assert(near == null || near == lastNode); // If we found an exact key match; it should be equal to lastNode
 
