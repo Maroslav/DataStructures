@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Utils.DataStructures;
 
 namespace ExternalSortRunner
 {
@@ -6,12 +8,18 @@ namespace ExternalSortRunner
     {
         static void Main(string[] args)
         {
-            Dictionary<int, string> d = new Dictionary<int, string>();
+            SplayTree<int, string> d = new SplayTree<int, string>();
 
             for (int i = 0; i < 10; i++)
                 d[i] = i.ToString();
 
-            ((ICollection<int>) d.Keys).Clear();
+
+            foreach (var n in d)
+            {
+                Console.WriteLine(string.Format("{0}\t{1}", n.Key, n.Value));
+            }
+
+            ((ICollection<int>)d.Keys).Clear();
         }
     }
 }
