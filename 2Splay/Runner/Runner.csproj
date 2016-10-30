@@ -7,8 +7,8 @@
     <ProjectGuid>{78A22A14-A931-4083-B691-130C9C353A9D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExternalSortRunner</RootNamespace>
-    <AssemblyName>ExternalSortRunner</AssemblyName>
+    <RootNamespace>Runner</RootNamespace>
+    <AssemblyName>Runner</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

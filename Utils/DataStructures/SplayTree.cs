@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+
+[assembly: InternalsVisibleTo("Runner")]
 
 namespace Utils.DataStructures
 {
@@ -18,7 +16,7 @@ namespace Utils.DataStructures
 
         #region Node family access flipping classes
 
-        private class FlipBase<TDoFlipTrait>
+        internal class FlipBase<TDoFlipTrait>
         {
             public static bool FlipChildren;
 
@@ -33,17 +31,17 @@ namespace Utils.DataStructures
             }
         }
 
-        sealed class NoFlip
+        internal sealed class NoFlip
             : FlipBase<NoFlip>
         { }
 
-        sealed class DoFlip
+        internal sealed class DoFlip
             : FlipBase<DoFlip>
         { }
 
         #endregion
 
-        private class Node
+        internal class Node
             : NodeItem, IDisposable
         {
             #region Fields
@@ -326,7 +324,7 @@ namespace Utils.DataStructures
             #endregion
         }
 
-        class NodeTraversalActions
+        internal class NodeTraversalActions
         {
             public delegate bool NodeTraversalAction(Node node);
             public delegate bool NodeKeyTraversalAction(Node node, TKey searchKey);

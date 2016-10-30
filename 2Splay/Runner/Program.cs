@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Utils.DataStructures;
+using Utils.DataStructures.SplayTree;
 
-namespace ExternalSortRunner
+namespace Runner
 {
     class Program
     {
@@ -18,7 +18,6 @@ namespace ExternalSortRunner
                 d[r] = r.ToString();
             }
 
-            SplayTree<int, string>.Node
 
             //foreach (var n in d)
             //{
