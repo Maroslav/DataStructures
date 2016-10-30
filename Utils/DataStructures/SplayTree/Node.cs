@@ -202,12 +202,18 @@ namespace Utils.DataStructures.SplayTree
             Node<TKey, TValue> grandParent = parent.Parent;
             Node<TKey, TValue> rightTree = GetRightChild<T>();
 
+            if (grandParent != null)
+            {
+                if (parent.IsLeftChild())
+                    grandParent.LeftChild = this;
+                else
+                    grandParent.RightChild = this;
+            }
+
+            parent.SetLeftChild<T>(rightTree);
             parent.Parent = this;
+
             SetRightChild<T>(parent);
-
-            Debug.Assert(GetRightChild<T>().GetLeftChild<T>() == this);
-            GetRightChild<T>().SetLeftChild<T>(rightTree);
-
             Parent = grandParent;
         }
 
