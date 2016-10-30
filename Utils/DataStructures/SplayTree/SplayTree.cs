@@ -49,7 +49,7 @@ namespace Utils.DataStructures.SplayTree
                     return true;
                 });
 
-                _root.Sift<NoFlip>(_traversalActions);
+                _root.SiftLeft(_traversalActions);
 
                 return new ItemCollection<NodeItem>(items, Count);
             }
@@ -141,7 +141,7 @@ namespace Utils.DataStructures.SplayTree
                 return false; // Terminate the DFS when we find the first node
             });
 
-            leftTree.Sift<DoFlip>(_traversalActions);
+            leftTree.SiftRight(_traversalActions);
             Debug.Assert(rightMost != null); // Count > 0: there should be at least the root
 
             // 3. Splay the right-most node
@@ -204,7 +204,7 @@ namespace Utils.DataStructures.SplayTree
             });
 
             // Start Dispose from the last node
-            _root.Sift<DoFlip>(_traversalActions);
+            _root.SiftRight(_traversalActions);
 
             _root = null;
             Count = 0;

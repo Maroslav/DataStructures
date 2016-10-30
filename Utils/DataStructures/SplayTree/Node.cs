@@ -9,6 +9,33 @@ namespace Utils.DataStructures.SplayTree
         where TKey : struct
         where TValue : IEquatable<TValue>
     {
+        #region Nested classes
+
+        private class FlipBase<TDoFlipTrait>
+        {
+            public static bool FlipChildren;
+
+            static FlipBase()
+            {
+                if (typeof(TDoFlipTrait) == typeof(NoFlip))
+                    FlipChildren = false;
+                else if (typeof(TDoFlipTrait) == typeof(DoFlip))
+                    FlipChildren = true;
+                else
+                    throw new TypeLoadException(string.Format("Invalid type parameter {0} for the FlipBase class.", typeof(TDoFlipTrait).Name));
+            }
+        }
+
+        private sealed class NoFlip
+            : FlipBase<NoFlip>
+        { }
+
+        private sealed class DoFlip
+            : FlipBase<DoFlip>
+        { }
+
+        #endregion
+
         #region Fields
 
         public Node<TKey, TValue> Parent;
@@ -26,7 +53,7 @@ namespace Utils.DataStructures.SplayTree
         #region Children getters and setters
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Node<TKey, TValue> GetLeftChild<TFlip>()
+        private Node<TKey, TValue> GetLeftChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -36,7 +63,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Node<TKey, TValue> GetRightChild<TFlip>()
+        private Node<TKey, TValue> GetRightChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -47,7 +74,7 @@ namespace Utils.DataStructures.SplayTree
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetLeftChild<TFlip>(Node<TKey, TValue> node)
+        private void SetLeftChild<TFlip>(Node<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -57,7 +84,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetRightChild<TFlip>(Node<TKey, TValue> node)
+        private void SetRightChild<TFlip>(Node<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -77,7 +104,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsLeftChild<TFlip>()
+        private bool IsLeftChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             return Parent != null && Parent.GetLeftChild<TFlip>() == this;
@@ -90,7 +117,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsRightChild<TFlip>()
+        private bool IsRightChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             return Parent != null && Parent.GetRightChild<TFlip>() == this;
@@ -258,14 +285,31 @@ namespace Utils.DataStructures.SplayTree
         }
 
         /// <summary>
-        /// DFS traversal of the binary search tree.
-        /// If the type parameter is <see cref="NoFlip"/>, nodes are iterated from the smallest
-        /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
-        /// nodes are iterated from the largest to the smallest key (right to left).
+        /// Left DFS traversal of the binary search tree. Nodes are traversed from the smallest to the largest key.
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
         /// <returns>False if an early termination of the recursion is requested.</returns>
-        public bool Sift<T>(NodeTraversalActions<TKey, TValue> nodeActions)
+        public bool SiftLeft(NodeTraversalActions<TKey, TValue> nodeActions)
+        {
+            return Sift<NoFlip>(nodeActions);
+        }
+
+        /// <summary>
+        /// Right DFS traversal of the binary search tree. Nodes are traversed from the largest to the smallest key.
+        /// The False return value of the action functions will result in early termination of the traversal.
+        /// </summary>
+        /// <returns>False if an early termination of the recursion is requested.</returns>
+        public bool SiftRight(NodeTraversalActions<TKey, TValue> nodeActions)
+        {
+            return Sift<DoFlip>(nodeActions);
+        }
+
+        /// <summary>
+        /// If the type parameter is <see cref="NoFlip"/>, nodes are iterated from the smallest
+        /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
+        /// nodes are iterated from the largest to the smallest key (right to left).
+        /// </summary>
+        private bool Sift<T>(NodeTraversalActions<TKey, TValue> nodeActions)
             where T : FlipBase<T>
         {
             if (nodeActions.InvokePreAction(this))

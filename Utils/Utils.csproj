@@ -43,7 +43,6 @@
     <Compile Include="DataStructures\AsyncBuffer.cs" />
     <Compile Include="DataStructures\DictionaryBase.cs" />
     <Compile Include="DataStructures\Heap.cs" />
-    <Compile Include="DataStructures\SplayTree\AccessFlipping.cs" />
     <Compile Include="DataStructures\SplayTree\Node.cs" />
     <Compile Include="DataStructures\SplayTree\NodeTraversalActions.cs" />
     <Compile Include="DataStructures\SplayTree\SplayTree.cs" />
