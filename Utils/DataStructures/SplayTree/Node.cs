@@ -11,7 +11,7 @@ namespace Utils.DataStructures.SplayTree
     {
         #region Nested classes
 
-        private class FlipBase<TDoFlipTrait>
+        internal class FlipBase<TDoFlipTrait>
         {
             public static bool FlipChildren;
 
@@ -26,11 +26,11 @@ namespace Utils.DataStructures.SplayTree
             }
         }
 
-        private sealed class NoFlip
+        internal sealed class NoFlip
             : FlipBase<NoFlip>
         { }
 
-        private sealed class DoFlip
+        internal sealed class DoFlip
             : FlipBase<DoFlip>
         { }
 
@@ -53,7 +53,7 @@ namespace Utils.DataStructures.SplayTree
         #region Children getters and setters
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Node<TKey, TValue> GetLeftChild<TFlip>()
+        internal Node<TKey, TValue> GetLeftChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -63,7 +63,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Node<TKey, TValue> GetRightChild<TFlip>()
+        internal Node<TKey, TValue> GetRightChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -74,7 +74,7 @@ namespace Utils.DataStructures.SplayTree
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetLeftChild<TFlip>(Node<TKey, TValue> node)
+        internal void SetLeftChild<TFlip>(Node<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -84,7 +84,7 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetRightChild<TFlip>(Node<TKey, TValue> node)
+        internal void SetRightChild<TFlip>(Node<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -104,10 +104,11 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsLeftChild<TFlip>()
+        internal bool IsLeftChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
-            return Parent != null && Parent.GetLeftChild<TFlip>() == this;
+            Debug.Assert(Parent != null);
+            return Parent.GetLeftChild<TFlip>() == this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -117,10 +118,11 @@ namespace Utils.DataStructures.SplayTree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsRightChild<TFlip>()
+        internal bool IsRightChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
-            return Parent != null && Parent.GetRightChild<TFlip>() == this;
+            Debug.Assert(Parent != null);
+            return Parent.GetRightChild<TFlip>() == this;
         }
 
         #endregion
@@ -180,7 +182,7 @@ namespace Utils.DataStructures.SplayTree
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void Zig()
+        internal void Zig()
         {
             if (IsLeftChild())
                 Zig<NoFlip>();
@@ -219,8 +221,10 @@ namespace Utils.DataStructures.SplayTree
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void ZigZxg()
+        internal void ZigZxg()
         {
+            Debug.Assert(Parent.Parent != null);
+
             if (Parent.IsLeftChild())
                 ZigZxg<NoFlip>();
             else

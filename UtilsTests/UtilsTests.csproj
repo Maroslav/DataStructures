@@ -51,8 +51,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="SplayTreeTests\NodeTests.cs" />
-    <Compile Include="SplayTreeTests\SplayTreeTests.cs" />
+    <Compile Include="SplayTree\NodeTests.cs" />
+    <Compile Include="SplayTree\SplayTreeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

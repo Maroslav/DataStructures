@@ -14,7 +14,7 @@ namespace Utils.DataStructures
         public class NodeItem
         {
             // Key is immutable
-            public TKey Key { get; protected set; }
+            public TKey Key { get; internal set; }
             // We allow the value to be mutable (only valid if it is a reference type
             public TValue Value { get; set; }
 
