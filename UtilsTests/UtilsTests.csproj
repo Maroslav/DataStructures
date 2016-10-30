@@ -55,6 +55,12 @@
     <Compile Include="SplayTreeTests\SplayTreeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Utils\Utils.csproj">
+      <Project>{464f0ccf-eeb9-45d0-b96f-d0aad3d86a53}</Project>
+      <Name>Utils</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
