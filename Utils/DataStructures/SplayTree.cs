@@ -108,15 +108,6 @@ namespace Utils.DataStructures
             #region Family getters
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Node GetGrandParent()
-            {
-                if (Parent == null)
-                    return null;
-
-                return Parent.Parent;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool IsLeftChild()
             {
                 return IsLeftChild<NoFlip>();
@@ -179,15 +170,17 @@ namespace Utils.DataStructures
 
             #region Rotations
 
-            public void Splay()
+            public void Splay(ref Node root)
             {
                 while (Parent != null)
                 {
-                    if (GetGrandParent() == null)
+                    if (Parent.Parent == null)
                         Zig();
                     else
                         ZigZxg();
                 }
+
+                root = this;
             }
 
 
@@ -196,10 +189,11 @@ namespace Utils.DataStructures
             {
                 if (IsLeftChild())
                     Zig<NoFlip>();
-                else if (IsRightChild())
-                    Zig<DoFlip>();
                 else
-                    Debug.Fail("This node is neither left nor the right child.... ?");
+                {
+                    Debug.Assert(IsRightChild(), "This node is neither left nor the right child.... ?");
+                    Zig<DoFlip>();
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -213,8 +207,9 @@ namespace Utils.DataStructures
                 Node grandParent = parent.Parent;
                 Node rightTree = GetRightChild<T>();
 
+                parent.Parent = this;
                 SetRightChild<T>(parent);
-                GetRightChild<T>().Parent = this;
+
                 Debug.Assert(GetRightChild<T>().GetLeftChild<T>() == this);
                 GetRightChild<T>().SetLeftChild<T>(rightTree);
 
@@ -240,7 +235,10 @@ namespace Utils.DataStructures
                 if (IsLeftChild<T>())
                     ZigZig();
                 else
+                {
+                    Debug.Assert(IsRightChild<T>(), "This node is neither left nor the right child.... ?");
                     ZigZag();
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -267,29 +265,9 @@ namespace Utils.DataStructures
             /// </summary>
             /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
             /// is not present in the data structure.</returns>
-            public Node Find(TKey searchKey)
-            {
-                int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
-
-                if (comp == 0)
-                    return this;
-
-                if (comp < 0)
-                {
-                    if (LeftChild == null)
-                        return null;
-                    return LeftChild.Find(searchKey);
-                }
-
-                if (RightChild == null)
-                    return null;
-                return RightChild.Find(searchKey);
-            }
-
-            // The other overload with nearly the same body is there just to reduce the recursion cost.
             public Node Find(TKey searchKey, NodeTraversalActions nodeActions)
             {
-                int comp = Comparer<TKey>.Default.Compare(searchKey, Key);
+                int comp = nodeActions.KeyComparer.Compare(searchKey, Key);
 
                 if (comp == 0)
                     return this;
@@ -297,16 +275,23 @@ namespace Utils.DataStructures
                 if (!nodeActions.InvokeKeyPreAction(this, searchKey))
                     return null;
 
-                if (comp < 0)
+                try
                 {
-                    if (LeftChild == null)
-                        return null;
-                    return LeftChild.Find(searchKey, nodeActions);
-                }
+                    if (comp < 0)
+                    {
+                        if (LeftChild == null)
+                            return null;
+                        return LeftChild.Find(searchKey, nodeActions);
+                    }
 
-                if (RightChild == null)
-                    return null;
-                return RightChild.Find(searchKey, nodeActions);
+                    if (RightChild == null)
+                        return null;
+                    return RightChild.Find(searchKey, nodeActions);
+                }
+                finally
+                {
+                    nodeActions.InvokeKeyPostAction(this, searchKey);
+                }
             }
 
             /// <summary>
@@ -352,6 +337,10 @@ namespace Utils.DataStructures
             public NodeTraversalAction PostAction;
 
             public NodeKeyTraversalAction KeyPreAction;
+            public NodeKeyTraversalAction KeyPostAction;
+
+
+            public IComparer<TKey> KeyComparer = Comparer<TKey>.Default;
 
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -363,9 +352,10 @@ namespace Utils.DataStructures
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void SetKeyActions(NodeKeyTraversalAction keyPreAction = null)
+            public void SetKeyActions(NodeKeyTraversalAction keyPreAction = null, NodeKeyTraversalAction keyPostAction = null)
             {
                 KeyPreAction = keyPreAction;
+                KeyPostAction = keyPostAction;
             }
 
 
@@ -393,6 +383,12 @@ namespace Utils.DataStructures
             {
                 return KeyPreAction == null || KeyPreAction(node, searchKey);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool InvokeKeyPostAction(Node node, TKey searchKey)
+            {
+                return KeyPostAction == null || KeyPostAction(node, searchKey);
+            }
         }
 
         #endregion
@@ -402,14 +398,19 @@ namespace Utils.DataStructures
         private Node _root;
 
         // Local variable to reduce stack load during recursion (we assume single-threaded usage)
-        private readonly NodeTraversalActions _traversalActions = new NodeTraversalActions();
+        private readonly NodeTraversalActions _traversalActions;
 
         #endregion
 
         #region Genesis
 
-        public SplayTree()
-        { }
+        public SplayTree(IComparer<TKey> keyComparer = null)
+        {
+            _traversalActions = new NodeTraversalActions();
+
+            if (keyComparer != null)
+                _traversalActions.KeyComparer = keyComparer;
+        }
 
         #endregion
 
@@ -458,7 +459,7 @@ namespace Utils.DataStructures
             }
 
             // 2. Insert the key/value
-            int comp = Comparer<TKey>.Default.Compare(key, near.Key);
+            int comp = _traversalActions.KeyComparer.Compare(key, near.Key);
 
             // If we found an exact key match, just alter the node's value
             if (comp == 0)
@@ -473,6 +474,8 @@ namespace Utils.DataStructures
                 Parent = near,
             };
 
+            Count++;
+
             if (comp < 0)
             {
                 Debug.Assert(near.LeftChild == null);
@@ -484,10 +487,8 @@ namespace Utils.DataStructures
                 near.RightChild = newNode;
             }
 
-            Count++;
-
             // 3. Splay the newly inserted node to the root
-            newNode.Splay();
+            newNode.Splay(ref _root);
         }
 
         public override bool Remove(TKey key)
@@ -527,7 +528,7 @@ namespace Utils.DataStructures
             // 3. Splay the right-most node
             // Remove the parent of root's left child to not splay up to root
             leftTree.Parent = null;
-            rightMost.Splay();
+            rightMost.Splay(ref _root);
 
             // 4. Right-most is now root of the left tree (and has no right subtree); merge it with Root
             leftTree = rightMost;
@@ -599,7 +600,7 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return null;
 
-            return _root.Find(key);
+            return _root.Find(key, _traversalActions);
         }
 
         Node FindNear(TKey key)
@@ -617,9 +618,9 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            Node near = _root.Find(key, _traversalActions);
+            Node exact = _root.Find(key, _traversalActions);
             Debug.Assert(lastNode != null); // Count > 0: there must be at least root
-            Debug.Assert(near == null || near == lastNode); // If we found an exact key match; it should be equal to lastNode
+            Debug.Assert(exact == null || exact == lastNode); // If we found an exact key match; it should be equal to lastNode
 
             return lastNode;
         }
@@ -632,7 +633,7 @@ namespace Utils.DataStructures
             if (node == null)
                 return false;
 
-            node.Splay();
+            node.Splay(ref _root);
             return true;
         }
 

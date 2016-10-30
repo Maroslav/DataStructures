@@ -10,14 +10,20 @@ namespace ExternalSortRunner
         {
             SplayTree<int, string> d = new SplayTree<int, string>();
 
+            Random rnd = new Random(1);
+
             for (int i = 0; i < 10; i++)
-                d[i] = i.ToString();
-
-
-            foreach (var n in d)
             {
-                Console.WriteLine(string.Format("{0}\t{1}", n.Key, n.Value));
+                int r = rnd.Next();
+                d[r] = r.ToString();
             }
+
+            SplayTree<int, string>.Node
+
+            //foreach (var n in d)
+            //{
+            //    Console.WriteLine(string.Format("{0}\t{1}", n.Key, n.Value));
+            //}
 
             ((ICollection<int>)d.Keys).Clear();
         }
