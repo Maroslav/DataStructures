@@ -160,7 +160,12 @@ namespace Utils.DataStructures.SplayTree
 
         #region Rotations
 
-        public void Splay(ref Node<TKey, TValue> root)
+        /// <summary>
+        /// Splays the node all the way to the root and outputs it.
+        /// This forces the caller not to forget to assign the new root somewhere..
+        /// </summary>
+        /// <param name="newRoot"></param>i
+        public void Splay(out Node<TKey, TValue> newRoot)
         {
             while (Parent != null)
             {
@@ -170,7 +175,7 @@ namespace Utils.DataStructures.SplayTree
                     ZigZxg();
             }
 
-            root = this;
+            newRoot = this;
         }
 
 
@@ -254,7 +259,7 @@ namespace Utils.DataStructures.SplayTree
         /// If no exact match is found in the tree, returns null.
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
-        /// is not present in the data structure.</returns>
+        /// is not present in the tree.</returns>
         public Node<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
         {
             int comp = nodeActions.KeyComparer.Compare(searchKey, Key);

@@ -107,7 +107,7 @@ namespace Utils.DataStructures.SplayTree
             }
 
             // 3. Splay the newly inserted node to the root
-            newNode.Splay(ref _root);
+            newNode.Splay(out _root);
         }
 
         public override bool Remove(TKey key)
@@ -147,7 +147,7 @@ namespace Utils.DataStructures.SplayTree
             // 3. Splay the right-most node
             // Remove the parent of root's left child to not splay up to root
             leftTree.Parent = null;
-            rightMost.Splay(ref _root);
+            rightMost.Splay(out _root);
 
             // 4. Right-most is now root of the left tree (and has no right subtree); merge it with Root
             leftTree = rightMost;
@@ -252,7 +252,7 @@ namespace Utils.DataStructures.SplayTree
             if (node == null)
                 return false;
 
-            node.Splay(ref _root);
+            node.Splay(out _root);
             return true;
         }
 
