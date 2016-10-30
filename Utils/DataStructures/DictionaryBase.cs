@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Utils.DataStructures
 {
@@ -49,7 +47,7 @@ namespace Utils.DataStructures
                 _count = count;
                 Debug.Assert(_count == _values.Count());
             }
-            
+
             #endregion
 
             #region ICollection<> overrides
@@ -107,7 +105,7 @@ namespace Utils.DataStructures
             {
                 throw new NotSupportedException("Modifying the ItemCollection is not allowed.");
             }
-         
+
             #endregion
         }
 
@@ -118,10 +116,11 @@ namespace Utils.DataStructures
         // Note: explicit implementation of interface members will make them private unless viewing the object as the interface itself
         // When working with DictionaryBase or derived types, users will see these implementations of Keys and Values (rather than
         // the explicit implementations). ItemCollection<> itself hides some members unless viewed as an ICollection<>
-        public virtual ItemCollection<TKey> Keys { get { return new ItemCollection<TKey>(Items().Select(node => node.Key), Count); } }
-        public virtual ItemCollection<TValue> Values { get { return new ItemCollection<TValue>(Items().Select(node => node.Value), Count); } }
+        public virtual ItemCollection<TKey> Keys { get { return new ItemCollection<TKey>(Items.Select(node => node.Key), Count); } }
+        public virtual ItemCollection<TValue> Values { get { return new ItemCollection<TValue>(Items.Select(node => node.Value), Count); } }
 
-        public abstract ItemCollection<NodeItem> Items();
+        // NodeItem allows modification of values
+        public abstract ItemCollection<NodeItem> Items { get; }
 
         #endregion
 
@@ -138,12 +137,12 @@ namespace Utils.DataStructures
 
         public virtual IEnumerator<NodeItem> GetEnumerator()
         {
-            return Items().GetEnumerator();
+            return Items.GetEnumerator();
         }
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
-            return Items().Select(node => new KeyValuePair<TKey, TValue>(node.Key, node.Value)).GetEnumerator();
+            return Items.Select(node => new KeyValuePair<TKey, TValue>(node.Key, node.Value)).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

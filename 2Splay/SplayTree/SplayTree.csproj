@@ -45,7 +45,16 @@
     <Compile Include="..\..\Utils\DataStructures\DictionaryBase.cs">
       <Link>DictionaryBase.cs</Link>
     </Compile>
-    <Compile Include="..\..\Utils\DataStructures\SplayTree.cs">
+    <Compile Include="..\..\Utils\DataStructures\SplayTree\AccessFlipping.cs">
+      <Link>AccessFlipping.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Utils\DataStructures\SplayTree\Node.cs">
+      <Link>Node.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Utils\DataStructures\SplayTree\NodeTraversalActions.cs">
+      <Link>NodeTraversalActions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Utils\DataStructures\SplayTree\SplayTree.cs">
       <Link>SplayTree.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
