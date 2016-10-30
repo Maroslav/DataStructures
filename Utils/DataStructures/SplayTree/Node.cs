@@ -40,8 +40,8 @@ namespace Utils.DataStructures.SplayTree
 
         public Node<TKey, TValue> Parent;
 
-        public Node<TKey, TValue> LeftChild;
-        public Node<TKey, TValue> RightChild;
+        private Node<TKey, TValue> _leftChild;
+        private Node<TKey, TValue> _rightChild;
 
         #endregion
 
@@ -51,6 +51,29 @@ namespace Utils.DataStructures.SplayTree
         // to avoid duplication (mirroring) of code (tree traversal and rotations)
 
         #region Children getters and setters
+
+        public Node<TKey, TValue> LeftChild
+        {
+            get { return _leftChild; }
+            set
+            {
+                _leftChild = value;
+                if (_leftChild != null)
+                    _leftChild.Parent = this;
+            }
+        }
+
+        public Node<TKey, TValue> RightChild
+        {
+            get { return _rightChild; }
+            set
+            {
+                _rightChild = value;
+                if (_rightChild != null)
+                    _rightChild.Parent = this;
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Node<TKey, TValue> GetLeftChild<TFlip>()
@@ -166,7 +189,6 @@ namespace Utils.DataStructures.SplayTree
         /// Splays the node all the way to the root and outputs it.
         /// This forces the caller not to forget to assign the new root somewhere..
         /// </summary>
-        /// <param name="newRoot"></param>i
         public void Splay(out Node<TKey, TValue> newRoot)
         {
             while (Parent != null)
@@ -213,10 +235,7 @@ namespace Utils.DataStructures.SplayTree
             }
 
             parent.SetLeftChild<T>(rightTree);
-            parent.Parent = this;
-
             SetRightChild<T>(parent);
-            Parent = grandParent;
         }
 
 

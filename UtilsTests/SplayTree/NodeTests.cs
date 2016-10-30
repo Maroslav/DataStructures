@@ -21,21 +21,35 @@ namespace UtilsTests.SplayTree
         {
             var left = GetNewRandomNode();
             left.Key = _rnd.Next(root.Key - leftMin) + leftMin;
-            left.Parent = root;
             root.SetLeftChild<T>(left);
 
             var right = GetNewRandomNode();
             right.Key = _rnd.Next(rightMax - root.Key) + root.Key;
-            right.Parent = root;
             root.SetRightChild<T>(right);
         }
 
         private void AssertFamilyEqual<T>(NodeType node, NodeType parent, NodeType leftChild, NodeType rightChild)
-            where T:NodeType.FlipBase<T>
+            where T : NodeType.FlipBase<T>
         {
             Assert.AreEqual(node.Parent, parent);
             Assert.AreEqual(node.GetLeftChild<T>(), leftChild);
             Assert.AreEqual(node.GetRightChild<T>(), rightChild);
+        }
+
+
+        [TestMethod]
+        public void TestChildren()
+        {
+            var root = GetNewRandomNode();
+            var temp = GetNewRandomNode();
+
+            root.LeftChild = temp;
+            root.RightChild = temp;
+
+            Assert.AreEqual(temp.Parent, root);
+
+            Assert.AreEqual(root.LeftChild, temp);
+            Assert.AreEqual(root.RightChild, temp);
         }
 
 
@@ -53,7 +67,6 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            root.Parent = parent;
             AddRandomChildren<T>(root, 0, int.MaxValue);
 
             var left = root.GetLeftChild<T>();
@@ -72,6 +85,7 @@ namespace UtilsTests.SplayTree
             AssertFamilyEqual<T>(root, left, leftRight, right);
         }
 
+
         [TestMethod]
         public void TestZigZag()
         {
@@ -86,7 +100,6 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            root.Parent = parent;
             AddRandomChildren<T>(root, 0, int.MaxValue);
 
             var left = root.GetLeftChild<T>();
@@ -112,6 +125,7 @@ namespace UtilsTests.SplayTree
             AssertFamilyEqual<T>(root, leftRight, leftRightRight, right);
         }
 
+
         [TestMethod]
         public void TestZigZig()
         {
@@ -126,7 +140,6 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            root.Parent = parent;
             AddRandomChildren<T>(root, 0, int.MaxValue);
 
             var left = root.GetLeftChild<T>();

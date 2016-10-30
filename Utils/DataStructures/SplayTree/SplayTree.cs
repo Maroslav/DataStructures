@@ -88,12 +88,7 @@ namespace Utils.DataStructures.SplayTree
             }
 
             // The key is not present in the tree, create a new node for it
-            Node<TKey, TValue> newNode = new Node<TKey, TValue>(key, value)
-            {
-                Parent = near,
-            };
-
-            Count++;
+            Node<TKey, TValue> newNode = new Node<TKey, TValue>(key, value);
 
             if (comp < 0)
             {
@@ -105,6 +100,8 @@ namespace Utils.DataStructures.SplayTree
                 Debug.Assert(near.RightChild == null);
                 near.RightChild = newNode;
             }
+
+            Count++;
 
             // 3. Splay the newly inserted node to the root
             newNode.Splay(out _root);
