@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NodeType = Utils.DataStructures.SplayTree.Node<int, string>;
 
@@ -7,12 +8,25 @@ namespace UtilsTests.SplayTree
     [TestClass]
     public class NodeTests
     {
-        readonly Random _rnd = new Random(2);
+        private Random _rnd;
+        private const int MaxRand = 9999;
+        private int uid = 0;
+
+        public NodeTests()
+        {
+            ResetRandom();
+        }
+
+        private void ResetRandom()
+        {
+            _rnd = new Random(2);
+        }
 
 
         private NodeType GetNewRandomNode()
         {
-            int val = _rnd.Next();
+            int val = uid++;
+            //int val = _rnd.Next(MaxRand);
             return new NodeType(val, val.ToString());
         }
 
@@ -20,12 +34,14 @@ namespace UtilsTests.SplayTree
             where T : NodeType.FlipBase<T>
         {
             var left = GetNewRandomNode();
-            left.Key = _rnd.Next(root.Key - leftMin) + leftMin;
+            //left.Key = _rnd.Next(root.Key - leftMin) + leftMin;
             root.SetLeftChild<T>(left);
+            Assert.AreEqual(left.Parent, root);
 
             var right = GetNewRandomNode();
-            right.Key = _rnd.Next(rightMax - root.Key) + root.Key;
+            //right.Key = _rnd.Next(Math.Min(rightMax, MaxRand) - root.Key) + root.Key;
             root.SetRightChild<T>(right);
+            Assert.AreEqual(right.Parent, root);
         }
 
         private void AssertFamilyEqual<T>(NodeType node, NodeType parent, NodeType leftChild, NodeType rightChild)
@@ -57,6 +73,7 @@ namespace UtilsTests.SplayTree
         public void TestZig()
         {
             TestZig<NodeType.NoFlip>();
+            ResetRandom();
             TestZig<NodeType.DoFlip>();
         }
 
@@ -77,7 +94,13 @@ namespace UtilsTests.SplayTree
 
             var right = root.GetRightChild<T>();
 
+            Debug.WriteLine("Pre:");
+            Debug.Write(parent);
+
             left.Zig();
+
+            Debug.WriteLine("Post:");
+            Debug.Write(parent);
 
             // Left should be the root
             Assert.IsTrue(left.IsLeftChild());
@@ -90,6 +113,7 @@ namespace UtilsTests.SplayTree
         public void TestZigZag()
         {
             TestZigZag<NodeType.NoFlip>();
+            ResetRandom();
             TestZigZag<NodeType.DoFlip>();
         }
 
@@ -114,7 +138,13 @@ namespace UtilsTests.SplayTree
 
             var right = root.GetRightChild<T>();
 
+            Debug.WriteLine("Pre:");
+            Debug.Write(parent);
+
             leftRight.ZigZxg();
+
+            Debug.WriteLine("Post:");
+            Debug.Write(parent);
 
             // LeftRight should be the root
             Assert.IsTrue(leftRight.IsLeftChild());
@@ -123,6 +153,13 @@ namespace UtilsTests.SplayTree
             AssertFamilyEqual<T>(left, leftRight, leftLeft, leftRightLeft);
             // Root should be the right child of new root
             AssertFamilyEqual<T>(root, leftRight, leftRightRight, right);
+
+            leftRight.Zig();
+
+            Debug.WriteLine("XX:");
+            Debug.Write(leftRight);
+
+            Assert.AreEqual(leftRight.Parent, null);
         }
 
 
@@ -130,6 +167,7 @@ namespace UtilsTests.SplayTree
         public void TestZigZig()
         {
             TestZigZig<NodeType.NoFlip>();
+            ResetRandom();
             TestZigZig<NodeType.DoFlip>();
         }
 
@@ -154,7 +192,13 @@ namespace UtilsTests.SplayTree
 
             var right = root.GetRightChild<T>();
 
+            Debug.WriteLine("Pre:");
+            Debug.Write(parent);
+
             leftLeft.ZigZxg();
+
+            Debug.WriteLine("Post:");
+            Debug.Write(parent);
 
             // LeftRight should be the root
             Assert.IsTrue(leftLeft.IsLeftChild());
@@ -163,6 +207,13 @@ namespace UtilsTests.SplayTree
             AssertFamilyEqual<T>(left, leftLeft, leftLeftRight, root);
             // Root should be the right child of the right child of the new root
             AssertFamilyEqual<T>(root, left, leftRight, right);
+
+            leftLeft.Zig();
+
+            Debug.WriteLine("XX:");
+            Debug.Write(leftLeft);
+
+            Assert.AreEqual(leftLeft.Parent, null);
         }
     }
 }

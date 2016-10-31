@@ -55,6 +55,11 @@ namespace Utils.DataStructures.SplayTree
             }
         }
 
+        public override string ToString()
+        {
+            return _root != null ? _root.ToString() : string.Empty;
+        }
+
         #endregion
 
         #region IDictionary<> overrides

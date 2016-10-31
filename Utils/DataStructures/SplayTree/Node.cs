@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Utils.DataStructures.SplayTree
 {
@@ -172,8 +173,8 @@ namespace Utils.DataStructures.SplayTree
             Value = default(TValue);
 
             Parent = null;
-            LeftChild = null;
-            RightChild = null;
+            _leftChild = null;
+            _rightChild = null;
         }
 
         public void Dispose()
@@ -364,6 +365,63 @@ namespace Utils.DataStructures.SplayTree
                 return false;
 
             return true;
+        }
+
+        private const string ExtendPrefix = "│   ";
+        private const string EmptyPrefix = "    ";
+        private const string RootFork = "─── ";
+        private const string RightFork = "┌── ";
+        private const string LeftFork = "└── ";
+
+        public override string ToString()
+        {
+            StringBuilder prefix = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
+
+            //ToString(prefix, true, sb);
+            //return sb.ToString();
+
+            NodeTraversalActions<TKey, TValue>.NodeTraversalAction preAction = node =>
+            {
+                Debug.Assert(node == this || node.Parent != null);
+
+                // Compute new prefix for the right child
+                prefix.Append(node.Parent != null && node.IsLeftChild() ? ExtendPrefix : EmptyPrefix);
+                return false;
+            };
+
+            NodeTraversalActions<TKey, TValue>.NodeTraversalAction inAction = node =>
+            {
+                // Get the old prefix (revert the preAction)
+                prefix.Length -= ExtendPrefix.Length;
+
+                bool isLeftChild = node.Parent == null || node.IsLeftChild();
+
+                // Output a new line
+                sb.Append(prefix);
+                if (node.Parent == null)
+                    sb.Append(RootFork);
+                else
+                    sb.Append(isLeftChild ? LeftFork : RightFork);
+                sb.AppendLine(node.Key.ToString());
+
+                // Compute new prefix for the left child
+                prefix.Append(isLeftChild ? EmptyPrefix : ExtendPrefix);
+                return false;
+            };
+
+            NodeTraversalActions<TKey, TValue>.NodeTraversalAction postAction = node =>
+            {
+                // Get the old prefix (revert the inAction)
+                prefix.Length -= ExtendPrefix.Length;
+                return false;
+            };
+
+            var nodeActions = new NodeTraversalActions<TKey, TValue>();
+            nodeActions.SetActions(preAction, inAction, postAction);
+            SiftRight(nodeActions);
+
+            return sb.ToString();
         }
 
         #endregion
