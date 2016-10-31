@@ -349,19 +349,19 @@ namespace Utils.DataStructures.SplayTree
         private bool Sift<T>(NodeTraversalActions<TKey, TValue> nodeActions)
             where T : FlipBase<T>
         {
-            if (nodeActions.InvokePreAction(this))
+            if (!nodeActions.InvokePreAction(this))
                 return false;
 
             if (GetLeftChild<T>() != null && !GetLeftChild<T>().Sift<T>(nodeActions))
                 return false;
 
-            if (nodeActions.InvokeInAction(this))
+            if (!nodeActions.InvokeInAction(this))
                 return false;
 
             if (GetRightChild<T>() != null && !GetRightChild<T>().Sift<T>(nodeActions))
                 return false;
 
-            if (nodeActions.InvokePostAction(this))
+            if (!nodeActions.InvokePostAction(this))
                 return false;
 
             return true;
@@ -387,7 +387,7 @@ namespace Utils.DataStructures.SplayTree
 
                 // Compute new prefix for the right child
                 prefix.Append(node.Parent != null && node.IsLeftChild() ? ExtendPrefix : EmptyPrefix);
-                return false;
+                return true;
             };
 
             NodeTraversalActions<TKey, TValue>.NodeTraversalAction inAction = node =>
@@ -407,14 +407,14 @@ namespace Utils.DataStructures.SplayTree
 
                 // Compute new prefix for the left child
                 prefix.Append(isLeftChild ? EmptyPrefix : ExtendPrefix);
-                return false;
+                return true;
             };
 
             NodeTraversalActions<TKey, TValue>.NodeTraversalAction postAction = node =>
             {
                 // Get the old prefix (revert the inAction)
                 prefix.Length -= ExtendPrefix.Length;
-                return false;
+                return true;
             };
 
             var nodeActions = new NodeTraversalActions<TKey, TValue>();
