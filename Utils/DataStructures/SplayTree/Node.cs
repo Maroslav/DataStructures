@@ -234,6 +234,8 @@ namespace Utils.DataStructures.SplayTree
                     grandParent.RightChild = this;
             }
 
+            Parent = grandParent;
+
             parent.SetLeftChild<T>(rightTree);
             SetRightChild<T>(parent);
         }
