@@ -42,8 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Utils\DataStructures\DictionaryBase.cs">
-      <Link>DictionaryBase.cs</Link>
+    <Compile Include="..\..\Utils\ArrayExtensions.cs">
+      <Link>ArrayExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Utils\DataStructures\Base classes\DictionaryBase.cs">
+      <Link>Base classes\DictionaryBase.cs</Link>
     </Compile>
     <Compile Include="..\..\Utils\DataStructures\SplayTree\Node.cs">
       <Link>Node.cs</Link>
