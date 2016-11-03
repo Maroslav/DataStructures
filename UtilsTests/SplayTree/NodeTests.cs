@@ -8,38 +8,23 @@ namespace UtilsTests.SplayTree
     [TestClass]
     public class NodeTests
     {
-        private Random _rnd;
-        private const int MaxRand = 9999;
-        private int uid = 0;
-
-        public NodeTests()
-        {
-            ResetRandom();
-        }
-
-        private void ResetRandom()
-        {
-            _rnd = new Random(2);
-        }
+        private int _uid = 0;
 
 
         private NodeType GetNewRandomNode()
         {
-            int val = uid++;
-            //int val = _rnd.Next(MaxRand);
+            int val = _uid++;
             return new NodeType(val, val.ToString());
         }
 
-        private void AddRandomChildren<T>(NodeType root, int leftMin, int rightMax)
+        private void AddRandomChildren<T>(NodeType root)
             where T : NodeType.FlipBase<T>
         {
             var left = GetNewRandomNode();
-            //left.Key = _rnd.Next(root.Key - leftMin) + leftMin;
             root.SetLeftChild<T>(left);
             Assert.AreEqual(left.Parent, root);
 
             var right = GetNewRandomNode();
-            //right.Key = _rnd.Next(Math.Min(rightMax, MaxRand) - root.Key) + root.Key;
             root.SetRightChild<T>(right);
             Assert.AreEqual(right.Parent, root);
         }
@@ -73,7 +58,6 @@ namespace UtilsTests.SplayTree
         public void TestZig()
         {
             TestZig<NodeType.NoFlip>();
-            ResetRandom();
             TestZig<NodeType.DoFlip>();
         }
 
@@ -84,10 +68,10 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            AddRandomChildren<T>(root, 0, int.MaxValue);
+            AddRandomChildren<T>(root);
 
             var left = root.GetLeftChild<T>();
-            AddRandomChildren<T>(left, 0, root.Key - 1);
+            AddRandomChildren<T>(left);
 
             var leftLeft = left.GetLeftChild<T>();
             var leftRight = left.GetRightChild<T>();
@@ -113,7 +97,6 @@ namespace UtilsTests.SplayTree
         public void TestZigZag()
         {
             TestZigZag<NodeType.NoFlip>();
-            ResetRandom();
             TestZigZag<NodeType.DoFlip>();
         }
 
@@ -124,15 +107,15 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            AddRandomChildren<T>(root, 0, int.MaxValue);
+            AddRandomChildren<T>(root);
 
             var left = root.GetLeftChild<T>();
-            AddRandomChildren<T>(left, 0, root.Key - 1);
+            AddRandomChildren<T>(left);
 
             var leftLeft = left.GetLeftChild<T>();
             var leftRight = left.GetRightChild<T>();
 
-            AddRandomChildren<T>(leftRight, left.Key, root.Key);
+            AddRandomChildren<T>(leftRight);
             var leftRightLeft = leftRight.GetLeftChild<T>();
             var leftRightRight = leftRight.GetRightChild<T>();
 
@@ -156,7 +139,7 @@ namespace UtilsTests.SplayTree
 
             leftRight.Zig();
 
-            Debug.WriteLine("XX:");
+            Debug.WriteLine("Zig:");
             Debug.Write(leftRight);
 
             Assert.AreEqual(leftRight.Parent, null);
@@ -167,7 +150,6 @@ namespace UtilsTests.SplayTree
         public void TestZigZig()
         {
             TestZigZig<NodeType.NoFlip>();
-            ResetRandom();
             TestZigZig<NodeType.DoFlip>();
         }
 
@@ -178,15 +160,15 @@ namespace UtilsTests.SplayTree
 
             var root = GetNewRandomNode();
             parent.LeftChild = root; // Non-generic variety -- we test both cases like this
-            AddRandomChildren<T>(root, 0, int.MaxValue);
+            AddRandomChildren<T>(root);
 
             var left = root.GetLeftChild<T>();
-            AddRandomChildren<T>(left, 0, root.Key - 1);
+            AddRandomChildren<T>(left);
 
             var leftLeft = left.GetLeftChild<T>();
             var leftRight = left.GetRightChild<T>();
 
-            AddRandomChildren<T>(leftLeft, 0, left.Key);
+            AddRandomChildren<T>(leftLeft);
             var leftLeftLeft = leftLeft.GetLeftChild<T>();
             var leftLeftRight = leftLeft.GetRightChild<T>();
 
@@ -210,7 +192,7 @@ namespace UtilsTests.SplayTree
 
             leftLeft.Zig();
 
-            Debug.WriteLine("XX:");
+            Debug.WriteLine("Zig:");
             Debug.Write(leftLeft);
 
             Assert.AreEqual(leftLeft.Parent, null);
