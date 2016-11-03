@@ -43,7 +43,7 @@ namespace Utils.DataStructures.SplayTree
 
                 int i = 0;
 
-                _traversalActions.SetActions(preAction: n =>
+                _traversalActions.SetActions(inAction: n =>
                 {
                     items[i++] = n;
                     return true;
@@ -57,7 +57,7 @@ namespace Utils.DataStructures.SplayTree
 
         public override string ToString()
         {
-            return _root != null ? _root.ToString() : string.Empty;
+            return ":: " + Count + " ::\n" + (_root != null ? _root.ToString() : "Empty");
         }
 
         #endregion
@@ -231,6 +231,8 @@ namespace Utils.DataStructures.SplayTree
 
             // Find the place in the tree, where the key should be inserted
             // Traverse the tree and store a reference to the last encountered node
+            // NOTE: We cannot find the closest node, we would need to have
+            // a metric defined on keys.
             Node<TKey, TValue> lastNode = null;
 
             _traversalActions.SetKeyActions(keyPreAction: (n, searchKey) =>
