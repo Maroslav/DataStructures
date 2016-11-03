@@ -199,6 +199,21 @@ namespace UtilsTests.SplayTree
         }
 
         [TestMethod]
+        public void TestAbsorb()
+        {
+            for (int i = 0; i < Rounds; i++)
+            {
+                for (int j = 0; j < ItemCount; j++)
+                    _tree.Add(1, j.ToString());
+
+                var treeItems = _tree.Items;
+                Assert.AreEqual(treeItems.Count, 1);
+
+                _tree.Clear();
+            }
+        }
+
+        [TestMethod]
         public void TestRemove()
         {
 
