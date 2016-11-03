@@ -11,7 +11,7 @@ namespace Utils.DataStructures.SplayTree
     {
         #region Fields
 
-        private Node<TKey, TValue> _root;
+        internal Node<TKey, TValue> Root;
 
         // Local variable to reduce stack load during recursion (we assume single-threaded usage)
         private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
@@ -49,7 +49,7 @@ namespace Utils.DataStructures.SplayTree
                     return true;
                 });
 
-                _root.SiftLeft(_traversalActions);
+                Root.SiftLeft(_traversalActions);
 
                 return new ItemCollection<NodeItem>(items, Count);
             }
@@ -57,7 +57,7 @@ namespace Utils.DataStructures.SplayTree
 
         public override string ToString()
         {
-            return ":: " + Count + " ::\n" + (_root != null ? _root.ToString() : "Empty");
+            return ":: " + Count + " ::\n" + (Root != null ? Root.ToString() : "Empty");
         }
 
         #endregion
@@ -77,7 +77,7 @@ namespace Utils.DataStructures.SplayTree
             if (near == null)
             {
                 Debug.Assert(Count == 0);
-                _root = new Node<TKey, TValue>(key, value);
+                Root = new Node<TKey, TValue>(key, value);
                 Count++;
                 return;
             }
@@ -109,7 +109,7 @@ namespace Utils.DataStructures.SplayTree
             Count++;
 
             // 3. Splay the newly inserted node to the root
-            newNode.Splay(out _root);
+            newNode.Splay(out Root);
         }
 
         public override bool Remove(TKey key)
@@ -118,17 +118,17 @@ namespace Utils.DataStructures.SplayTree
                 return false;
 
             // Root is now the node to be removed
-            Debug.Assert(_root != null);
+            Debug.Assert(Root != null);
 
-            Node<TKey, TValue> leftTree = _root.LeftChild;
+            Node<TKey, TValue> leftTree = Root.LeftChild;
 
             // 1. If the root's left subtree is empty, the root will start with the right subtree
             if (leftTree == null)
             {
-                Node<TKey, TValue> oldRoot = _root;
-                _root = oldRoot.RightChild;
-                if (_root != null)
-                    _root.Parent = null;
+                Node<TKey, TValue> oldRoot = Root;
+                Root = oldRoot.RightChild;
+                if (Root != null)
+                    Root.Parent = null;
                 oldRoot.Dispose();
                 Count--;
                 return true;
@@ -149,18 +149,18 @@ namespace Utils.DataStructures.SplayTree
             // 3. Splay the right-most node
             // Remove the parent of root's left child to not splay up to root
             leftTree.Parent = null;
-            rightMost.Splay(out _root);
+            rightMost.Splay(out Root);
 
             // 4. Right-most is now root of the left tree (and has no right subtree); merge it with Root
             leftTree = rightMost;
             Debug.Assert(leftTree.RightChild == null); // Splay on the right-most node should make it have no right (larger) children
 
-            leftTree.RightChild = _root.RightChild;
+            leftTree.RightChild = Root.RightChild;
             if (leftTree.RightChild != null)
                 leftTree.RightChild.Parent = leftTree;
 
-            _root.Clear();
-            _root = leftTree;
+            Root.Clear();
+            Root = leftTree;
             Count--;
 
             return true;
@@ -174,7 +174,7 @@ namespace Utils.DataStructures.SplayTree
             if (!Splay(key))
                 return false;
 
-            value = _root.Value;
+            value = Root.Value;
             return true;
         }
 
@@ -185,7 +185,7 @@ namespace Utils.DataStructures.SplayTree
                 if (!Splay(key))
                     throw new KeyNotFoundException(string.Format("The key {0} was not found in the collection.", key));
 
-                return _root.Value;
+                return Root.Value;
             }
             set
             {
@@ -206,9 +206,9 @@ namespace Utils.DataStructures.SplayTree
             });
 
             // Start Dispose from the last node
-            _root.SiftRight(_traversalActions);
+            Root.SiftRight(_traversalActions);
 
-            _root = null;
+            Root = null;
             Count = 0;
         }
 
@@ -221,7 +221,7 @@ namespace Utils.DataStructures.SplayTree
             if (Count == 0)
                 return null;
 
-            return _root.Find(key, _traversalActions);
+            return Root.Find(key, _traversalActions);
         }
 
         Node<TKey, TValue> FindNear(TKey key)
@@ -241,7 +241,7 @@ namespace Utils.DataStructures.SplayTree
                 return true;
             });
 
-            Node<TKey, TValue> exact = _root.Find(key, _traversalActions);
+            Node<TKey, TValue> exact = Root.Find(key, _traversalActions);
             Debug.Assert(lastNode != null); // Count > 0: there must be at least root
             Debug.Assert(exact == null || exact == lastNode); // If we found an exact key match; it should be equal to lastNode
 
@@ -256,7 +256,7 @@ namespace Utils.DataStructures.SplayTree
             if (node == null)
                 return false;
 
-            node.Splay(out _root);
+            node.Splay(out Root);
             return true;
         }
 
