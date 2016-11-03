@@ -204,7 +204,6 @@ namespace Utils.DataStructures.SplayTree
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Zig()
         {
             if (IsLeftChild())
@@ -242,7 +241,6 @@ namespace Utils.DataStructures.SplayTree
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ZigZxg()
         {
             Debug.Assert(Parent.Parent != null);
@@ -263,7 +261,7 @@ namespace Utils.DataStructures.SplayTree
                 ZigZig();
             else
             {
-                Debug.Assert(IsRightChild<T>(), "This node is neither left nor the right child.... ?");
+                Debug.Assert(IsRightChild<T>(), "This node is neither the left nor the right child.... ?");
                 ZigZag();
             }
         }
