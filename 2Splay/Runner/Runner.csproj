@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Runner</RootNamespace>
     <AssemblyName>Runner</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -49,6 +50,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GeneratorWrapper\GeneratorWrapper.vcxproj">
+      <Project>{51c0cbbd-f327-4ca4-9651-fb6bef61f16e}</Project>
+      <Name>GeneratorWrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SplayTree\SplayTree.csproj">
       <Project>{306c39ba-042b-4f48-9c21-da7d424c6be1}</Project>
       <Name>SplayTree</Name>

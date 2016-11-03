@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplayTree", "SplayTree\Spla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsTests", "..\UtilsTests\UtilsTests.csproj", "{4796B32E-1F19-4CE4-A51C-6A1695A3A167}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneratorWrapper", "GeneratorWrapper\GeneratorWrapper.vcxproj", "{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +35,10 @@ Global
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug|x64.Build.0 = Debug|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.ActiveCfg = Release|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.Build.0 = Release|x64
+		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Debug|x64.ActiveCfg = Debug|x64
+		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Debug|x64.Build.0 = Debug|x64
+		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Release|x64.ActiveCfg = Release|x64
+		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
