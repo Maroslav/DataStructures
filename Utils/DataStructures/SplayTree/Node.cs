@@ -292,13 +292,13 @@ namespace Utils.DataStructures.SplayTree
         /// is not present in the tree.</returns>
         public Node<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
         {
+            if (!nodeActions.InvokeKeyPreAction(this, searchKey))
+                return null;
+
             int comp = nodeActions.KeyComparer.Compare(searchKey, Key);
 
             if (comp == 0)
                 return this;
-
-            if (!nodeActions.InvokeKeyPreAction(this, searchKey))
-                return null;
 
             try
             {
