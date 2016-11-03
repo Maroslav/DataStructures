@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace Utils.DataStructures
 {
@@ -107,6 +108,22 @@ namespace Utils.DataStructures
             }
 
             #endregion
+
+
+            public string ToString(Func<T, string> selector)
+            {
+                var sb = new StringBuilder("{ ");
+
+                foreach (var value in _values)
+                {
+                    sb.Append(selector(value));
+                    sb.Append(", ");
+                }
+
+                sb.Append(" }");
+
+                return sb.ToString();
+            }
         }
 
         #endregion
