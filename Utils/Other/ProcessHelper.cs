@@ -3,7 +3,15 @@ using System.Diagnostics;
 
 namespace Utils.Other
 {
-    class ProcessHelper
+    [Flags]
+    public enum WaitResult
+    {
+        Ok = 1,
+        Failed = 2,
+        TimedOut = 4,
+    }
+
+    public class ProcessHelper
         : IDisposable
     {
         private Process _p;
@@ -28,7 +36,10 @@ namespace Utils.Other
         public void Dispose()
         {
             if (_p != null)
+            {
+                _p.Kill();
                 _p.Dispose();
+            }
 
             _p = null;
         }
@@ -91,10 +102,20 @@ namespace Utils.Other
                 _verboseLog(message);
         }
 
-        public bool Wait(int msTimeout)
+        public WaitResult Wait(int msTimeout)
         {
-            _p.WaitForExit(msTimeout);
-            return _noError;
+            WaitResult res = 0;
+
+            if (!_p.WaitForExit(msTimeout))
+                res |= WaitResult.TimedOut;
+
+            if (!_noError)
+                res |= WaitResult.Failed;
+
+            if (res == 0)
+                return WaitResult.Ok;
+
+            return res;
         }
     }
 }
