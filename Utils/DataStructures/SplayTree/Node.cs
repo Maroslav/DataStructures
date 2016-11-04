@@ -376,9 +376,6 @@ namespace Utils.DataStructures.SplayTree
             StringBuilder prefix = new StringBuilder();
             StringBuilder sb = new StringBuilder();
 
-            //ToString(prefix, true, sb);
-            //return sb.ToString();
-
             NodeTraversalActions<TKey, TValue>.NodeTraversalAction preAction = node =>
             {
                 Debug.Assert(node == this || node.Parent != null);
