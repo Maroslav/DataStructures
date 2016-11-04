@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Utils.DataStructures.SplayTree
+namespace Utils.DataStructures.Internal
 {
     internal class NodeTraversalActions<TKey, TValue>
         where TKey : struct

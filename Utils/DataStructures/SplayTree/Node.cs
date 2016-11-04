@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Utils.DataStructures.SplayTree
+namespace Utils.DataStructures.Internal
 {
     internal class Node<TKey, TValue>
             : DictionaryBase<TKey, TValue>.NodeItem, IDisposable

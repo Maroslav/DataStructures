@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NodeType = Utils.DataStructures.SplayTree.Node<int, string>;
+using NodeType = Utils.DataStructures.Internal.Node<int, string>;
 
 namespace UtilsTests.SplayTree
 {

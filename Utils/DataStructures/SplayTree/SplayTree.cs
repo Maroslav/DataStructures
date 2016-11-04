@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Utils.DataStructures.Internal;
 
-namespace Utils.DataStructures.SplayTree
+namespace Utils.DataStructures
 {
     public class SplayTree<TKey, TValue>
         : DictionaryBase<TKey, TValue>

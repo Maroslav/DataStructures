@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Utils.DataStructures.SplayTree;
+using Utils.DataStructures;
+using Utils.DataStructures.Internal;
 
 using KeyType = System.Int32;
 using ValueType = System.String;

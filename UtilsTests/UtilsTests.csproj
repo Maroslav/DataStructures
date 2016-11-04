@@ -57,10 +57,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\2Splay\GeneratorWrapper\GeneratorWrapper.vcxproj">
-      <Project>{51c0cbbd-f327-4ca4-9651-fb6bef61f16e}</Project>
-      <Name>GeneratorWrapper</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Utils\Utils.csproj">
       <Project>{464f0ccf-eeb9-45d0-b96f-d0aad3d86a53}</Project>
       <Name>Utils</Name>
