@@ -120,17 +120,17 @@ _END_EXTERN_C
 	#undef _GETOPT_THROW
 	#undef _GETOPT_API
 
-	//#ifdef _UNICODE
-	//	#define getopt getopt_w
-	//	#define getopt_long getopt_long_w
-	//	#define getopt_long_only getopt_long_only_w
-	//	#define option option_w
-	//	#define optarg optarg_w
-	//#else
+	#ifdef _UNICODE
+		#define getopt getopt_w
+		#define getopt_long getopt_long_w
+		#define getopt_long_only getopt_long_only_w
+		#define option option_w
+		#define optarg optarg_w
+	#else
 		#define getopt getopt_a
 		#define getopt_long getopt_long_a
 		#define getopt_long_only getopt_long_only_a
 		#define option option_a
 		#define optarg optarg_a
-	//#endif
+	#endif
 #endif  // __GETOPT_H_

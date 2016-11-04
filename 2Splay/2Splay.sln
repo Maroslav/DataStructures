@@ -5,13 +5,9 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "..\Utils\Utils.csproj", "{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runner", "Runner\Runner.csproj", "{78A22A14-A931-4083-B691-130C9C353A9D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplayTree", "SplayTree\SplayTree.csproj", "{306C39BA-042B-4F48-9C21-DA7D424C6BE1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsTests", "..\UtilsTests\UtilsTests.csproj", "{4796B32E-1F19-4CE4-A51C-6A1695A3A167}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneratorWrapper", "GeneratorWrapper\GeneratorWrapper.vcxproj", "{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Generator", "Generator\Generator.vcxproj", "{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,22 +19,13 @@ Global
 		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|x64.Build.0 = Debug|x64
 		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.ActiveCfg = Release|x64
 		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.Build.0 = Release|x64
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|x64.ActiveCfg = Debug|x64
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Debug|x64.Build.0 = Debug|x64
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|x64.ActiveCfg = Release|x64
-		{78A22A14-A931-4083-B691-130C9C353A9D}.Release|x64.Build.0 = Release|x64
-		{306C39BA-042B-4F48-9C21-DA7D424C6BE1}.Debug|x64.ActiveCfg = Debug|x64
-		{306C39BA-042B-4F48-9C21-DA7D424C6BE1}.Debug|x64.Build.0 = Debug|x64
-		{306C39BA-042B-4F48-9C21-DA7D424C6BE1}.Release|x64.ActiveCfg = Release|x64
-		{306C39BA-042B-4F48-9C21-DA7D424C6BE1}.Release|x64.Build.0 = Release|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug|x64.ActiveCfg = Debug|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug|x64.Build.0 = Debug|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.ActiveCfg = Release|x64
 		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.Build.0 = Release|x64
-		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Debug|x64.ActiveCfg = Debug|x64
-		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Debug|x64.Build.0 = Debug|x64
-		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Release|x64.ActiveCfg = Release|x64
-		{51C0CBBD-F327-4CA4-9651-FB6BEF61F16E}.Release|x64.Build.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug|x64.ActiveCfg = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug|x64.Deploy.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

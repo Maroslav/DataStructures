@@ -1,60 +1,10 @@
 // Generates data
 
 #include <string.h>
-#include <fcntl.h>
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
-#include <io.h>
-#include <iostream>
-#include <unistd.h>
 #include <stdbool.h>
 #include <getopt.h>
-#include <assert.h>
-
-using namespace System;
-
-
-static int generate(int argc, char* argv[]);
-
-namespace GeneratorWrapper
-{
-    public ref class OpGeneratorWrapper
-    {
-    public:
-        void Generate(array<String^>^ args)
-        {
-            char** tokensAsUtf8 = new char*[args->Length];
-
-            for (int i = 0; i < args->Length; i++)
-            {
-                array<Byte>^ encodedBytes = Text::Encoding::UTF8->GetBytes(args[i]);
-
-                // Probably just using [0] is fine here
-                pin_ptr<Byte> pinnedBytes = &encodedBytes[encodedBytes->GetLowerBound(0)];
-
-                tokensAsUtf8[i] = new char[encodedBytes->Length + 1];
-                memcpy(
-                    tokensAsUtf8[i],
-                    reinterpret_cast<char*>(pinnedBytes),
-                    encodedBytes->Length
-                );
-
-                // NULL-terminate the native string
-                tokensAsUtf8[i][encodedBytes->Length] = '\0';
-            }
-
-            generate(args->Length, tokensAsUtf8);
-
-
-            for (int i = 0; i < args->Length; i++)
-                delete[] tokensAsUtf8[i];
-
-            delete[] tokensAsUtf8;
-        }
-    };
-}
-
 
 #define MAX_LEN  (10000000)
 
@@ -119,7 +69,7 @@ static void sequential_generator(void)
     }
 }
 
-static int generate(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     bool sequential = false, last = false;
     int opt, student_id = -1, subset_size = -1;
