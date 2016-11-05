@@ -12,7 +12,10 @@ namespace Utils.DataStructures.Internal
     {
         #region Nested classes
 
+        #region Flipping
+
         internal class FlipBase<TDoFlipTrait>
+            where TDoFlipTrait : FlipBase<TDoFlipTrait>
         {
             public static bool FlipChildren;
 
@@ -34,6 +37,23 @@ namespace Utils.DataStructures.Internal
         internal sealed class DoFlip
             : FlipBase<DoFlip>
         { }
+
+        #endregion
+
+        #region Traversal
+
+        private enum NodeContinuation
+        {
+
+        }
+
+        private struct TraversalNodeItem
+        {
+            public Node<TKey, TValue> Node;
+
+        }
+
+        #endregion
 
         #endregion
 
@@ -324,6 +344,41 @@ namespace Utils.DataStructures.Internal
         }
 
         /// <summary>
+        /// Traverses the binary search tree looking for the searchKey.
+        /// If no exact match is found in the tree, returns null.
+        /// </summary>
+        /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
+        /// is not present in the tree.</returns>
+        internal Node<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
+        {
+            if (!nodeActions.InvokeKeyPreAction(this, searchKey))
+                return null;
+
+            int comp = nodeActions.KeyComparer.Compare(searchKey, Key);
+
+            if (comp == 0)
+                return this;
+
+            try
+            {
+                if (comp < 0)
+                {
+                    if (LeftChild == null)
+                        return null;
+                    return LeftChild.FindRecursive(searchKey, nodeActions);
+                }
+
+                if (RightChild == null)
+                    return null;
+                return RightChild.FindRecursive(searchKey, nodeActions);
+            }
+            finally
+            {
+                nodeActions.InvokeKeyPostAction(this, searchKey);
+            }
+        }
+
+        /// <summary>
         /// Left DFS traversal of the binary search tree. Nodes are traversed from the smallest to the largest key.
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
@@ -351,16 +406,66 @@ namespace Utils.DataStructures.Internal
         private bool Sift<T>(NodeTraversalActions<TKey, TValue> nodeActions)
             where T : FlipBase<T>
         {
+            // We have to use an iterative way because the default stack size of .net apps is 1MB
+            // and it's impractical to change it.....
+            Stack<Node<TKey, TValue>> stack = nodeActions.TraversalStack;
+            Debug.Assert(stack.Count == 0);
+            stack.Push(this);
+
+            try
+            {
+                while (stack.Count > 0)
+                {
+                    var node = stack.Pop();
+
+                    // First and only visit of this node
+                    if (!nodeActions.InvokePreAction(this))
+                        return false;
+
+                    // Handle missing children
+                    if (node.GetLeftChild<T>() == null)
+                    {
+                        if (!nodeActions.InvokeInAction(this))
+                            return false;
+
+                        if (node.GetRightChild<T>() == null)
+                        {
+                            if (!nodeActions.InvokeInAction(this))
+                                return false;
+
+                            continue;
+                        }
+                    }
+
+
+                }
+            }
+            finally
+            {
+                stack.Clear();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// If the type parameter is <see cref="NoFlip"/>, nodes are iterated from the smallest
+        /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
+        /// nodes are iterated from the largest to the smallest key (right to left).
+        /// </summary>
+        internal bool SiftRecursive<T>(NodeTraversalActions<TKey, TValue> nodeActions)
+            where T : FlipBase<T>
+        {
             if (!nodeActions.InvokePreAction(this))
                 return false;
 
-            if (GetLeftChild<T>() != null && !GetLeftChild<T>().Sift<T>(nodeActions))
+            if (GetLeftChild<T>() != null && !GetLeftChild<T>().SiftRecursive<T>(nodeActions))
                 return false;
 
             if (!nodeActions.InvokeInAction(this))
                 return false;
 
-            if (GetRightChild<T>() != null && !GetRightChild<T>().Sift<T>(nodeActions))
+            if (GetRightChild<T>() != null && !GetRightChild<T>().SiftRecursive<T>(nodeActions))
                 return false;
 
             if (!nodeActions.InvokePostAction(this))
@@ -416,7 +521,7 @@ namespace Utils.DataStructures.Internal
                 return true;
             };
 
-            var nodeActions = new NodeTraversalActions<TKey, TValue>();
+            var nodeActions = new NodeTraversalActions<TKey, TValue>(); // We do not need to pass the owner's comparer -- Sift does not use it (only Find does)
             nodeActions.SetActions(preAction, inAction, postAction);
             SiftRight(nodeActions);
 
