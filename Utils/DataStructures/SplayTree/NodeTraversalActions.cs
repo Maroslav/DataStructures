@@ -23,7 +23,7 @@ namespace Utils.DataStructures.Internal
 
 
         public IComparer<TKey> KeyComparer { get; private set; }
-        public Stack<Node<TKey, TValue>> TraversalStack { get { return _traversalStack ?? new Stack<Node<TKey, TValue>>(); } }
+        public Stack<Node<TKey, TValue>> TraversalStack { get { return _traversalStack = _traversalStack ?? new Stack<Node<TKey, TValue>>(); } }
 
 
         public NodeTraversalActions(IComparer<TKey> keyComparer = null)

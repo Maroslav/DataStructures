@@ -162,19 +162,23 @@ namespace Utils.DataStructures.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
-            var disp = Key as IDisposable;
-            if (disp != null)
-                disp.Dispose();
-            Key = default(TKey);
-
-            disp = Value as IDisposable;
-            if (disp != null)
-                disp.Dispose();
-            Value = default(TValue);
+            Dispose(ref _key);
+            Dispose(ref _value);
 
             Parent = null;
             _leftChild = null;
             _rightChild = null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Dispose<T>(ref T item)
+        {
+            var disp = item as IDisposable;
+
+            if (disp != null)
+                disp.Dispose();
+
+            item = default(T);
         }
 
         public void Dispose()
