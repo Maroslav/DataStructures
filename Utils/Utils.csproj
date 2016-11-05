@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\Stack.cs" />
     <Compile Include="Other\ArrayExtensions.cs" />
     <Compile Include="DataStructures\AsyncBuffer.cs" />
     <Compile Include="DataStructures\Base classes\DictionaryBase.cs" />

@@ -19,6 +19,7 @@ namespace Utils.DataStructures.Internal
         private NodeKeyTraversalAction _keyPreAction;
         private NodeKeyTraversalAction _keyPostAction;
 
+        private Stack<Node<TKey, TValue>> _traversalStack;
 
 
         public IComparer<TKey> KeyComparer { get; private set; }
