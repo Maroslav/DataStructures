@@ -329,31 +329,43 @@ namespace Utils.DataStructures.Internal
         /// is not present in the tree.</returns>
         public Node<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
         {
-            if (!nodeActions.InvokeKeyPreAction(this, searchKey))
-                return null;
-
-            int comp = nodeActions.KeyComparer.Compare(searchKey, Key);
-
-            if (comp == 0)
-                return this;
+            // We have to use an iterative way because the default stack size of .net apps is 1MB
+            // and it's impractical to change it.....
+            var stack = nodeActions.TraversalStack;
+            Debug.Assert(stack.Count == 0);
+            stack.Push(new NodeTraversalToken(this, NodeAction.Sift));
 
             try
             {
-                if (comp < 0)
+                while (stack.Count > 0)
                 {
-                    if (LeftChild == null)
-                        return null;
-                    return LeftChild.Find(searchKey, nodeActions);
-                }
+                    var token = stack.Pop();
 
-                if (RightChild == null)
-                    return null;
-                return RightChild.Find(searchKey, nodeActions);
+                    if (!nodeActions.InvokeKeyPreAction(token.Node, searchKey))
+                        return null;
+
+
+                    int comp = nodeActions.KeyComparer.Compare(searchKey, token.Node.Key);
+
+                    if (comp == 0)
+                        return token.Node;
+
+                    var nextNode = comp < 0
+                        ? token.Node.LeftChild
+                        : token.Node.RightChild;
+
+                    if (nextNode == null)
+                        return null;
+                    stack.Push(new NodeTraversalToken(nextNode, NodeAction.Sift));
+                }
             }
             finally
             {
-                nodeActions.InvokeKeyPostAction(this, searchKey);
+                stack.Clear();
             }
+
+            Debug.Fail("Wth?");
+            return null;
         }
 
         /// <summary>

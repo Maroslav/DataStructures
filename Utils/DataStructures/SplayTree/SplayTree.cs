@@ -235,6 +235,7 @@ namespace Utils.DataStructures
 
             _traversalActions.SetKeyActions(keyPreAction: (n, searchKey) =>
             {
+                Debug.Assert(n != null);
                 lastNode = n;
                 return true;
             });
