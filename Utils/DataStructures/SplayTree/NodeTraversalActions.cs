@@ -19,11 +19,15 @@ namespace Utils.DataStructures.Internal
         private NodeKeyTraversalAction _keyPreAction;
         private NodeKeyTraversalAction _keyPostAction;
 
-        private Stack<Node<TKey, TValue>> _traversalStack;
+        private Stack<Node<TKey, TValue>.NodeTraversalToken> _traversalStack;
 
 
         public IComparer<TKey> KeyComparer { get; private set; }
-        public Stack<Node<TKey, TValue>> TraversalStack { get { return _traversalStack = _traversalStack ?? new Stack<Node<TKey, TValue>>(); } }
+
+        public Stack<Node<TKey, TValue>.NodeTraversalToken> TraversalStack
+        {
+            get { return _traversalStack = _traversalStack ?? new Stack<Node<TKey, TValue>.NodeTraversalToken>(); }
+        }
 
 
         public NodeTraversalActions(IComparer<TKey> keyComparer = null)

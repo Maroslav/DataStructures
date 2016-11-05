@@ -42,15 +42,28 @@ namespace Utils.DataStructures.Internal
 
         #region Traversal
 
-        private enum NodeContinuation
+        internal enum NodeAction
         {
-
+            Sift,
+            InAction,
+            PostAction,
         }
 
-        private struct TraversalNodeItem
+        internal struct NodeTraversalToken
         {
-            public Node<TKey, TValue> Node;
+            public readonly Node<TKey, TValue> Node;
+            public readonly NodeAction Action;
 
+            public NodeTraversalToken(Node<TKey, TValue> node, NodeAction action)
+            {
+                Node = node;
+                Action = action;
+            }
+
+            public override string ToString()
+            {
+                return Action.ToString();
+            }
         }
 
         #endregion
@@ -408,41 +421,82 @@ namespace Utils.DataStructures.Internal
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
-            Stack<Node<TKey, TValue>> stack = nodeActions.TraversalStack;
+            var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(this);
+            stack.Push(new NodeTraversalToken(this, NodeAction.Sift));
 
             try
             {
                 while (stack.Count > 0)
                 {
-                    var node = stack.Pop();
+                    var token = stack.Pop();
 
-                    // First and only visit of this node
-                    if (!nodeActions.InvokePreAction(this))
-                        return false;
-
-                    // Handle missing children
-                    if (node.GetLeftChild<T>() == null)
+                    switch (token.Action)
                     {
-                        if (!nodeActions.InvokeInAction(this))
-                            return false;
-
-                        if (node.GetRightChild<T>() == null)
-                        {
-                            if (!nodeActions.InvokeInAction(this))
+                        case NodeAction.Sift:
+                            if (!token.Node.HandleSift<T>(stack, nodeActions))
                                 return false;
+                            break;
 
-                            continue;
-                        }
+                        case NodeAction.InAction:
+                            if (!nodeActions.InvokeInAction(token.Node))
+                                return false;
+                            break;
+
+                        case NodeAction.PostAction:
+                            if (!nodeActions.InvokePostAction(token.Node))
+                                return false;
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
-
-
                 }
             }
             finally
             {
                 stack.Clear();
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleSift<T>(Stack<NodeTraversalToken> stack, NodeTraversalActions<TKey, TValue> nodeActions)
+            where T : FlipBase<T>
+        {
+            // First and only visit to this node
+            if (!nodeActions.InvokePreAction(this))
+                return false;
+
+
+            // Push actions in reverse order
+            var right = GetRightChild<T>();
+            var left = GetLeftChild<T>();
+
+            if (right != null)
+            {
+                stack.Push(new NodeTraversalToken(this, NodeAction.PostAction));
+                stack.Push(new NodeTraversalToken(right, NodeAction.Sift));
+            }
+            else if (left != null)
+                // We need to store the action (it has to be executed after sifting through Left)
+                stack.Push(new NodeTraversalToken(this, NodeAction.PostAction));
+
+            if (left != null)
+            {
+                stack.Push(new NodeTraversalToken(this, NodeAction.InAction));
+                stack.Push(new NodeTraversalToken(left, NodeAction.Sift));
+            }
+            else
+            {
+                // Handle missing children -- we can only invoke actions right away if children are null from left to right
+                if (!nodeActions.InvokeInAction(this))
+                    return false;
+
+                if (right == null)
+                    if (!nodeActions.InvokePostAction(this))
+                        return false;
             }
 
             return true;
