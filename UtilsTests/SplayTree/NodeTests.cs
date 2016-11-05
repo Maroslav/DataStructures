@@ -42,15 +42,19 @@ namespace UtilsTests.SplayTree
         public void TestChildren()
         {
             var root = GetNewRandomNode();
-            var temp = GetNewRandomNode();
+            var temp1 = GetNewRandomNode();
+            var temp2 = GetNewRandomNode();
 
-            root.LeftChild = temp;
-            root.RightChild = temp;
+            root.LeftChild = temp1;
+            root.RightChild = temp2;
 
-            Assert.AreEqual(temp.Parent, root);
+            Debug.WriteLine(root);
 
-            Assert.AreEqual(root.LeftChild, temp);
-            Assert.AreEqual(root.RightChild, temp);
+            Assert.AreEqual(temp1.Parent, root);
+            Assert.AreEqual(temp2.Parent, root);
+
+            Assert.AreEqual(root.LeftChild, temp1);
+            Assert.AreEqual(root.RightChild, temp2);
         }
 
 
