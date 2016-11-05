@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Utils.DataStructures
 {
@@ -47,7 +41,7 @@ namespace Utils.DataStructures
         public T Pop()
         {
             T res = Peek();
-            _buffer[_head--] = default(T);
+            _buffer[--_head] = default(T);
             return res;
         }
 
@@ -56,14 +50,14 @@ namespace Utils.DataStructures
             if (Count == 0)
                 throw new InvalidOperationException("The Stack<T> is empty.");
 
-            return _buffer[_head];
+            return _buffer[_head - 1];
         }
 
         public T this[int idx]
         {
             get
             {
-                if (idx < 0 || idx > Count)
+                if (idx < 0 || idx >= Count)
                     throw new ArgumentOutOfRangeException("idx", "The index was out of range of the array.");
                 return _buffer[idx];
             }
@@ -83,14 +77,14 @@ namespace Utils.DataStructures
 
         private void CheckReallocate()
         {
-            if (_head < Count)
+            if (_head < Capacity)
                 return;
 
             int newCapacity = (int)(Capacity * ReallocateFactor);
             T[] newBuffer = new T[newCapacity];
-            Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _head * Marshal.SizeOf(typeof(T)));
+            Array.Copy(_buffer, newBuffer, _head);
 
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _head; i++)
                 _buffer[i] = default(T);
 
             _buffer = newBuffer;
