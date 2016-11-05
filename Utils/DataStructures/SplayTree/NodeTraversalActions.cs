@@ -20,7 +20,15 @@ namespace Utils.DataStructures.Internal
         private NodeKeyTraversalAction _keyPostAction;
 
 
-        public IComparer<TKey> KeyComparer = Comparer<TKey>.Default;
+
+        public IComparer<TKey> KeyComparer { get; private set; }
+        public Stack<Node<TKey, TValue>> TraversalStack { get { return _traversalStack ?? new Stack<Node<TKey, TValue>>(); } }
+
+
+        public NodeTraversalActions(IComparer<TKey> keyComparer = null)
+        {
+            KeyComparer = keyComparer ?? Comparer<TKey>.Default;
+        }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

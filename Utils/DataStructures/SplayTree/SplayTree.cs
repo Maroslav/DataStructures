@@ -23,10 +23,7 @@ namespace Utils.DataStructures
 
         public SplayTree(IComparer<TKey> keyComparer = null)
         {
-            _traversalActions = new NodeTraversalActions<TKey, TValue>();
-
-            if (keyComparer != null)
-                _traversalActions.KeyComparer = keyComparer;
+            _traversalActions = new NodeTraversalActions<TKey, TValue>(keyComparer);
         }
 
         #endregion
