@@ -13,6 +13,7 @@ namespace Utils.DataStructures
         #region Fields
 
         internal Node<TKey, TValue> Root;
+        internal int LastSplayDepth;
 
         // Local variable to reduce stack load during recursion (we assume single-threaded usage)
         private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
@@ -107,7 +108,7 @@ namespace Utils.DataStructures
             Count++;
 
             // 3. Splay the newly inserted node to the root
-            newNode.Splay(out Root);
+            newNode.Splay(out Root, out LastSplayDepth);
         }
 
         public override bool Remove(TKey key)
@@ -147,7 +148,7 @@ namespace Utils.DataStructures
             // 3. Splay the right-most node
             // Remove the parent of root's left child to not splay up to root
             leftTree.Parent = null;
-            rightMost.Splay(out Root);
+            rightMost.Splay(out Root, out LastSplayDepth);
 
             // 4. Right-most is now root of the left tree (and has no right subtree); merge it with Root
             leftTree = rightMost;
@@ -255,7 +256,7 @@ namespace Utils.DataStructures
             if (node == null)
                 return false;
 
-            node.Splay(out Root);
+            node.Splay(out Root, out LastSplayDepth);
             return true;
         }
 

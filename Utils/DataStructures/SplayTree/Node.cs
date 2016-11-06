@@ -227,14 +227,22 @@ namespace Utils.DataStructures.Internal
         /// Splays the node all the way to the root and outputs it.
         /// This forces the caller not to forget to assign the new root somewhere..
         /// </summary>
-        public void Splay(out Node<TKey, TValue> newRoot)
+        public void Splay(out Node<TKey, TValue> newRoot, out int depth)
         {
+            depth = 1;
+
             while (Parent != null)
             {
                 if (Parent.Parent == null)
+                {
                     Zig();
+                    depth++;
+                }
                 else
+                {
                     ZigZxg();
+                    depth += 2;
+                }
             }
 
             newRoot = this;
@@ -321,6 +329,8 @@ namespace Utils.DataStructures.Internal
 
         #region Traversal
 
+        #region Find
+
         /// <summary>
         /// Traverses the binary search tree looking for the searchKey.
         /// If no exact match is found in the tree, returns null.
@@ -402,6 +412,10 @@ namespace Utils.DataStructures.Internal
                 nodeActions.InvokeKeyPostAction(this, searchKey);
             }
         }
+
+        #endregion
+
+        #region Sift
 
         /// <summary>
         /// Left DFS traversal of the binary search tree. Nodes are traversed from the smallest to the largest key.
@@ -540,6 +554,10 @@ namespace Utils.DataStructures.Internal
             return true;
         }
 
+        #endregion
+
+        #region ToString
+
         private const string ExtendPrefix = "│   ";
         private const string EmptyPrefix = "    ";
         private const string RootFork = "─── ";
@@ -593,6 +611,8 @@ namespace Utils.DataStructures.Internal
 
             return sb.ToString();
         }
+
+        #endregion
 
         #endregion
     }
