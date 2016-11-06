@@ -63,6 +63,9 @@ namespace UtilsTests.SplayTree
 
         private void DataReceivedHandler(object sender, DataReceivedEventArgs e)
         {
+            if (e.Data == null)
+                return;
+
             try
             {
                 switch (e.Data[0])
@@ -110,7 +113,7 @@ namespace UtilsTests.SplayTree
             catch (Exception)
             {
                 _cancellationTokenSource.Cancel();
-                Assert.Fail();
+                Assert.Fail("Error in parsing generator data.");
             }
         }
 
@@ -136,6 +139,7 @@ namespace UtilsTests.SplayTree
                     _cancellationTokenSource.Cancel();
 
                 Assert.IsTrue(result.HasFlag(WaitResult.Ok), "Generator process error: " + result);
+                Debug.WriteLine("Generator finished. Running time: " + generatorProcess.GetElapsedTime());
             }
         }
 
@@ -173,59 +177,52 @@ namespace UtilsTests.SplayTree
 
         private void RunRequestCollectionAsync()
         {
-            try
+            while (!_cancellationTokenSource.IsCancellationRequested)
             {
-                while (!_cancellationTokenSource.IsCancellationRequested)
+                Task<StringBuilder> task;
+
+                // Get a new task to wait for
+                try
                 {
-                    Task<StringBuilder> task;
+                    bool got = _buffer.TryGet(out task);
 
-                    // Get a new task to wait for
-                    try
-                    {
-                        bool got = _buffer.TryGet(out task);
-
-                        if (ExitWhenNoItems && !got)
-                            // The producer has finished his work -- if there are no more waiting items, we can safely exit
-                            return;
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        Debug.Assert(_cancellationTokenSource.IsCancellationRequested);
+                    if (ExitWhenNoItems && !got)
+                        // The producer has finished his work -- if there are no more waiting items, we can safely exit
                         return;
-                    }
-                    catch (Exception)
-                    {
-                        // Should not ever happen ;-)
-                        Debug.Assert(false);
-                        continue;
-                    }
-
-                    // Wait for the producers to queue up an item
-                    try
-                    {
-                        while (!task.Wait(1000, _cancellationTokenSource.Token))
-                        {
-                            if (ExitWhenNoItems)
-                                // The producer has finished his work -- no new items will ever be created and we can safely exit
-                                return;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        if (_cancellationTokenSource.IsCancellationRequested)
-                            return;
-
-                        continue;
-                    }
-
-                    // Pass the item back
-                    StringBuilder result = task.Result; // Can throw if cancellation was requested (we want to end the thread anyway)
-                    _callback(result);
                 }
-            }
-            finally
-            {
-                _buffer.Clear();
+                catch (ObjectDisposedException)
+                {
+                    Debug.Assert(_cancellationTokenSource.IsCancellationRequested);
+                    return;
+                }
+                catch (Exception)
+                {
+                    // Should not ever happen ;-)
+                    Debug.Assert(false);
+                    continue;
+                }
+
+                // Wait for the producers to queue up an item
+                try
+                {
+                    while (!task.Wait(1000, _cancellationTokenSource.Token))
+                    {
+                        if (ExitWhenNoItems)
+                            // The producer has finished his work -- no new items will ever be created and we can safely exit
+                            return;
+                    }
+                }
+                catch (Exception)
+                {
+                    if (_cancellationTokenSource.IsCancellationRequested)
+                        return;
+
+                    continue;
+                }
+
+                // Pass the item back
+                StringBuilder result = task.Result; // Can throw if cancellation was requested (we want to end the thread anyway)
+                _callback(result);
             }
         }
 
@@ -239,7 +236,7 @@ namespace UtilsTests.SplayTree
         #region Fields and constants
 
         private const int ConsumerCount = 4;
-        private int _currentConsumerCount;
+        private int _currentJobsTaken;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly AsyncBuffer<StringBuilder> _buffer;
@@ -256,6 +253,7 @@ namespace UtilsTests.SplayTree
         public GeneratorTests()
         {
             _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource.Token.Register(() => Debug.WriteLine("Cancellation requested."));
             _buffer = new AsyncBuffer<StringBuilder>(_cancellationTokenSource.Token);
 
             _generator = new MyCommandGenerator(_buffer, _cancellationTokenSource);
@@ -270,7 +268,8 @@ namespace UtilsTests.SplayTree
 
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
+            if (!_cancellationTokenSource.IsCancellationRequested)
+                _cancellationTokenSource.Cancel();
         }
 
         #endregion
@@ -300,11 +299,11 @@ namespace UtilsTests.SplayTree
 
         private void Process(StringBuilder commands)
         {
-            Interlocked.Increment(ref _currentConsumerCount);
-            Debug.Write(_currentConsumerCount);
-            Debug.Write(':');
-            Debug.Write(_buffer.WaitingItemCount);
-            Debug.Write(' ');
+            Interlocked.Increment(ref _currentJobsTaken);
+            //Debug.Write(_currentJobsTaken);
+            //Debug.Write(':');
+            //Debug.Write(_buffer.WaitingItemCount);
+            //Debug.Write(' ');
 
             int offset = 0;
 
@@ -337,26 +336,63 @@ namespace UtilsTests.SplayTree
 
             lock (_results)
                 _results.Add(insertCount, depthSum / findCount);
-
-            Interlocked.Decrement(ref _currentConsumerCount);
         }
 
         #endregion
 
 
-        [TestMethod]
-        public void Run()
+        public void FinishRun()
         {
-            // TODO: time logging, nejaky ops/sec, etc
-            _generator.RunGenerator(100).Wait();
-
             foreach (var c in _consumers)
                 c.ExitWhenNoItems = true;
 
             Task.WaitAll(_consumers.Select(c => c.RequestCollectionTask).ToArray(), _cancellationTokenSource.Token);
 
-            Debug.WriteLine(_results.Items);
+            Debug.WriteLine(_results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString()));
             Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
+        }
+
+        private void RunT(int T)
+        {
+            _generator.RunGenerator(T).Wait();
+            FinishRun();
+        }
+
+
+        [TestMethod]
+        public void Run10T()
+        {
+            RunT(10);
+        }
+
+        [TestMethod]
+        public void Run100T()
+        {
+            RunT(100);
+        }
+
+        [TestMethod]
+        public void Run1000T()
+        {
+            RunT(1000);
+        }
+
+        [TestMethod]
+        public void Run10000T()
+        {
+            RunT(10000);
+        }
+
+        [TestMethod]
+        public void Run100000T()
+        {
+            RunT(100000);
+        }
+
+        [TestMethod]
+        public void Run1000000T()
+        {
+            RunT(1000000);
         }
     }
 }

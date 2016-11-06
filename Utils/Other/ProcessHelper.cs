@@ -38,7 +38,8 @@ namespace Utils.Other
         {
             if (_p != null)
             {
-                _p.Kill();
+                if (!_p.HasExited)
+                    _p.Kill();
                 _p.Dispose();
             }
 
@@ -120,6 +121,11 @@ namespace Utils.Other
 
                 return res;
             });
+        }
+
+        public TimeSpan GetElapsedTime()
+        {
+            return _p.ExitTime - _p.StartTime;
         }
     }
 }
