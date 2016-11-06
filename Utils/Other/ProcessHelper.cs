@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Utils.Other
 {
@@ -102,20 +103,23 @@ namespace Utils.Other
                 _verboseLog(message);
         }
 
-        public WaitResult Wait(int msTimeout)
+        public async Task<WaitResult> Wait(int msTimeout)
         {
-            WaitResult res = 0;
+            return await Task.Factory.StartNew(() =>
+            {
+                WaitResult res = 0;
 
-            if (!_p.WaitForExit(msTimeout))
-                res |= WaitResult.TimedOut;
+                if (!_p.WaitForExit(msTimeout))
+                    res |= WaitResult.TimedOut;
 
-            if (!_noError)
-                res |= WaitResult.Failed;
+                if (!_noError)
+                    res |= WaitResult.Failed;
 
-            if (res == 0)
-                return WaitResult.Ok;
+                if (res == 0)
+                    return WaitResult.Ok;
 
-            return res;
+                return res;
+            });
         }
     }
 }

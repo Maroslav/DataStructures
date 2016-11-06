@@ -25,7 +25,7 @@ namespace UtilsTests.SplayTree
 
         #region Constants
 
-        private const int TimeOut = 600000; // 600 seconds timeout
+        private const int TimeOut = 6000000; // 6000 seconds = 100 minutes timeout
         private const int BuilderInitSize = 1000;
         private const int BuilderSizeIncrement = 3000;
 
@@ -41,10 +41,10 @@ namespace UtilsTests.SplayTree
 
         #region Fields
 
-        private CommandState _state = CommandState.Init;
-
         private readonly AsyncBuffer<StringBuilder> _buffer;
         private readonly CancellationTokenSource _cancellationTokenSource;
+
+        private CommandState _state = CommandState.Init;
         private StringBuilder _currentBuilder = new StringBuilder(BuilderInitSize);
 
         #endregion
@@ -114,7 +114,7 @@ namespace UtilsTests.SplayTree
             }
         }
 
-        public void RunGenerator(int t = -1)
+        public async Task RunGenerator(int t = -1)
         {
             using (var generatorProcess = new ProcessHelper(
                 s => Debug.WriteLine(s),
@@ -130,7 +130,7 @@ namespace UtilsTests.SplayTree
 
                 generatorProcess.StartProcess(Path.Combine(ToolsPath, GeneratorName), pars, FolderPath);
 
-                var result = generatorProcess.Wait(TimeOut);
+                var result = await generatorProcess.Wait(TimeOut);
 
                 if (result != WaitResult.Ok)
                     _cancellationTokenSource.Cancel();
@@ -143,13 +143,13 @@ namespace UtilsTests.SplayTree
     }
 
     class MyCommandConsumer
-        : IDisposable
     {
         private readonly AsyncBuffer<StringBuilder> _buffer;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private Action<StringBuilder> _callback;
 
-        private Task _requestCollectionTask;
+        public Task RequestCollectionTask;
+        public bool ExitWhenNoItems;
 
 
         public MyCommandConsumer(AsyncBuffer<StringBuilder> buffer, CancellationTokenSource cts)
@@ -160,14 +160,12 @@ namespace UtilsTests.SplayTree
 
         public void Start(Action<StringBuilder> callback)
         {
-            _requestCollectionTask = Task.Factory.StartNew(RunRequestCollectionAsync, TaskCreationOptions.LongRunning);
             _callback = callback;
-        }
-
-        public void Dispose()
-        {
-            if (!_cancellationTokenSource.IsCancellationRequested)
-                _cancellationTokenSource.Cancel();
+            RequestCollectionTask = Task.Factory.StartNew(
+                RunRequestCollectionAsync,
+                _cancellationTokenSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
 
 
@@ -184,7 +182,11 @@ namespace UtilsTests.SplayTree
                     // Get a new task to wait for
                     try
                     {
-                        task = _buffer.Get();
+                        bool got = _buffer.TryGet(out task);
+
+                        if (ExitWhenNoItems && !got)
+                            // The producer has finished his work -- if there are no more waiting items, we can safely exit
+                            return;
                     }
                     catch (ObjectDisposedException)
                     {
@@ -201,7 +203,12 @@ namespace UtilsTests.SplayTree
                     // Wait for the producers to queue up an item
                     try
                     {
-                        task.Wait(_cancellationTokenSource.Token);
+                        while (!task.Wait(1000, _cancellationTokenSource.Token))
+                        {
+                            if (ExitWhenNoItems)
+                                // The producer has finished his work -- no new items will ever be created and we can safely exit
+                                return;
+                        }
                     }
                     catch (Exception)
                     {
@@ -232,9 +239,13 @@ namespace UtilsTests.SplayTree
         #region Fields and constants
 
         private const int ConsumerCount = 4;
+        private int _currentConsumerCount;
+
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly AsyncBuffer<StringBuilder> _buffer;
 
         private readonly MyCommandGenerator _generator;
-        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly MyCommandConsumer[] _consumers;
 
         private readonly SplayTree<int, int> _results = new SplayTree<int, int>();
 
@@ -245,15 +256,15 @@ namespace UtilsTests.SplayTree
         public GeneratorTests()
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            var buffer = new AsyncBuffer<StringBuilder>(_cancellationTokenSource.Token);
-            _generator = new MyCommandGenerator(buffer, _cancellationTokenSource);
+            _buffer = new AsyncBuffer<StringBuilder>(_cancellationTokenSource.Token);
 
-            MyCommandConsumer[] consumers = Enumerable
+            _generator = new MyCommandGenerator(_buffer, _cancellationTokenSource);
+            _consumers = Enumerable
                 .Range(0, ConsumerCount)
-                .Select(n => new MyCommandConsumer(buffer, _cancellationTokenSource))
+                .Select(n => new MyCommandConsumer(_buffer, _cancellationTokenSource))
                 .ToArray();
 
-            foreach (var consumer in consumers)
+            foreach (var consumer in _consumers)
                 consumer.Start(Process);
         }
 
@@ -289,13 +300,17 @@ namespace UtilsTests.SplayTree
 
         private void Process(StringBuilder commands)
         {
+            Interlocked.Increment(ref _currentConsumerCount);
+            Debug.Write(_currentConsumerCount);
+            Debug.Write(':');
+            Debug.Write(_buffer.WaitingItemCount);
+            Debug.Write(' ');
+
             int offset = 0;
 
             // Prepare the tree
             int insertCount = ParseNextNumber(commands, ref offset);
             var tree = new SplayTree<int, string>();
-
-            int complexity = 0; // TODO
 
             // Do insert commands
             for (int i = 0; i < insertCount; i++)
@@ -304,18 +319,26 @@ namespace UtilsTests.SplayTree
                 tree.Add(key, null);
             }
 
+            int depthSum = 0;
+            int findCount = 0;
+
             // Do find commands
             while (offset < commands.Length)
             {
                 int key = ParseNextNumber(commands, ref offset);
                 string val = tree[key];
+
+                depthSum += tree.LastSplayDepth;
+                findCount++;
             }
 
             // Cleanup and store the measurements
             tree.Clear();
 
             lock (_results)
-                _results.Add(insertCount, complexity);
+                _results.Add(insertCount, depthSum / findCount);
+
+            Interlocked.Decrement(ref _currentConsumerCount);
         }
 
         #endregion
@@ -324,8 +347,16 @@ namespace UtilsTests.SplayTree
         [TestMethod]
         public void Run()
         {
-            _generator.RunGenerator(100);
+            // TODO: time logging, nejaky ops/sec, etc
+            _generator.RunGenerator(100).Wait();
+
+            foreach (var c in _consumers)
+                c.ExitWhenNoItems = true;
+
+            Task.WaitAll(_consumers.Select(c => c.RequestCollectionTask).ToArray(), _cancellationTokenSource.Token);
+
             Debug.WriteLine(_results.Items);
+            Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
         }
     }
 }
