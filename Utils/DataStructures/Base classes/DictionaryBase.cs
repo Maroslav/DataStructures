@@ -16,7 +16,7 @@ namespace Utils.DataStructures
         {
             protected TKey _key;
             protected TValue _value;
-            
+
             // Key is immutable
             public TKey Key
             {
@@ -121,6 +121,12 @@ namespace Utils.DataStructures
 
             #endregion
 
+            #region ToString()
+
+            public override string ToString()
+            {
+                return ToString(item => item.ToString());
+            }
 
             public string ToString(Func<T, string> selector)
             {
@@ -136,6 +142,8 @@ namespace Utils.DataStructures
 
                 return sb.ToString();
             }
+
+            #endregion
         }
 
         #endregion
