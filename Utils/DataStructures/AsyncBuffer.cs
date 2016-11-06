@@ -9,10 +9,13 @@ namespace Utils.DataStructures
     {
         #region Fields
 
-        private readonly Queue<T> m_queue;
-        private readonly Queue<TaskCompletionSource<T>> m_waitingTasks;
+        private readonly Queue<T> _queue;
+        private readonly Queue<TaskCompletionSource<T>> _waitingTasks;
 
         public bool Disposed { get; private set; }
+
+        public int WaitingItemCount { get { return _queue.Count; } }
+        public int WaitingConsumerCount { get { return _waitingTasks.Count; } }
 
         #endregion
 
@@ -20,14 +23,14 @@ namespace Utils.DataStructures
 
         public AsyncBuffer()
         {
-            m_queue = new Queue<T>();
-            m_waitingTasks = new Queue<TaskCompletionSource<T>>();
+            _queue = new Queue<T>();
+            _waitingTasks = new Queue<TaskCompletionSource<T>>();
         }
 
         public AsyncBuffer(CancellationToken cancellationToken)
         {
-            m_queue = new Queue<T>();
-            m_waitingTasks = new Queue<TaskCompletionSource<T>>();
+            _queue = new Queue<T>();
+            _waitingTasks = new Queue<TaskCompletionSource<T>>();
 
             cancellationToken.Register(Clear);
         }
@@ -40,13 +43,13 @@ namespace Utils.DataStructures
 
         public void Clear()
         {
-            lock (m_queue)
+            lock (_queue)
             {
-                foreach (TaskCompletionSource<T> taskCompletionSource in m_waitingTasks)
+                foreach (TaskCompletionSource<T> taskCompletionSource in _waitingTasks)
                     taskCompletionSource.SetCanceled();
 
-                m_waitingTasks.Clear();
-                m_queue.Clear();
+                _waitingTasks.Clear();
+                _queue.Clear();
             }
         }
 
@@ -61,15 +64,15 @@ namespace Utils.DataStructures
 
             TaskCompletionSource<T> tcs = null;
 
-            lock (m_queue)
+            lock (_queue)
             {
-                if (m_waitingTasks.Count > 0)
+                if (_waitingTasks.Count > 0)
                 {
-                    tcs = m_waitingTasks.Dequeue();
+                    tcs = _waitingTasks.Dequeue();
                 }
                 else
                 {
-                    m_queue.Enqueue(item);
+                    _queue.Enqueue(item);
                 }
             }
 
@@ -84,16 +87,37 @@ namespace Utils.DataStructures
             if (Disposed)
                 throw new ObjectDisposedException("AsyncBuffer");
 
-            lock (m_queue)
+            lock (_queue)
             {
-                if (m_queue.Count > 0)
+                if (_queue.Count > 0)
+                    return Task.FromResult(_queue.Dequeue());
+
+                var tcs = new TaskCompletionSource<T>();
+                _waitingTasks.Enqueue(tcs);
+                return tcs.Task;
+            }
+        }
+
+        /// <summary>
+        /// Returns false if there were no waiting items to get.
+        /// </summary>
+        public bool TryGet(out Task<T> item)
+        {
+            if (Disposed)
+                throw new ObjectDisposedException("AsyncBuffer");
+
+            lock (_queue)
+            {
+                if (_queue.Count > 0)
                 {
-                    return Task.FromResult(m_queue.Dequeue());
+                    item = Task.FromResult(_queue.Dequeue());
+                    return true;
                 }
 
                 var tcs = new TaskCompletionSource<T>();
-                m_waitingTasks.Enqueue(tcs);
-                return tcs.Task;
+                _waitingTasks.Enqueue(tcs);
+                item = tcs.Task;
+                return false;
             }
         }
 
