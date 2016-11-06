@@ -233,6 +233,10 @@ namespace Utils.DataStructures.Internal
 
             while (Parent != null)
             {
+#if __NAIVE
+                Zig();
+                depth++;
+#else
                 if (Parent.Parent == null)
                 {
                     Zig();
@@ -243,6 +247,7 @@ namespace Utils.DataStructures.Internal
                     ZigZxg();
                     depth += 2;
                 }
+#endif
             }
 
             newRoot = this;
