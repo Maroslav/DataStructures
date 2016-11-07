@@ -55,6 +55,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="SplayTree\GeneratorTests.cs" />
+    <Compile Include="SplayTree\MyCommandConsumer.cs" />
+    <Compile Include="SplayTree\MyCommandGenerator.cs" />
     <Compile Include="SplayTree\NodeTests.cs" />
     <Compile Include="SplayTree\SplayTreeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
