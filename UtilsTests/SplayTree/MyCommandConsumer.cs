@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Utils.DataStructures;
@@ -11,21 +8,21 @@ namespace UtilsTests.SplayTree
 {
     internal class MyCommandConsumer
     {
-        private readonly AsyncBuffer<StringBuilder> _buffer;
+        private readonly AsyncBuffer<Stack<int>> _buffer;
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private Action<StringBuilder> _callback;
+        private Action<Stack<int>> _callback;
 
         public Task RequestCollectionTask;
         public bool ExitWhenNoItems;
 
 
-        public MyCommandConsumer(AsyncBuffer<StringBuilder> buffer, CancellationTokenSource cts)
+        public MyCommandConsumer(AsyncBuffer<Stack<int>> buffer, CancellationTokenSource cts)
         {
             _buffer = buffer;
             _cancellationTokenSource = cts;
         }
 
-        public void Start(Action<StringBuilder> callback)
+        public void Start(Action<Stack<int>> callback)
         {
             _callback = callback;
             RequestCollectionTask = Task.Factory.StartNew(
@@ -42,7 +39,7 @@ namespace UtilsTests.SplayTree
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
-                Task<StringBuilder> task;
+                Task<Stack<int>> task;
 
                 // Get a new task to wait for
                 try
@@ -84,7 +81,7 @@ namespace UtilsTests.SplayTree
                 }
 
                 // Pass the item back
-                StringBuilder result = task.Result; // Can throw if cancellation was requested (we want to end the thread anyway)
+                var result = task.Result; // Can throw if cancellation was requested (we want to end the thread anyway)
                 _callback(result);
             }
         }

@@ -123,7 +123,7 @@ namespace Utils.Other
                     return WaitResult.Ok;
 
                 return res;
-            });
+            }).ConfigureAwait(false);
         }
 
         public TimeSpan GetElapsedTime()

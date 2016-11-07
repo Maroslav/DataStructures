@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,7 +23,7 @@ namespace UtilsTests.SplayTree
         #region Constants
 
         private const int TimeOut = 6000000; // 6000 seconds = 100 minutes timeout
-        private const int BuilderInitSize = 1000;
+        private const int BuilderInitSize = 8000;
         private const int BuilderSizeIncrement = 3000;
 
         private const string ToolsPath = @"Tools";
@@ -39,17 +38,17 @@ namespace UtilsTests.SplayTree
 
         #region Fields
 
-        private readonly AsyncBuffer<StringBuilder> _buffer;
+        private readonly AsyncBuffer<Stack<int>> _buffer;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         private CommandState _state = CommandState.Init;
-        private StringBuilder _currentBuilder = new StringBuilder(BuilderInitSize);
+        private Stack<int> _currentCommands = new Stack<int>(BuilderInitSize);
 
         #endregion
 
         #region Genesis
 
-        public MyCommandGenerator(AsyncBuffer<StringBuilder> buffer, CancellationTokenSource cts)
+        public MyCommandGenerator(AsyncBuffer<Stack<int>> buffer, CancellationTokenSource cts)
         {
             _buffer = buffer;
             _cancellationTokenSource = cts;
@@ -72,18 +71,17 @@ namespace UtilsTests.SplayTree
                         Debug.Assert(_state == CommandState.Init || _state == CommandState.Finds); // A race condition -- another DataReceivedHandler changed the state
 
                         // Replace the builder by a new instance
-                        StringBuilder builder = _currentBuilder;
+                        Stack<int> commands = _currentCommands;
 
                         if (_state != CommandState.Init)
                         {
-                            _buffer.Add(builder);
+                            _buffer.Add(commands);
 
-                            _currentBuilder = new StringBuilder(builder.Length + BuilderSizeIncrement);
+                            _currentCommands = new Stack<int>(commands.Count + BuilderSizeIncrement);
                         }
 
                         // Start gathering a new batch
-                        _currentBuilder.Append(e.Data.Substring(2));
-                        _currentBuilder.Append(' ');
+                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         _state = CommandState.Starts;
                         return;
 
@@ -93,8 +91,7 @@ namespace UtilsTests.SplayTree
                         if (_state == CommandState.Starts)
                             _state = CommandState.Inserts;
 
-                        _currentBuilder.Append(e.Data.Substring(2));
-                        _currentBuilder.Append(' ');
+                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         break;
 
                     case 'F':
@@ -103,8 +100,7 @@ namespace UtilsTests.SplayTree
                         if (_state == CommandState.Inserts)
                             _state = CommandState.Finds;
 
-                        _currentBuilder.Append(e.Data.Substring(2));
-                        _currentBuilder.Append(' ');
+                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         break;
                 }
             }
@@ -135,7 +131,7 @@ namespace UtilsTests.SplayTree
                     FolderPath,
                     _cancellationTokenSource.Token);
 
-                var result = await generatorProcess.Wait(TimeOut);
+                var result = await generatorProcess.Wait(TimeOut).ConfigureAwait(false);
 
                 if (result != WaitResult.Ok)
                     _cancellationTokenSource.Cancel();

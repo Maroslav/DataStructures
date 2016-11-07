@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.DataStructures;
-using Utils.Other;
 
 namespace UtilsTests.SplayTree
 {
@@ -18,16 +14,16 @@ namespace UtilsTests.SplayTree
     {
         #region Fields and constants
 
-        private const int ConsumerCount = 4;
-        private int _currentJobsTaken;
+        private const int ConsumerCount = 3;
+        private int _currentJobsDone;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private readonly AsyncBuffer<StringBuilder> _buffer;
+        private readonly AsyncBuffer<Stack<int>> _buffer;
 
         private readonly MyCommandGenerator _generator;
         private readonly MyCommandConsumer[] _consumers;
 
-        private readonly SplayTree<int, int> _results = new SplayTree<int, int>();
+        private readonly SplayTree<int, float> _results = new SplayTree<int, float>();
 
         #endregion
 
@@ -36,8 +32,8 @@ namespace UtilsTests.SplayTree
         public GeneratorTests()
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            _cancellationTokenSource.Token.Register(() => Console.WriteLine("Cancellation requested."));
-            _buffer = new AsyncBuffer<StringBuilder>(_cancellationTokenSource.Token);
+            _cancellationTokenSource.Token.Register(() => Log("Cancellation requested."));
+            _buffer = new AsyncBuffer<Stack<int>>(_cancellationTokenSource.Token);
 
             _generator = new MyCommandGenerator(_buffer, _cancellationTokenSource);
             _consumers = Enumerable
@@ -47,6 +43,11 @@ namespace UtilsTests.SplayTree
 
             foreach (var consumer in _consumers)
                 consumer.Start(Process);
+        }
+
+        ~GeneratorTests()
+        {
+            Dispose();
         }
 
         public void Dispose()
@@ -59,94 +60,128 @@ namespace UtilsTests.SplayTree
 
         #region Processing
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsNumber(char c)
+        private void Process(Stack<int> commands)
         {
-            return c >= '0' && c <= '9';
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int ParseNextNumber(StringBuilder builder, ref int offset)
-        {
-            char c;
-            int num = 0;
-
-            while (IsNumber(c = builder[offset++]))
-            {
-                num *= 10;
-                num += c - '0';
-            }
-
-            return num;
-        }
-
-        private void Process(StringBuilder commands)
-        {
-            Interlocked.Increment(ref _currentJobsTaken);
-            Console.Write(_currentJobsTaken);
-            Console.Write(':');
-            Console.Write(_buffer.WaitingItemCount);
+            var sw = Stopwatch.StartNew();
 
             int offset = 0;
 
             // Prepare the tree
-            int insertCount = ParseNextNumber(commands, ref offset);
             var tree = new SplayTree<int, string>();
+            int insertCount = commands[offset++];
+            float insertDepthSum = 0;
 
             // Do insert commands
-            for (int i = 0; i < insertCount; i++)
+            for (; offset < insertCount + 1; offset++)
             {
-                int key = ParseNextNumber(commands, ref offset);
+                int key = commands[offset];
                 tree.Add(key, null);
+
+                insertDepthSum += tree.LastSplayDepth / (float)(Math.Log10(tree.Count + 1) * 3.321928); // Plus one for when Count==1
+                // Expected depth of a balanced binary tree
             }
 
-            int depthSum = 0;
+            var findDepthSum = 0;
             int findCount = 0;
+            offset--;
 
             // Do find commands
-            while (offset < commands.Length)
+            while (++offset < commands.Count)
             {
-                int key = ParseNextNumber(commands, ref offset);
+                int key = commands[offset];
                 string val = tree[key];
 
-                depthSum += tree.LastSplayDepth;
+                findDepthSum += tree.LastSplayDepth;
                 findCount++;
             }
 
             // Cleanup and store the measurements
-            tree.Clear();
+            //tree.Clear(); // Disassembles tree node pointers .... not a good idea with a GC...
 
-            int avgDepth = depthSum / findCount;
+            sw.Stop();
+
+            float avgInsertDepth = insertDepthSum / findCount;
+            float avgFindDepth = findDepthSum / (float)findCount;
 
             lock (_results)
-                _results.Add(insertCount, avgDepth);
+                _results.Add(insertCount, avgFindDepth);
 
-            Console.Write("::");
-            Console.Write(insertCount);
-            Console.Write(":");
-            Console.Write(avgDepth);
-            Console.Write(' ');
+            Interlocked.Increment(ref _currentJobsDone);
+            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4} adds/finds : {5:F}/{6:F} insert depth factor/find depth",
+                _currentJobsDone,
+                _buffer.WaitingItemCount,
+                sw.ElapsedMilliseconds * 0.001,
+                insertCount,
+                findCount,
+                avgInsertDepth,
+                avgFindDepth);
         }
 
         #endregion
 
+        #region Logging
 
-        public void FinishRun()
+        private void Log(string message)
         {
+            Console.WriteLine(message);
+        }
+
+        private void Log(string format, params object[] args)
+        {
+            Console.WriteLine(format, args);
+        }
+
+        #endregion
+
+        #region Run commons
+
+        private async Task HandleGeneratorDone(Task generatorTask)
+        {
+            await generatorTask.ConfigureAwait(false);
+
+            // Signal the finish to consumers
             foreach (var c in _consumers)
                 c.ExitWhenNoItems = true;
+        }
 
-            Task.WaitAll(_consumers.Select(c => c.RequestCollectionTask).ToArray(), _cancellationTokenSource.Token);
+        private void FinishRun(Task generatorTask)
+        {
+            HandleGeneratorDone(generatorTask);
 
-            Console.WriteLine(_results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString()));
+            var consumers = _consumers.Select(c => c.RequestCollectionTask).ToArray();
+
+            while (!Task.WaitAll(consumers, 2000, _cancellationTokenSource.Token))
+            {
+                // Check for user cancellation
+                if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)
+                {
+                    Log("Terminating...");
+                    _cancellationTokenSource.Cancel();
+                    return;
+                }
+            }
+
+            string result = _results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString());
+            Log("Results: ");
+            Log(result);
+
             Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
         }
 
         private void RunT(int T)
         {
-            _generator.RunGenerator(T).Wait();
-            FinishRun();
+            string runName = "T test: " + T;
+            Log("Running " + runName);
+
+            var sw = Stopwatch.StartNew();
+
+            var generatorTask = _generator.RunGenerator(T);
+            FinishRun(generatorTask);
+
+            Log(runName + " finished in: " + sw.Elapsed);
         }
+
+        #endregion
 
 
         [TestMethod]
