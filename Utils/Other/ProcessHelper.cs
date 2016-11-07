@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utils.Other
@@ -49,7 +50,7 @@ namespace Utils.Other
         #endregion
 
 
-        public void StartProcess(string process, string arguments, string workingDirectory)
+        public void StartProcess(string process, string arguments, string workingDirectory, CancellationToken token)
         {
             LogVerbose("*** StartProcess: " + process + " ***");
 
@@ -81,6 +82,8 @@ namespace Utils.Other
             };
             _p.Exited += _processExited;
             _p.Exited += (sender, args) => LogVerbose(string.Format("*** {0} exited ***", process));
+
+            token.Register(Dispose);
 
             try
             {

@@ -129,7 +129,11 @@ namespace UtilsTests.SplayTree
                         ? "-b"
                         : "-t " + t);
 
-                generatorProcess.StartProcess(Path.Combine(ToolsPath, GeneratorName), pars, FolderPath);
+                generatorProcess.StartProcess(
+                    Path.Combine(ToolsPath, GeneratorName),
+                    pars,
+                    FolderPath,
+                    _cancellationTokenSource.Token);
 
                 var result = await generatorProcess.Wait(TimeOut);
 
