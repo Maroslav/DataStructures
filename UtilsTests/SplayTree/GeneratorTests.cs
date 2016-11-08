@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ namespace UtilsTests.SplayTree
     {
         #region Fields and constants
 
-        private const int ConsumerCount = 3;
+        private const string LogFileName = "SplayTreeLog";
+
+        private const int ConsumerCount = 4;
         private int _currentJobsDone;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -24,6 +27,7 @@ namespace UtilsTests.SplayTree
         private readonly MyCommandConsumer[] _consumers;
 
         private readonly SplayTree<int, float> _results = new SplayTree<int, float>();
+        private TextWriter _log;
 
         #endregion
 
@@ -41,13 +45,14 @@ namespace UtilsTests.SplayTree
                 .Select(n => new MyCommandConsumer(_buffer, _cancellationTokenSource))
                 .ToArray();
 
-            foreach (var consumer in _consumers)
+            for (int i = 0; i < _consumers.Length; i++)
+            {
+                var consumer = _consumers[i];
                 consumer.Start(Process);
-        }
 
-        ~GeneratorTests()
-        {
-            Dispose();
+                int closure = i;
+                consumer.RequestCollectionTask.ContinueWith(task => Console.WriteLine("Worker " + closure + " finished."));
+            }
         }
 
         public void Dispose()
@@ -123,17 +128,23 @@ namespace UtilsTests.SplayTree
 
         private void Log(string message)
         {
+            if (_log != null)
+                _log.WriteLine(message);
+
             Console.WriteLine(message);
         }
 
         private void Log(string format, params object[] args)
         {
+            if (_log != null)
+                _log.WriteLine(format, args);
+
             Console.WriteLine(format, args);
         }
 
         #endregion
 
-        #region Run commons
+        #region Running
 
         private async Task HandleGeneratorDone(Task generatorTask)
         {
@@ -162,23 +173,31 @@ namespace UtilsTests.SplayTree
             }
 
             string result = _results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString());
-            Log("Results: ");
-            Log(result);
+            Log("\nResults:\n" + result + '\n');
+        }
 
-            Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
+        private void Run(string runName, Task generatorTask)
+        {
+            using (_log = TextWriter.Synchronized(new StreamWriter(LogFileName + '_' + runName)))
+            {
+                Log("Running " + runName);
+                var sw = Stopwatch.StartNew();
+
+                FinishRun(generatorTask);
+
+                sw.Stop();
+                Log(runName + " finished in: " + sw.Elapsed);
+
+                Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
+            }
+
+            _log = null;
         }
 
         private void RunT(int T)
         {
-            string runName = "T test: " + T;
-            Log("Running " + runName);
-
-            var sw = Stopwatch.StartNew();
-
             var generatorTask = _generator.RunGenerator(T);
-            FinishRun(generatorTask);
-
-            Log(runName + " finished in: " + sw.Elapsed);
+            Run("T_test_" + T, generatorTask);
         }
 
         #endregion
