@@ -82,17 +82,14 @@ namespace UtilsTests.SplayTree
                         }
 
                         // Start gathering a new batch
-                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         _state = CommandState.Starts;
-                        return;
+                        break;
 
                     case 'I':
                         Debug.Assert(_state == CommandState.Inserts || _state == CommandState.Starts); // A race condition -- another DataReceivedHandler changed the state
 
                         if (_state == CommandState.Starts)
                             _state = CommandState.Inserts;
-
-                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         break;
 
                     case 'F':
@@ -100,15 +97,15 @@ namespace UtilsTests.SplayTree
 
                         if (_state == CommandState.Inserts)
                             _state = CommandState.Finds;
-
-                        _currentCommands.Push(int.Parse(e.Data.Substring(2)));
                         break;
                 }
+
+                _currentCommands.Push(int.Parse(e.Data.Substring(2)));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _cancellationTokenSource.Cancel();
-                Assert.Fail("Error in parsing generator data.");
+                Console.WriteLine("Error in parsing generator data:\n" + ex.Message);
             }
         }
 
