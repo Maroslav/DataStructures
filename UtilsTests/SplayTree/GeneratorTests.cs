@@ -48,6 +48,7 @@ namespace UtilsTests.SplayTree
                 .Select(n => new MyCommandConsumer(_buffer, _cancellationTokenSource))
                 .ToArray();
 
+            Console.WriteLine("Starting " + _consumers.Length + " workers.");
             for (int i = 0; i < _consumers.Length; i++)
             {
                 var consumer = _consumers[i];
