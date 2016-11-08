@@ -15,6 +15,7 @@ namespace UtilsTests.SplayTree
     {
         #region Fields and constants
 
+        private readonly string _logFolderName;
         private const string LogFileName = "SplayTreeLog";
 
         private const int ConsumerCount = 4;
@@ -33,8 +34,10 @@ namespace UtilsTests.SplayTree
 
         #region Genesis
 
-        public GeneratorTests()
+        public GeneratorTests(string logFolderName)
         {
+            _logFolderName = logFolderName;
+
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationTokenSource.Token.Register(() => Log("Cancellation requested."));
             _buffer = new AsyncBuffer<Stack<int>>(_cancellationTokenSource.Token);
@@ -180,15 +183,15 @@ namespace UtilsTests.SplayTree
 
         private void Run(string runName, Task generatorTask)
         {
-            using (_log = TextWriter.Synchronized(new StreamWriter(LogFileName + '_' + runName)))
+            using (_log = TextWriter.Synchronized(new StreamWriter(Path.Combine(_logFolderName, LogFileName) + '_' + runName)))
             {
-                Log("Running " + runName);
+                Log("\n---- Running " + runName);
                 var sw = Stopwatch.StartNew();
 
                 FinishRun(generatorTask);
 
                 sw.Stop();
-                Log(runName + " finished in: " + sw.Elapsed);
+                Log("---- " + runName + " finished in: " + sw.Elapsed);
             }
 
             _log = null;
