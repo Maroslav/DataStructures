@@ -82,8 +82,8 @@ namespace UtilsTests.SplayTree
                 int key = commands[offset];
                 tree.Add(key, null);
 
-                insertDepthSum += tree.LastSplayDepth / (float)(Math.Log10(tree.Count + 1) * 3.321928); // Plus one for when Count==1
-                // Expected depth of a balanced binary tree
+                insertDepthSum += tree.LastSplayDepth / (float)(Math.Log10(tree.Count + 1) * 3.321928);
+                // Normalized by the expected depth of a balanced binary tree; Plus one for when Count==1
             }
 
             var findDepthSum = 0;
@@ -105,7 +105,7 @@ namespace UtilsTests.SplayTree
 
             sw.Stop();
 
-            float avgInsertDepth = insertDepthSum / findCount;
+            float avgInsertDepth = insertDepthSum / insertCount;
             float avgFindDepth = findDepthSum / (float)findCount;
 
             lock (_results)
@@ -174,6 +174,8 @@ namespace UtilsTests.SplayTree
 
             string result = _results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString());
             Log("\nResults:\n" + result + '\n');
+
+            Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
         }
 
         private void Run(string runName, Task generatorTask)
@@ -187,8 +189,6 @@ namespace UtilsTests.SplayTree
 
                 sw.Stop();
                 Log(runName + " finished in: " + sw.Elapsed);
-
-                Assert.IsFalse(_cancellationTokenSource.IsCancellationRequested);
             }
 
             _log = null;
