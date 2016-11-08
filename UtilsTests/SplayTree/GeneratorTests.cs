@@ -194,10 +194,16 @@ namespace UtilsTests.SplayTree
             _log = null;
         }
 
-        private void RunT(int T)
+        public void RunSubset(int T)
         {
-            var generatorTask = _generator.RunGenerator(T);
+            var generatorTask = _generator.RunGeneratorSubset(T);
             Run("T_test_" + T, generatorTask);
+        }
+
+        private void RunSeq()
+        {
+            var generatorTask = _generator.RunGeneratorSequential();
+            Run("Seq_test_", generatorTask);
         }
 
         #endregion
@@ -206,37 +212,44 @@ namespace UtilsTests.SplayTree
         [TestMethod]
         public void Run10T()
         {
-            RunT(10);
+            RunSubset(10);
         }
 
         [TestMethod]
         public void Run100T()
         {
-            RunT(100);
+            RunSubset(100);
         }
 
         [TestMethod]
         public void Run1000T()
         {
-            RunT(1000);
+            RunSubset(1000);
         }
 
         [TestMethod]
         public void Run10000T()
         {
-            RunT(10000);
+            RunSubset(10000);
         }
 
         [TestMethod]
         public void Run100000T()
         {
-            RunT(100000);
+            RunSubset(100000);
         }
 
         [TestMethod]
         public void Run1000000T()
         {
-            RunT(1000000);
+            RunSubset(1000000);
+        }
+
+
+        [TestMethod]
+        public void RunSequential()
+        {
+            RunSeq();
         }
     }
 }

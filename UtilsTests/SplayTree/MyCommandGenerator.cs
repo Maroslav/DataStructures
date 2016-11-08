@@ -25,6 +25,7 @@ namespace UtilsTests.SplayTree
         private const int TimeOut = 6000000; // 6000 seconds = 100 minutes timeout
         private const int BuilderInitSize = 8000;
         private const int BuilderSizeIncrement = 3000;
+        private const int Seed = 82;
 
         private const string ToolsPath = @"Tools";
         private const string GeneratorName = "generator.exe";
@@ -111,7 +112,21 @@ namespace UtilsTests.SplayTree
             }
         }
 
-        public async Task RunGenerator(int t = -1)
+        public Task RunGeneratorSubset(int t)
+        {
+            Debug.Assert(t > 0);
+
+            var pars = string.Format("-s {0} -t {1}", Seed, t);
+            return RunGenerator(pars);
+        }
+
+        public Task RunGeneratorSequential()
+        {
+            var pars = string.Format("-s {0} -b", Seed);
+            return RunGenerator(pars);
+        }
+
+        private async Task RunGenerator(string pars)
         {
             using (var generatorProcess = new ProcessHelper(
                 Console.WriteLine,
@@ -119,12 +134,6 @@ namespace UtilsTests.SplayTree
                 (sender, args) => Thread.CurrentThread.Abort(),
                 null))
             {
-                var pars =
-                    "-s 82 " +
-                    (t <= 0
-                        ? "-b"
-                        : "-t " + t);
-
                 generatorProcess.StartProcess(
                     Path.Combine(ToolsPath, GeneratorName),
                     pars,

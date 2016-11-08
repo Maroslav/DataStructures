@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UtilsTests.SplayTree;
+﻿using UtilsTests.SplayTree;
 
 namespace Runner
 {
@@ -13,7 +8,12 @@ namespace Runner
         {
             GeneratorTests tests = new GeneratorTests();
 
-            tests.Run100T();
+            int[] ts = { 10, 100, 1000, 10000, 100000, 1000000 };
+
+            foreach (var t in ts)
+                tests.RunSubset(t);
+
+            tests.RunSequential();
         }
     }
 }
