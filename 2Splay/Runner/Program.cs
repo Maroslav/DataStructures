@@ -4,11 +4,7 @@ namespace Runner
 {
     class Program
     {
-#if __NAIVE
-        private const string LogFolderName = "Log_Naive";
-#else
         private const string LogFolderName = "Log";
-#endif
 
         static void Main(string[] args)
         {
