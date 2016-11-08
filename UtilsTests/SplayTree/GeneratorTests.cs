@@ -183,7 +183,10 @@ namespace UtilsTests.SplayTree
 
         private void Run(string runName, Task generatorTask)
         {
-            using (_log = TextWriter.Synchronized(new StreamWriter(Path.Combine(_logFolderName, LogFileName) + '_' + runName)))
+            if (!Directory.Exists(_logFolderName))
+                Directory.CreateDirectory(_logFolderName);
+
+            using (_log = TextWriter.Synchronized(new StreamWriter(Path.Combine(_logFolderName, LogFileName) + '_' + runName + ".txt")))
             {
                 Log("\n---- Running " + runName);
                 var sw = Stopwatch.StartNew();
