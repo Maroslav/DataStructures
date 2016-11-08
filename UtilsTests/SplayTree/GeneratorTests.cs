@@ -203,7 +203,7 @@ namespace UtilsTests.SplayTree
         private void RunSeq()
         {
             var generatorTask = _generator.RunGeneratorSequential();
-            Run("Seq_test_", generatorTask);
+            Run("Seq_test", generatorTask);
         }
 
         #endregion
