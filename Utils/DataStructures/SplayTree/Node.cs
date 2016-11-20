@@ -6,7 +6,7 @@ using System.Text;
 namespace Utils.DataStructures.Internal
 {
     internal class Node<TKey, TValue>
-            : DictionaryBase<TKey, TValue>.NodeItem, IDisposable
+            : DictionaryBase<TKey, TValue>.NodeItem
         where TKey : struct
         where TValue : IEquatable<TValue>
     {
@@ -195,28 +195,15 @@ namespace Utils.DataStructures.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
-            Dispose(ref _key);
-            Dispose(ref _value);
-
             Parent = null;
             _leftChild = null;
             _rightChild = null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Dispose<T>(ref T item)
-        {
-            var disp = item as IDisposable;
-
-            if (disp != null)
-                disp.Dispose();
-
-            item = default(T);
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Clear();
+            base.Dispose();
         }
 
         #endregion

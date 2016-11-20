@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Utils.DataStructures
@@ -13,6 +14,7 @@ namespace Utils.DataStructures
         #region Nested classes
 
         public class NodeItem
+            : IDisposable
         {
             protected TKey _key;
             protected TValue _value;
@@ -36,6 +38,23 @@ namespace Utils.DataStructures
             {
                 Key = key;
                 Value = value;
+            }
+
+            public virtual void Dispose()
+            {
+                Dispose(ref _key);
+                Dispose(ref _value);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void Dispose<T>(ref T item)
+            {
+                var disp = item as IDisposable;
+
+                if (disp != null)
+                    disp.Dispose();
+
+                item = default(T);
             }
         }
 
