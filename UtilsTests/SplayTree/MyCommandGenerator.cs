@@ -142,6 +142,12 @@ namespace UtilsTests.SplayTree
                 if (result != WaitResult.Ok)
                     _cancellationTokenSource.Cancel();
 
+                if (_currentCommands != null)
+                {
+                    _buffer.Add(_currentCommands);
+                    _currentCommands = null;
+                }
+
                 Assert.IsTrue(result.HasFlag(WaitResult.Ok), "Generator process error: " + result);
                 Console.WriteLine("Generator finished. Running time: " + generatorProcess.GetElapsedTime());
             }
