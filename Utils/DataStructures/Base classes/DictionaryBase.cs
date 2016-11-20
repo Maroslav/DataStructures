@@ -24,7 +24,7 @@ namespace Utils.DataStructures
                 internal set { _key = value; }
             }
 
-            // We allow the value to be mutable (only valid if it is a reference type
+            // We allow the value to be mutable (only valid if it is a reference type)
             public TValue Value
             {
                 get { return _value; }
