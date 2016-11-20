@@ -1,74 +1,124 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Utils.DataStructures
 {
-    public class Heap<T>
+    public class Heap<TKey, TValue>
+        : HeapBase<TKey, TValue>
     {
-        private readonly IComparer<T> m_comparer;
-
-        protected readonly T[] m_heap;
+        protected readonly NodeItem[] m_heap;
 
 
         protected int MinIndex { get { return 1; } }
         protected int MaxIndex { get { return Count + 1; } }
 
-        public int Count { get; protected set; }
         public int Capacity { get { return m_heap.Length - 1; } }
 
 
-        public Heap(int capacity, IComparer<T> comparer = null)
+        public Heap(int capacity, IComparer<TKey> comparer = null)
+            : base(comparer)
         {
-            m_comparer = comparer ?? Comparer<T>.Default;
-
             Debug.Assert(capacity > 0);
             // Heaps ought to be indexed from 1
-            m_heap = new T[capacity + 1];
+            m_heap = new NodeItem[capacity + 1];
         }
 
 
-        public T PeekMin()
+        #region HeapBase<,> overrides
+
+        public override bool IsReadOnly { get { return false; } }
+
+        public override ItemCollection<NodeItem> Items { get { return new ItemCollection<NodeItem>(m_heap.Skip(1), Count); } }
+
+        public override void Add(TKey key, TValue value)
+        {
+            // TODO: check reallocate
+            m_heap[MaxIndex] = new NodeItem(key, value);
+
+
+            int currentIdx = MaxIndex;
+            int lastIdx = 0;
+
+            while (currentIdx != lastIdx)
+            {
+                lastIdx = currentIdx;
+                currentIdx = Heapify(currentIdx);
+            }
+        }
+
+        public override NodeItem PeekMin()
         {
             if (Count == 0)
-                return default(T);
+                return default(NodeItem);
 
             return m_heap[MinIndex];
         }
 
-        public T PopMin()
+        public override NodeItem DeleteMin()
         {
-            T min = PeekMin();
-            DeleteMin();
-            return min;
-        }
+            NodeItem min = PeekMin();
 
-        private void DeleteMin()
-        {
             // Place the last element in place of the root element
             m_heap[MinIndex] = m_heap[MaxIndex];
 
+            // TODO!
+            //Heapify();
+
+            Count--;
+            return min;
+        }
+
+        public override void Clear()
+        {
+            for (int i = 0; i < m_heap.Length; i++)
+            {
+                m_heap[i].Dispose();
+                m_heap[i] = null;
+            }
+
+            Count = 0;
+        }
+
+
+        #endregion
+
+        #region Helpers
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int Bubble(int idx)
+        {
             // Bubble the new root through the heap
-            int currentIdx = MinIndex;
-            int leftIdx = currentIdx*2;
+            int currentIdx = idx;
+            int leftIdx = currentIdx * 2;
             int rightIdx = leftIdx + 1;
-            T act = m_heap[currentIdx];
-            T left = m_heap[leftIdx];
-            T right = m_heap[rightIdx];
+            NodeItem act = m_heap[currentIdx];
+            NodeItem left = m_heap[leftIdx];
+            NodeItem right = m_heap[rightIdx];
 
             int swapIdx = currentIdx;
 
-            if (leftIdx <= MaxIndex && m_comparer.Compare(act, left) <= 0)
+            if (leftIdx <= MaxIndex && Comparer.Compare(act.Key, left.Key) <= 0)
                 swapIdx = leftIdx;
-            if (rightIdx <= MaxIndex && m_comparer.Compare(act, right) <= 0)
+            if (rightIdx <= MaxIndex && Comparer.Compare(act.Key, right.Key) <= 0)
                 swapIdx = rightIdx;
 
-            if (swapIdx != currentIdx)
-                currentIdx = swapIdx;
+            if (currentIdx == swapIdx)
+                return currentIdx;
+
+            Swap(ref m_heap[currentIdx], ref m_heap[swapIdx]);
+            return swapIdx;
         }
 
-        public void Add(T value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Swap<T>(ref T one, ref T two)
         {
-
+            T tmp = one;
+            one = two;
+            two = tmp;
         }
+
+        #endregion
     }
 }
