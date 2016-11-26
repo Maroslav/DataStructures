@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -65,6 +66,21 @@ namespace Utils.DataStructures.Nodes
         #endregion
 
         #region Traversal
+
+        public IEnumerable<SiblingNode<TKey, TValue>> GetSiblings()
+        {
+            var actSibling = this;
+            var nextSibling = actSibling.RightSibling;
+
+            yield return actSibling;
+
+            while (actSibling != nextSibling)
+            {
+                actSibling = nextSibling;
+                yield return actSibling;
+                nextSibling = actSibling.RightSibling;
+            }
+        }
 
         #endregion
     }

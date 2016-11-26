@@ -15,12 +15,15 @@ namespace Utils.DataStructures.Nodes
         public DisseminateNode<TKey, TValue> Parent;
 
         // Children are kept with cyclic pointers (one child has itself as siblings)
+        // We store the left-most child; to reach the last child, we can get the left sibling of the child
         private DisseminateNode<TKey, TValue> _children;
 
         #endregion
 
         #region Properties
 
+        public int ChildrenCount { get; private set; }
+        
         #endregion
 
         #region Genesis
