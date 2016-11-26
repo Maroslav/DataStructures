@@ -52,11 +52,10 @@
     <Compile Include="DataStructures\Heap\HeapBase.cs" />
     <Compile Include="DataStructures\Heap\FibonacciHeap.cs" />
     <Compile Include="DataStructures\Heap\Heap.cs" />
-    <Compile Include="DataStructures\Stack.cs" />
+    <Compile Include="DataStructures\Misc\Stack.cs" />
     <Compile Include="Other\ArrayExtensions.cs" />
-    <Compile Include="DataStructures\AsyncBuffer.cs" />
-    <Compile Include="DataStructures\Base classes\DictionaryBase.cs" />
-    <Compile Include="DataStructures\SplayTree\Node.cs" />
+    <Compile Include="DataStructures\Misc\AsyncBuffer.cs" />
+    <Compile Include="DataStructures\DictionaryBase.cs" />
     <Compile Include="DataStructures\SplayTree\NodeTraversalActions.cs" />
     <Compile Include="DataStructures\SplayTree\SplayTree.cs" />
     <Compile Include="Other\ProcessHelper.cs" />
