@@ -13,6 +13,7 @@ namespace Utils.DataStructures.Nodes
     {
         #region Fields
 
+        // Siblings are kept with cyclic pointers (one node has itself as siblings)
         private SiblingNode<TKey, TValue> _leftSibling;
         private SiblingNode<TKey, TValue> _rightSibling;
 
@@ -48,7 +49,9 @@ namespace Utils.DataStructures.Nodes
 
         public SiblingNode(TKey key, TValue value)
             : base(key, value)
-        { }
+        {
+            LeftSibling = this; // Sets right sibling..
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Clear()
@@ -61,6 +64,25 @@ namespace Utils.DataStructures.Nodes
         {
             Clear();
             base.Dispose();
+        }
+
+        #endregion
+
+        #region Public methods
+
+        public void InsertBefore(SiblingNode<TKey, TValue> newSiblings)
+        {
+            LeftSibling.InsertAfter(newSiblings);
+        }
+
+        public void InsertAfter(SiblingNode<TKey, TValue> newSiblings)
+        {
+            var nextLocal = RightSibling;
+            var lastTheir = newSiblings.LeftSibling;
+
+            RightSibling = newSiblings;
+            nextLocal.LeftSibling = lastTheir;
+            // Opposite directions are set in setters
         }
 
         #endregion
