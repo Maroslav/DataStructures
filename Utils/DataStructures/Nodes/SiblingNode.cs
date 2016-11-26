@@ -81,8 +81,7 @@ namespace Utils.DataStructures.Nodes
             var lastTheir = newSiblings.LeftSibling;
 
             RightSibling = newSiblings;
-            nextLocal.LeftSibling = lastTheir;
-            // Opposite directions are set in setters
+            nextLocal.LeftSibling = lastTheir; // Opposite directions are set in setters
         }
 
         #endregion
