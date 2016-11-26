@@ -86,6 +86,12 @@ namespace Utils.DataStructures
 
         #region Helpers
 
+        private int Heapify(int idx)
+        {
+            // TODO: exchange with parents while it is larger than the parent
+            return idx;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int Bubble(int idx)
         {

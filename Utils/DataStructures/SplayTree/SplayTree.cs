@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Utils.DataStructures.Internal;
+using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
 {
@@ -12,7 +13,7 @@ namespace Utils.DataStructures
     {
         #region Fields
 
-        internal Node<TKey, TValue> Root;
+        internal BinaryNode<TKey, TValue> Root;
         internal int LastSplayDepth;
 
         // Local variable to reduce stack load during recursion (we assume single-threaded usage)
@@ -70,13 +71,13 @@ namespace Utils.DataStructures
         public override void Add(TKey key, TValue value)
         {
             // 1. Find the parent of the place in the tree, where the key should be inserted
-            Node<TKey, TValue> near = FindNear(key);
+            BinaryNode<TKey, TValue> near = FindNear(key);
 
             // If the tree is empty, insert new root
             if (near == null)
             {
                 Debug.Assert(Count == 0);
-                Root = new Node<TKey, TValue>(key, value);
+                Root = new BinaryNode<TKey, TValue>(key, value);
                 Count++;
                 return;
             }
@@ -92,7 +93,7 @@ namespace Utils.DataStructures
             }
 
             // The key is not present in the tree, create a new node for it
-            Node<TKey, TValue> newNode = new Node<TKey, TValue>(key, value);
+            BinaryNode<TKey, TValue> newNode = new BinaryNode<TKey, TValue>(key, value);
 
             if (comp < 0)
             {
@@ -119,12 +120,12 @@ namespace Utils.DataStructures
             // Root is now the node to be removed
             Debug.Assert(Root != null);
 
-            Node<TKey, TValue> leftTree = Root.LeftChild;
+            BinaryNode<TKey, TValue> leftTree = Root.LeftChild;
 
             // 1. If the root's left subtree is empty, the root will start with the right subtree
             if (leftTree == null)
             {
-                Node<TKey, TValue> oldRoot = Root;
+                BinaryNode<TKey, TValue> oldRoot = Root;
                 Root = oldRoot.RightChild;
                 if (Root != null)
                     Root.Parent = null;
@@ -134,7 +135,7 @@ namespace Utils.DataStructures
             }
 
             // 2. Find the right-most node in the root's left subtree -- it will become the new root
-            Node<TKey, TValue> rightMost = null;
+            BinaryNode<TKey, TValue> rightMost = null;
 
             _traversalActions.SetActions(inAction: n =>
             {
@@ -215,7 +216,7 @@ namespace Utils.DataStructures
 
         #region Helpers
 
-        Node<TKey, TValue> Find(TKey key)
+        BinaryNode<TKey, TValue> Find(TKey key)
         {
             if (Count == 0)
                 return null;
@@ -223,7 +224,7 @@ namespace Utils.DataStructures
             return Root.Find(key, _traversalActions);
         }
 
-        Node<TKey, TValue> FindNear(TKey key)
+        BinaryNode<TKey, TValue> FindNear(TKey key)
         {
             if (Count == 0)
                 return null;
@@ -232,7 +233,7 @@ namespace Utils.DataStructures
             // Traverse the tree and store a reference to the last encountered node
             // NOTE: We cannot find the closest node, we would need to have
             // a metric defined on keys.
-            Node<TKey, TValue> lastNode = null;
+            BinaryNode<TKey, TValue> lastNode = null;
 
             _traversalActions.SetKeyActions(keyPreAction: (n, searchKey) =>
             {
@@ -241,7 +242,7 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            Node<TKey, TValue> exact = Root.Find(key, _traversalActions);
+            BinaryNode<TKey, TValue> exact = Root.Find(key, _traversalActions);
             Debug.Assert(lastNode != null); // Count > 0: there must be at least root
             Debug.Assert(exact == null || exact == lastNode); // If we found an exact key match; it should be equal to lastNode
 
@@ -251,7 +252,7 @@ namespace Utils.DataStructures
 
         private bool Splay(TKey key)
         {
-            Node<TKey, TValue> node = Find(key);
+            BinaryNode<TKey, TValue> node = Find(key);
 
             if (node == null)
                 return false;

@@ -5,14 +5,14 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.DataStructures;
 using Utils.DataStructures.Internal;
-
+using Utils.DataStructures.Nodes;
 using KeyType = System.Int32;
 using ValueType = System.String;
 
 namespace UtilsTests.SplayTree
 {
     using TreeType = SplayTree<KeyType, ValueType>;
-    using NodeType = Node<KeyType, ValueType>;
+    using NodeType = BinaryNode<KeyType, ValueType>;
 
 
     [TestClass]

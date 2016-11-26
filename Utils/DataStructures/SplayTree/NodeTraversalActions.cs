@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures.Internal
 {
@@ -8,8 +9,8 @@ namespace Utils.DataStructures.Internal
         where TKey : struct
         where TValue : IEquatable<TValue>
     {
-        public delegate bool NodeTraversalAction(Node<TKey, TValue> node);
-        public delegate bool NodeKeyTraversalAction(Node<TKey, TValue> node, TKey searchKey);
+        public delegate bool NodeTraversalAction(BinaryNode<TKey, TValue> node);
+        public delegate bool NodeKeyTraversalAction(BinaryNode<TKey, TValue> node, TKey searchKey);
 
 
         private NodeTraversalAction _preAction;
@@ -19,14 +20,14 @@ namespace Utils.DataStructures.Internal
         private NodeKeyTraversalAction _keyPreAction;
         private NodeKeyTraversalAction _keyPostAction;
 
-        private Stack<Node<TKey, TValue>.NodeTraversalToken> _traversalStack;
+        private Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> _traversalStack;
 
 
         public IComparer<TKey> KeyComparer { get; private set; }
 
-        public Stack<Node<TKey, TValue>.NodeTraversalToken> TraversalStack
+        public Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> TraversalStack
         {
-            get { return _traversalStack = _traversalStack ?? new Stack<Node<TKey, TValue>.NodeTraversalToken>(); }
+            get { return _traversalStack = _traversalStack ?? new Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>>(); }
         }
 
 
@@ -53,32 +54,32 @@ namespace Utils.DataStructures.Internal
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InvokePreAction(Node<TKey, TValue> node)
+        public bool InvokePreAction(BinaryNode<TKey, TValue> node)
         {
             return _preAction == null || _preAction(node);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InvokeInAction(Node<TKey, TValue> node)
+        public bool InvokeInAction(BinaryNode<TKey, TValue> node)
         {
             return _inAction == null || _inAction(node);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InvokePostAction(Node<TKey, TValue> node)
+        public bool InvokePostAction(BinaryNode<TKey, TValue> node)
         {
             return _postAction == null || _postAction(node);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InvokeKeyPreAction(Node<TKey, TValue> node, TKey searchKey)
+        public bool InvokeKeyPreAction(BinaryNode<TKey, TValue> node, TKey searchKey)
         {
             return _keyPreAction == null || _keyPreAction(node, searchKey);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InvokeKeyPostAction(Node<TKey, TValue> node, TKey searchKey)
+        public bool InvokeKeyPostAction(BinaryNode<TKey, TValue> node, TKey searchKey)
         {
             return _keyPostAction == null || _keyPostAction(node, searchKey);
         }
