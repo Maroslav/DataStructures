@@ -96,6 +96,66 @@ namespace Utils.DataStructures
 
         #region Public methods
 
+        public void DecreaseKey(NodeItem node, TKey newKey)
+        {
+            var nNode = node as HeapNode;
+
+            if (nNode == null)
+                throw new ArgumentException(
+                    "The argument is invalid. Have you specified a node that is saved in this datastructure?", "node");
+
+            int comp = Comparer.Compare(newKey, nNode.Key);
+
+            if (comp > 0)
+                throw new ArgumentException("Trying to increase the key.", "newKey");
+
+
+            nNode.Key = newKey;
+
+            // Check if we have a new minimum
+            comp = Comparer.Compare(nNode.Key, MinNode.Key);
+
+            if (comp < 0)
+                MinNode = nNode;
+
+
+            // Check if we validated the heap property
+            comp = Comparer.Compare(nNode.Key, nNode.Parent.Key);
+
+            if (nNode.Parent == null || comp >= 0)
+                return; // Heap property is OK
+
+
+            var parent = (HeapNode)nNode.Parent;
+
+            // Heap property is invalid -- cut the node from its parent and make it one of our roots
+            nNode.IsMarked = false;
+            nNode.CutFromParent();
+            FirstRoot.InsertBefore(nNode);
+
+            if (parent == null)
+                return;
+
+
+            // Recursively mark and cut parents, end at root
+            while (parent.Parent != null)
+            {
+                if (!parent.IsMarked)
+                {
+                    parent.IsMarked = true;
+                    break;
+                }
+
+                // The parent is marked -- unmark and cut it
+                var p = parent;
+                parent = (HeapNode)parent.Parent;
+
+                p.IsMarked = false;
+                p.CutFromParent();
+                FirstRoot.InsertBefore(nNode);
+            }
+        }
+
         public void Merge(FibonacciHeap<TKey, TValue> other)
         {
             Count += other.Count;
