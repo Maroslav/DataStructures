@@ -2,10 +2,19 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Utils.DataStructures.Internal;
 
-namespace Utils.DataStructures.Internal
+namespace Utils.DataStructures.Nodes
 {
-    internal class Node<TKey, TValue>
+    internal enum BinaryNodeAction
+    {
+        Sift,
+        InAction,
+        PostAction,
+    }
+
+
+    internal class BinaryNode<TKey, TValue>
             : DictionaryBase<TKey, TValue>.NodeItem
         where TKey : struct
         where TValue : IEquatable<TValue>
@@ -40,42 +49,14 @@ namespace Utils.DataStructures.Internal
 
         #endregion
 
-        #region Traversal
-
-        internal enum NodeAction
-        {
-            Sift,
-            InAction,
-            PostAction,
-        }
-
-        internal struct NodeTraversalToken
-        {
-            public readonly Node<TKey, TValue> Node;
-            public readonly NodeAction Action;
-
-            public NodeTraversalToken(Node<TKey, TValue> node, NodeAction action)
-            {
-                Node = node;
-                Action = action;
-            }
-
-            public override string ToString()
-            {
-                return Action.ToString();
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region Fields
 
-        public Node<TKey, TValue> Parent;
+        public BinaryNode<TKey, TValue> Parent;
 
-        private Node<TKey, TValue> _leftChild;
-        private Node<TKey, TValue> _rightChild;
+        private BinaryNode<TKey, TValue> _leftChild;
+        private BinaryNode<TKey, TValue> _rightChild;
 
         #endregion
 
@@ -86,7 +67,7 @@ namespace Utils.DataStructures.Internal
 
         #region Children getters and setters
 
-        public Node<TKey, TValue> LeftChild
+        public BinaryNode<TKey, TValue> LeftChild
         {
             get { return _leftChild; }
             set
@@ -97,7 +78,7 @@ namespace Utils.DataStructures.Internal
             }
         }
 
-        public Node<TKey, TValue> RightChild
+        public BinaryNode<TKey, TValue> RightChild
         {
             get { return _rightChild; }
             set
@@ -110,7 +91,7 @@ namespace Utils.DataStructures.Internal
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Node<TKey, TValue> GetLeftChild<TFlip>()
+        internal BinaryNode<TKey, TValue> GetLeftChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -120,7 +101,7 @@ namespace Utils.DataStructures.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Node<TKey, TValue> GetRightChild<TFlip>()
+        internal BinaryNode<TKey, TValue> GetRightChild<TFlip>()
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -131,7 +112,7 @@ namespace Utils.DataStructures.Internal
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void SetLeftChild<TFlip>(Node<TKey, TValue> node)
+        internal void SetLeftChild<TFlip>(BinaryNode<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -141,7 +122,7 @@ namespace Utils.DataStructures.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void SetRightChild<TFlip>(Node<TKey, TValue> node)
+        internal void SetRightChild<TFlip>(BinaryNode<TKey, TValue> node)
             where TFlip : FlipBase<TFlip>
         {
             if (FlipBase<TFlip>.FlipChildren)
@@ -188,7 +169,7 @@ namespace Utils.DataStructures.Internal
 
         #region Genesis
 
-        public Node(TKey key, TValue value)
+        public BinaryNode(TKey key, TValue value)
             : base(key, value)
         { }
 
@@ -214,7 +195,7 @@ namespace Utils.DataStructures.Internal
         /// Splays the node all the way to the root and outputs it.
         /// This forces the caller not to forget to assign the new root somewhere..
         /// </summary>
-        public void Splay(out Node<TKey, TValue> newRoot, out int depth)
+        public void Splay(out BinaryNode<TKey, TValue> newRoot, out int depth)
         {
             depth = 1;
 
@@ -259,9 +240,9 @@ namespace Utils.DataStructures.Internal
             if (Parent == null)
                 return;
 
-            Node<TKey, TValue> parent = Parent;
-            Node<TKey, TValue> grandParent = parent.Parent;
-            Node<TKey, TValue> rightTree = GetRightChild<T>();
+            BinaryNode<TKey, TValue> parent = Parent;
+            BinaryNode<TKey, TValue> grandParent = parent.Parent;
+            BinaryNode<TKey, TValue> rightTree = GetRightChild<T>();
 
             if (grandParent != null)
             {
@@ -329,13 +310,13 @@ namespace Utils.DataStructures.Internal
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        public Node<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
+        public BinaryNode<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(new NodeTraversalToken(this, NodeAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.Sift));
 
             try
             {
@@ -358,7 +339,7 @@ namespace Utils.DataStructures.Internal
 
                     if (nextNode == null)
                         return null;
-                    stack.Push(new NodeTraversalToken(nextNode, NodeAction.Sift));
+                    stack.Push(GetNodeTraversalToken(nextNode, BinaryNodeAction.Sift));
                 }
             }
             finally
@@ -376,7 +357,7 @@ namespace Utils.DataStructures.Internal
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        internal Node<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
+        internal BinaryNode<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
         {
             if (!nodeActions.InvokeKeyPreAction(this, searchKey))
                 return null;
@@ -441,7 +422,7 @@ namespace Utils.DataStructures.Internal
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(new NodeTraversalToken(this, NodeAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.Sift));
 
             try
             {
@@ -451,17 +432,17 @@ namespace Utils.DataStructures.Internal
 
                     switch (token.Action)
                     {
-                        case NodeAction.Sift:
+                        case BinaryNodeAction.Sift:
                             if (!token.Node.HandleSift<T>(stack, nodeActions))
                                 return false;
                             break;
 
-                        case NodeAction.InAction:
+                        case BinaryNodeAction.InAction:
                             if (!nodeActions.InvokeInAction(token.Node))
                                 return false;
                             break;
 
-                        case NodeAction.PostAction:
+                        case BinaryNodeAction.PostAction:
                             if (!nodeActions.InvokePostAction(token.Node))
                                 return false;
                             break;
@@ -480,7 +461,7 @@ namespace Utils.DataStructures.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleSift<T>(Stack<NodeTraversalToken> stack, NodeTraversalActions<TKey, TValue> nodeActions)
+        private bool HandleSift<T>(Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> stack, NodeTraversalActions<TKey, TValue> nodeActions)
             where T : FlipBase<T>
         {
             // First and only visit to this node
@@ -494,17 +475,17 @@ namespace Utils.DataStructures.Internal
 
             if (right != null)
             {
-                stack.Push(new NodeTraversalToken(this, NodeAction.PostAction));
-                stack.Push(new NodeTraversalToken(right, NodeAction.Sift));
+                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
+                stack.Push(GetNodeTraversalToken(right, BinaryNodeAction.Sift));
             }
             else if (left != null)
                 // We need to store the action (it has to be executed after sifting through Left)
-                stack.Push(new NodeTraversalToken(this, NodeAction.PostAction));
+                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
 
             if (left != null)
             {
-                stack.Push(new NodeTraversalToken(this, NodeAction.InAction));
-                stack.Push(new NodeTraversalToken(left, NodeAction.Sift));
+                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.InAction));
+                stack.Push(GetNodeTraversalToken(left, BinaryNodeAction.Sift));
             }
             else
             {
@@ -605,6 +586,15 @@ namespace Utils.DataStructures.Internal
         }
 
         #endregion
+
+        #endregion
+
+        #region Helpers
+
+        private NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction> GetNodeTraversalToken(BinaryNode<TKey, TValue> node, BinaryNodeAction action)
+        {
+            return new NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>(node, action);
+        }
 
         #endregion
     }

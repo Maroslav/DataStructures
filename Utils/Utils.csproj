@@ -52,16 +52,21 @@
     <Compile Include="DataStructures\Heap\HeapBase.cs" />
     <Compile Include="DataStructures\Heap\FibonacciHeap.cs" />
     <Compile Include="DataStructures\Heap\Heap.cs" />
+    <Compile Include="DataStructures\Nodes\DisseminateNode.cs" />
+    <Compile Include="DataStructures\Nodes\SiblingNode.cs" />
     <Compile Include="DataStructures\Misc\Stack.cs" />
+    <Compile Include="DataStructures\SplayTree\NodeTraversalToken.cs" />
     <Compile Include="Other\ArrayExtensions.cs" />
     <Compile Include="DataStructures\Misc\AsyncBuffer.cs" />
     <Compile Include="DataStructures\DictionaryBase.cs" />
+    <Compile Include="DataStructures\Nodes\BinaryNode.cs" />
     <Compile Include="DataStructures\SplayTree\NodeTraversalActions.cs" />
     <Compile Include="DataStructures\SplayTree\SplayTree.cs" />
     <Compile Include="Other\ProcessHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UtilsTestsFriendDefinition.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
