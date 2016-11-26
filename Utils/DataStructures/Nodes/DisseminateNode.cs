@@ -16,7 +16,7 @@ namespace Utils.DataStructures.Nodes
 
         // Children are kept with cyclic pointers (one child has itself as siblings)
         // We store the left-most child; to reach the last child, we can get the left sibling of the child
-        private DisseminateNode<TKey, TValue> _firstChild;
+        internal DisseminateNode<TKey, TValue> FirstChild;
 
         #endregion
 
@@ -48,7 +48,7 @@ namespace Utils.DataStructures.Nodes
         private void Clear()
         {
             Parent = null;
-            _firstChild = null;
+            FirstChild = null;
         }
 
         public override void Dispose()
@@ -84,13 +84,13 @@ namespace Utils.DataStructures.Nodes
                 {
                     // We are the only child
                     Debug.Assert(LeftSibling == RightSibling && RightSibling == this);
-                    Parent._firstChild = null;
+                    Parent.FirstChild = null;
                     Parent.ChildrenCount = 0;
                     return;
                 }
 
-                if (Parent._firstChild == this)
-                    Parent._firstChild = RightSibling;
+                if (Parent.FirstChild == this)
+                    Parent.FirstChild = RightSibling;
 
                 Parent.ChildrenCount--;
             }
