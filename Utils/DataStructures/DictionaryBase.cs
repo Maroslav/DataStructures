@@ -209,7 +209,12 @@ namespace Utils.DataStructures
         #endregion
 
 
-        public abstract void Add(TKey key, TValue value);
+        public abstract NodeItem Add(TKey key, TValue value);
+
+        void IDictionary<TKey, TValue>.Add(TKey key, TValue value)
+        {
+            Add(key, value);
+        }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {

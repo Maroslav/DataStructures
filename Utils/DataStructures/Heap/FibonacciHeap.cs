@@ -10,10 +10,24 @@ namespace Utils.DataStructures
         where TKey : struct
         where TValue : IEquatable<TValue>
     {
+        #region Nested classes
+
+        internal class HeapNode
+            : DisseminateNode<TKey, TValue>
+        {
+            internal bool IsMarked { get; set; }
+
+            public HeapNode(TKey key, TValue value)
+                : base(key, value)
+            { }
+        }
+
+        #endregion
+
         #region Fields
 
-        internal DisseminateNode<TKey, TValue> FirstRoot;
-        internal DisseminateNode<TKey, TValue> MinNode;
+        internal HeapNode FirstRoot;
+        internal HeapNode MinNode;
 
         private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
 
@@ -36,15 +50,15 @@ namespace Utils.DataStructures
         public override ItemCollection<NodeItem> Items { get { return new ItemCollection<NodeItem>(/* Enumerable of all children */null, Count); } }
 
 
-        public override void Add(TKey key, TValue value)
+        public override NodeItem Add(TKey key, TValue value)
         {
-            var newNode = new DisseminateNode<TKey, TValue>(key, value);
+            var newNode = new HeapNode(key, value);
 
             if (Count == 0)
             {
                 FirstRoot = newNode;
                 MinNode = FirstRoot;
-                return;
+                return newNode;
             }
 
             FirstRoot.InsertBefore(newNode);
@@ -52,6 +66,8 @@ namespace Utils.DataStructures
 
             if (Comparer.Compare(key, MinNode.Key) <= 0)
                 MinNode = newNode;
+
+            return newNode;
         }
 
         public override NodeItem PeekMin()
@@ -64,7 +80,7 @@ namespace Utils.DataStructures
 
         public override NodeItem DeleteMin()
         {
-            NodeItem min = PeekMin();
+            var min = PeekMin();
 
 
 
