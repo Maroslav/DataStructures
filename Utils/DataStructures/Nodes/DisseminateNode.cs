@@ -47,7 +47,7 @@ namespace Utils.DataStructures.Nodes
 
         #endregion
 
-        #region Helpers
+        #region Public methods
 
         public void AddChild(DisseminateNode<TKey, TValue> child)
         {
