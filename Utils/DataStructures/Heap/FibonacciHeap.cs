@@ -90,6 +90,7 @@ namespace Utils.DataStructures
 
         public override void Clear()
         {
+
         }
 
         #endregion
@@ -152,7 +153,7 @@ namespace Utils.DataStructures
 
                 p.IsMarked = false;
                 p.CutFromParent();
-                FirstRoot.InsertBefore(nNode);
+                FirstRoot.InsertBefore(p);
             }
         }
 
