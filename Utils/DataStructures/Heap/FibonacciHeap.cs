@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Utils.DataStructures.Internal;
 using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
@@ -14,13 +15,17 @@ namespace Utils.DataStructures
         internal DisseminateNode<TKey, TValue> RootsParent;
         internal DisseminateNode<TKey, TValue> MinNode;
 
+        private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
+
         #endregion
 
         #region Genesis
 
-        public FibonacciHeap(IComparer<TKey> comparer = null)
-            : base(comparer)
-        { }
+        public FibonacciHeap(IComparer<TKey> keyComparer = null)
+            : base(keyComparer)
+        {
+            _traversalActions = new NodeTraversalActions<TKey, TValue>();
+        }
 
         #endregion
 

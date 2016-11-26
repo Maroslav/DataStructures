@@ -10,9 +10,9 @@ namespace Utils.DataStructures
 
 
 
-        public HeapBase(IComparer<TKey> comparer = null)
+        public HeapBase(IComparer<TKey> keyComparer = null)
         {
-            Comparer = comparer ?? Comparer<TKey>.Default;
+            Comparer = keyComparer ?? Comparer<TKey>.Default;
         }
 
 

@@ -17,8 +17,8 @@ namespace Utils.DataStructures
         public int Capacity { get { return m_heap.Length - 1; } }
 
 
-        public Heap(int capacity, IComparer<TKey> comparer = null)
-            : base(comparer)
+        public Heap(int capacity, IComparer<TKey> keyComparer = null)
+            : base(keyComparer)
         {
             Debug.Assert(capacity > 0);
             // Heaps ought to be indexed from 1
