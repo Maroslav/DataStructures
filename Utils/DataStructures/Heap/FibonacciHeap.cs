@@ -180,7 +180,8 @@ namespace Utils.DataStructures
 
         public void Merge(FibonacciHeap<TKey, TValue> other)
         {
-            Consolidate(other.FirstRoot, other.Count);
+            Consolidate(other.FirstRoot);
+            Count += other.Count;
         }
 
         #endregion
@@ -196,7 +197,7 @@ namespace Utils.DataStructures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Consolidate(HeapNode firstNode, int count, bool checkMin = false)
+        private void Consolidate(HeapNode firstNode, bool checkMin = false)
         {
             Debug.Assert(firstNode != null);
 
@@ -242,11 +243,12 @@ namespace Utils.DataStructures
                 if (carry != null)
                     inputs |= Bits.Carry;
 
-                // Join the nodes together, update the roots and minNode and create the new carry
+                // Combine the nodes together, update the roots and minNode and create the new carry
                 AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs, checkMin);
-            }
 
-            Count += count;
+                // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
+                // This saves us going through all the roots (we now go only through the NEW roots).
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
