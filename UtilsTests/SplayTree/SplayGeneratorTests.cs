@@ -168,7 +168,7 @@ namespace UtilsTests.SplayTree
                 _currentCommands = null;
             }
 
-            string result = _results.Items.ToString(n => n.Key.ToString() + ':' + n.Value.ToString());
+            string result = _results.Items.ToString(n => '\n' + n.Key.ToString() + ':' + n.Value.ToString());
             Log("\nResults:\n" + result + '\n');
         }
 
