@@ -66,7 +66,7 @@ namespace Utils.DataStructures
                 return newNode;
             }
 
-            Consolidate(newNode);
+            Consolidate(newNode); // We need to do this work at some point anyway.. This way, we keep the roots organized
             Count++;
 
             if (Comparer.Compare(key, MinNode.Key) <= 0)
@@ -113,9 +113,9 @@ namespace Utils.DataStructures
                 return; // Heap property is OK
 
 
+            // Heap property is invalid -- cut the node from its parent and make it one of our roots
             var parent = (HeapNode)nNode.Parent;
 
-            // Heap property is invalid -- cut the node from its parent and make it one of our roots
             nNode.IsMarked = false;
             nNode.CutFromFamily();
             // We consolidate all the cut nodes at once later
