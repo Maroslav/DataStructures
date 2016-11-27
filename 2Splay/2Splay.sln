@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "..\Utils\Utils.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsTests", "..\UtilsTests\UtilsTests.csproj", "{4796B32E-1F19-4CE4-A51C-6A1695A3A167}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Generator", "Generator\Generator.vcxproj", "{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FibTreeGenerator", "FibTreeGenerator\FibTreeGenerator.vcxproj", "{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runner", "Runner\Runner.csproj", "{A68BD693-9136-4EF0-95B3-D785A3A59134}"
 EndProject
