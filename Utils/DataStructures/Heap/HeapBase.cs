@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
 {
     public abstract class HeapBase<TKey, TValue>
-        : DictionaryBase<TKey, TValue>
+        : DictionaryBase<TKey, TValue>, IPriorityQueue<TKey, TValue>
     {
         protected IComparer<TKey> Comparer { get; private set; }
-
 
 
         public HeapBase(IComparer<TKey> keyComparer = null)
@@ -38,11 +38,15 @@ namespace Utils.DataStructures
 
         #endregion
 
-        #region Extending accessors
+        #region IPriorityQueue<,> overrides
 
-        public abstract NodeItem PeekMin();
+        public abstract NodeItem<TKey, TValue> PeekMin();
 
-        public abstract NodeItem DeleteMin();
+        public abstract void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey);
+        public abstract void DeleteMin();
+        public abstract void Delete(NodeItem<TKey, TValue> node);
+
+        public abstract void Merge(IPriorityQueue<TKey, TValue> other);
 
         #endregion
     }

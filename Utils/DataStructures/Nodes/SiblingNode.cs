@@ -7,7 +7,7 @@ using System.Text;
 namespace Utils.DataStructures.Nodes
 {
     internal class SiblingNode<TKey, TValue>
-            : DictionaryBase<TKey, TValue>.NodeItem
+            : NodeItem<TKey, TValue>
         where TKey : struct
         where TValue : IEquatable<TValue>
     {

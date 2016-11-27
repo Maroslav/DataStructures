@@ -3,167 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
+using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
 {
     public abstract class DictionaryBase<TKey, TValue>
-        : IDictionary<TKey, TValue>, IEnumerable<DictionaryBase<TKey, TValue>.NodeItem>
+        : IDictionary<TKey, TValue>, IEnumerable<NodeItem<TKey, TValue>>
     {
         #region Nested classes
-
-        public class NodeItem
-            : IDisposable
-        {
-            protected TKey _key;
-            protected TValue _value;
-
-            // Key is immutable
-            public TKey Key
-            {
-                get { return _key; }
-                internal set { _key = value; }
-            }
-
-            // We allow the value to be mutable (only valid if it is a reference type)
-            public TValue Value
-            {
-                get { return _value; }
-                set { _value = value; }
-            }
-
-
-            public NodeItem(TKey key, TValue value)
-            {
-                Key = key;
-                Value = value;
-            }
-
-            public virtual void Dispose()
-            {
-                Dispose(ref _key);
-                Dispose(ref _value);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private void Dispose<T>(ref T item)
-            {
-                var disp = item as IDisposable;
-
-                if (disp != null)
-                    disp.Dispose();
-
-                item = default(T);
-            }
-        }
-
-        public class ItemCollection<T>
-            : ICollection<T>
-        {
-            #region Fields
-
-            private readonly IEnumerable<T> _values;
-            private readonly int _count;
-
-            #endregion
-
-            #region Genesis
-
-            internal ItemCollection(IEnumerable<T> values, int count)
-            {
-                if (values == null)
-                    throw new ArgumentNullException("values");
-
-                _values = values;
-                _count = count;
-                Debug.Assert(_count == _values.Count());
-            }
-
-            #endregion
-
-            #region ICollection<> overrides
-
-            public int Count { get { return _count; } }
-            public bool IsReadOnly { get { return true; } }
-
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                return _values.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-
-            #region Hidded (explicit) disabled overrides
-
-            void ICollection<T>.Add(T item)
-            {
-                throw Throw();
-            }
-
-            bool ICollection<T>.Remove(T item)
-            {
-                throw Throw();
-            }
-
-            void ICollection<T>.Clear()
-            {
-                throw Throw();
-            }
-
-            #endregion
-
-
-            public bool Contains(T item)
-            {
-                return _values.Contains(item);
-            }
-
-            public void CopyTo(T[] array, int arrayIndex)
-            {
-                DictionaryBase<TKey, TValue>.CopyTo(_values, Count, array, arrayIndex);
-            }
-
-            #endregion
-
-            #region Helpers
-
-            private static NotSupportedException Throw()
-            {
-                throw new NotSupportedException("Modifying the ItemCollection is not allowed.");
-            }
-
-            #endregion
-
-            #region ToString()
-
-            public override string ToString()
-            {
-                return ToString(item => item.ToString());
-            }
-
-            public string ToString(Func<T, string> selector)
-            {
-                var sb = new StringBuilder("{ ");
-
-                foreach (var value in _values)
-                {
-                    sb.Append(selector(value));
-                    sb.Append(", ");
-                }
-
-                sb.Append(" }");
-
-                return sb.ToString();
-            }
-
-            #endregion
-        }
 
         #endregion
 
@@ -176,7 +23,7 @@ namespace Utils.DataStructures
         public virtual ItemCollection<TValue> Values { get { return new ItemCollection<TValue>(Items.Select(node => node.Value), Count); } }
 
         // NodeItem allows modification of values
-        public abstract ItemCollection<NodeItem> Items { get; }
+        public abstract ItemCollection<NodeItem<TKey, TValue>> Items { get; }
 
         #endregion
 
@@ -191,7 +38,7 @@ namespace Utils.DataStructures
 
         #region Enumeration
 
-        public virtual IEnumerator<NodeItem> GetEnumerator()
+        public virtual IEnumerator<NodeItem<TKey, TValue>> GetEnumerator()
         {
             return Items.GetEnumerator();
         }
@@ -209,7 +56,7 @@ namespace Utils.DataStructures
         #endregion
 
 
-        public abstract NodeItem Add(TKey key, TValue value);
+        public abstract NodeItem<TKey,TValue> Add(TKey key, TValue value);
 
         void IDictionary<TKey, TValue>.Add(TKey key, TValue value)
         {

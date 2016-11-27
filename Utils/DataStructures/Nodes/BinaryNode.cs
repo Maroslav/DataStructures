@@ -15,7 +15,7 @@ namespace Utils.DataStructures.Nodes
 
 
     internal class BinaryNode<TKey, TValue>
-            : DictionaryBase<TKey, TValue>.NodeItem
+            : NodeItem<TKey, TValue>
         where TKey : struct
         where TValue : IEquatable<TValue>
     {

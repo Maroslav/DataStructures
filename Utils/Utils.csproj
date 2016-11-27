@@ -52,7 +52,10 @@
     <Compile Include="DataStructures\Heap\HeapBase.cs" />
     <Compile Include="DataStructures\Heap\FibonacciHeap.cs" />
     <Compile Include="DataStructures\Heap\Heap.cs" />
+    <Compile Include="DataStructures\IPriorityQueue.cs" />
     <Compile Include="DataStructures\Nodes\DisseminateNode.cs" />
+    <Compile Include="DataStructures\Nodes\ItemCollection.cs" />
+    <Compile Include="DataStructures\Nodes\NodeItem.cs" />
     <Compile Include="DataStructures\Nodes\SiblingNode.cs" />
     <Compile Include="DataStructures\Misc\Stack.cs" />
     <Compile Include="DataStructures\SplayTree\NodeTraversalToken.cs" />

@@ -32,14 +32,14 @@ namespace Utils.DataStructures
 
         #region Enumeration
 
-        public override ItemCollection<NodeItem> Items
+        public override ItemCollection<NodeItem<TKey, TValue>> Items
         {
             get
             {
-                NodeItem[] items = new NodeItem[Count];
+                NodeItem<TKey, TValue>[] items = new NodeItem<TKey, TValue>[Count];
 
                 if (Count == 0)
-                    return new ItemCollection<NodeItem>(items, 0);
+                    return new ItemCollection<NodeItem<TKey, TValue>>(items, 0);
 
                 int i = 0;
 
@@ -51,7 +51,7 @@ namespace Utils.DataStructures
 
                 Root.SiftLeft(_traversalActions);
 
-                return new ItemCollection<NodeItem>(items, Count);
+                return new ItemCollection<NodeItem<TKey, TValue>>(items, Count);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Utils.DataStructures
         public override bool IsReadOnly { get { return false; } }
 
 
-        public override void Add(TKey key, TValue value)
+        public override NodeItem<TKey, TValue> Add(TKey key, TValue value)
         {
             // 1. Find the parent of the place in the tree, where the key should be inserted
             BinaryNode<TKey, TValue> near = FindNear(key);
@@ -79,7 +79,7 @@ namespace Utils.DataStructures
                 Debug.Assert(Count == 0);
                 Root = new BinaryNode<TKey, TValue>(key, value);
                 Count++;
-                return;
+                return Root;
             }
 
             // 2. Insert the key/value
@@ -89,7 +89,7 @@ namespace Utils.DataStructures
             if (comp == 0)
             {
                 near.Value = value;
-                return;
+                return near;
             }
 
             // The key is not present in the tree, create a new node for it
@@ -110,6 +110,8 @@ namespace Utils.DataStructures
 
             // 3. Splay the newly inserted node to the root
             newNode.Splay(out Root, out LastSplayDepth);
+
+            return newNode;
         }
 
         public override bool Remove(TKey key)

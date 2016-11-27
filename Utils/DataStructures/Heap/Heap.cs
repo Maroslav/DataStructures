@@ -2,13 +2,14 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
 {
     public class Heap<TKey, TValue>
         : HeapBase<TKey, TValue>
     {
-        protected readonly NodeItem[] m_heap;
+        protected readonly NodeItem<TKey, TValue>[] m_heap;
 
 
         protected int MinIndex { get { return 1; } }
@@ -22,7 +23,7 @@ namespace Utils.DataStructures
         {
             Debug.Assert(capacity > 0);
             // Heaps ought to be indexed from 1
-            m_heap = new NodeItem[capacity + 1];
+            m_heap = new NodeItem<TKey, TValue>[capacity + 1];
         }
 
 
@@ -30,12 +31,14 @@ namespace Utils.DataStructures
 
         public override bool IsReadOnly { get { return false; } }
 
-        public override ItemCollection<NodeItem> Items { get { return new ItemCollection<NodeItem>(m_heap.Skip(1), Count); } }
+        public override ItemCollection<NodeItem<TKey, TValue>> Items { get { return new ItemCollection<NodeItem<TKey, TValue>>(m_heap.Skip(1), Count); } }
 
-        public override void Add(TKey key, TValue value)
+
+        public override NodeItem<TKey, TValue> Add(TKey key, TValue value)
         {
             // TODO: check reallocate
-            m_heap[MaxIndex] = new NodeItem(key, value);
+            var newNode = new NodeItem<TKey, TValue>(key, value);
+            m_heap[MaxIndex] = newNode;
 
 
             int currentIdx = MaxIndex;
@@ -46,20 +49,27 @@ namespace Utils.DataStructures
                 lastIdx = currentIdx;
                 currentIdx = Heapify(currentIdx);
             }
+
+            return newNode;
         }
 
-        public override NodeItem PeekMin()
+
+        public override NodeItem<TKey, TValue> PeekMin()
         {
             if (Count == 0)
-                return default(NodeItem);
+                return default(NodeItem<TKey, TValue>);
 
             return m_heap[MinIndex];
         }
 
-        public override NodeItem DeleteMin()
-        {
-            NodeItem min = PeekMin();
 
+        public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
+        {
+            // TODO
+        }
+
+        public override void DeleteMin()
+        {
             // Place the last element in place of the root element
             m_heap[MinIndex] = m_heap[MaxIndex];
 
@@ -67,7 +77,17 @@ namespace Utils.DataStructures
             //Heapify();
 
             Count--;
-            return min;
+        }
+
+        public override void Delete(NodeItem<TKey, TValue> node)
+        {
+            // TODO: store idx in the node?
+        }
+
+
+        public override void Merge(IPriorityQueue<TKey, TValue> other)
+        {
+            // TODO
         }
 
         public override void Clear()
@@ -80,7 +100,6 @@ namespace Utils.DataStructures
 
             Count = 0;
         }
-
 
         #endregion
 
@@ -99,9 +118,9 @@ namespace Utils.DataStructures
             int currentIdx = idx;
             int leftIdx = currentIdx * 2;
             int rightIdx = leftIdx + 1;
-            NodeItem act = m_heap[currentIdx];
-            NodeItem left = m_heap[leftIdx];
-            NodeItem right = m_heap[rightIdx];
+            NodeItem<TKey, TValue> act = m_heap[currentIdx];
+            NodeItem<TKey, TValue> left = m_heap[leftIdx];
+            NodeItem<TKey, TValue> right = m_heap[rightIdx];
 
             int swapIdx = currentIdx;
 

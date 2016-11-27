@@ -47,10 +47,10 @@ namespace Utils.DataStructures
 
         public override bool IsReadOnly { get { return false; } }
 
-        public override ItemCollection<NodeItem> Items { get { return new ItemCollection<NodeItem>(/* Enumerable of all children */null, Count); } }
+        public override ItemCollection<NodeItem<TKey, TValue>> Items { get { return new ItemCollection<NodeItem<TKey, TValue>>(/* Enumerable of all children */null, Count); } }
 
 
-        public override NodeItem Add(TKey key, TValue value)
+        public override NodeItem<TKey, TValue> Add(TKey key, TValue value)
         {
             var newNode = new HeapNode(key, value);
 
@@ -70,34 +70,15 @@ namespace Utils.DataStructures
             return newNode;
         }
 
-        public override NodeItem PeekMin()
+        public override NodeItem<TKey, TValue> PeekMin()
         {
             if (Count == 0)
-                return default(NodeItem);
+                return default(NodeItem<TKey, TValue>);
 
             return MinNode;
         }
 
-        public override NodeItem DeleteMin()
-        {
-            var min = PeekMin();
-
-
-
-            Count--;
-            return min;
-        }
-
-        public override void Clear()
-        {
-
-        }
-
-        #endregion
-
-        #region Public methods
-
-        public void DecreaseKey(NodeItem node, TKey newKey)
+        public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
         {
             var nNode = node as HeapNode;
 
@@ -156,6 +137,35 @@ namespace Utils.DataStructures
                 FirstRoot.InsertBefore(p);
             }
         }
+
+        public override void DeleteMin()
+        {
+            if (Count == 0)
+                return;
+
+            Delete(MinNode);
+        }
+
+        public override void Delete(NodeItem<TKey, TValue> node)
+        {
+        }
+
+        public override void Merge(IPriorityQueue<TKey, TValue> other)
+        {
+            var heap = other as FibonacciHeap<TKey, TValue>;
+
+            if (heap == null)
+                throw new ArgumentException("Can only merge with another Fibonacci Heap.", "other");
+
+            Merge(heap);
+        }
+
+        public override void Clear()
+        { }
+
+        #endregion
+
+        #region Public methods
 
         public void Merge(FibonacciHeap<TKey, TValue> other)
         {

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.DataStructures;
-using Utils.DataStructures.Internal;
 using Utils.DataStructures.Nodes;
 using KeyType = System.Int32;
 using ValueType = System.String;
@@ -173,7 +172,7 @@ namespace UtilsTests.SplayTree
                 Debug.WriteLine(treeItems.ToString(n => n.Key.ToString()));
 
                 var orderedItems = items.OrderBy(item => item.Key).ToArray();
-                Debug.WriteLine(new TreeType.ItemCollection<NodeType>(orderedItems, ItemCount).ToString(n => n.Key.ToString()));
+                Debug.WriteLine(new ItemCollection<NodeType>(orderedItems, ItemCount).ToString(n => n.Key.ToString()));
 
                 CollectionAssert.AllItemsAreNotNull(orderedItems);
                 CollectionAssert.AreEquivalent(orderedItems, items);
@@ -190,7 +189,7 @@ namespace UtilsTests.SplayTree
                 AddItems(ItemCount);
 
                 var treeItems = _tree.Items;
-                TreeType.NodeItem[] itemCollection = new TreeType.NodeItem[ItemCount];
+                NodeType[] itemCollection = new NodeType[ItemCount];
                 treeItems.CopyTo(itemCollection, 0);
 
                 CollectionAssert.AllItemsAreUnique(itemCollection);
