@@ -77,6 +77,7 @@ namespace Utils.DataStructures.Nodes
 
         /// <summary>
         /// Gracefully remove this node from the parent -- connect neighbouring siblings and update the parent.
+        /// Children are preserved.
         /// </summary>
         public void CutFromFamily()
         {
