@@ -72,6 +72,7 @@ namespace Utils.DataStructures.Nodes
 
         public void InsertBefore(SiblingNode<TKey, TValue> newSiblings)
         {
+            Debug.Assert(LeftSibling != null);
             LeftSibling.InsertAfter(newSiblings);
         }
 
@@ -92,11 +93,13 @@ namespace Utils.DataStructures.Nodes
         {
             var actSibling = this;
             var nextSibling = actSibling.RightSibling;
+            Debug.Assert(LeftSibling != null);
 
             yield return actSibling;
 
-            while (actSibling != nextSibling)
+            while (nextSibling != this)
             {
+                Debug.Assert(nextSibling != null);
                 actSibling = nextSibling;
                 yield return actSibling;
                 nextSibling = actSibling.RightSibling;
