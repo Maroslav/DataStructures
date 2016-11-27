@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Utils.DataStructures.Internal;
 using Utils.DataStructures.Nodes;
@@ -154,7 +155,48 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return;
 
-            Delete(MinNode);
+            var min = MinNode;
+
+
+            // Cut the minimum from roots (preserves children)
+            MinNode.CutFromFamily();
+            Count--;
+            MinNode = null;
+
+
+            // Make min's children into roots
+            if (min.FirstChild != null)
+            {
+                HeapNode children = (HeapNode)min.FirstChild;
+                min.FirstChild = null;
+
+                if (children != null)
+                {
+                    children.Parent = null;
+                    Consolidate(children);
+                }
+            }
+
+            if (Count == 0)
+                return;
+
+
+            // Find the new minimum
+            // Consolidation does not neccessarily keep the roots
+            // interlinked correctly -- we need to go through the array
+            var roots = _roots.Where(r => r != null);
+            FirstRoot = roots.First();
+            HeapNode lastRoot = null;
+
+            MinNode = roots.Aggregate((first, second) =>
+            {
+                lastRoot = second;
+                first.RightSibling = second;
+                int comp = Comparer.Compare(first.Key, second.Key);
+                return comp <= 0 ? first : second;
+            });
+
+            lastRoot.RightSibling = FirstRoot;
         }
 
         public override void Delete(NodeItem<TKey, TValue> node)
