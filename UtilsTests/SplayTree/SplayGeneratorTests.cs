@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +19,9 @@ namespace UtilsTests.SplayTree
         private const int BuilderSizeIncrement = 3000;
         private const int Seed = 82;
 
+        private const string GeneratorName = "generator.exe";
         private const string LogFileName = "SplayTreeLog";
+
         private const int ConsumerCount = 4;
         private int _currentJobsDone;
 
@@ -178,13 +181,13 @@ namespace UtilsTests.SplayTree
             Debug.Assert(t > 0);
 
             var pars = string.Format("-s {0} -t {1}", Seed, t);
-            return Generator.RunGenerator(pars, GenerateHandler);
+            return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
         public Task RunGeneratorSequential()
         {
             var pars = string.Format("-s {0} -b", Seed);
-            return Generator.RunGenerator(pars, GenerateHandler);
+            return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
         private void RunInternal(string runName, Task generatorTask)

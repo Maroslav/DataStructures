@@ -13,9 +13,6 @@ namespace UtilsTests.Helpers
 
         private const int TimeOut = 6000000; // 6000 seconds = 100 minutes timeout
 
-        private const string ToolsPath = @"Tools";
-        private const string GeneratorName = "generator.exe";
-
         private string FolderPath
         {
             get { return AppDomain.CurrentDomain.BaseDirectory; }
@@ -36,7 +33,7 @@ namespace UtilsTests.Helpers
 
         #region Generating
 
-        public async Task RunGenerator(string pars, Action<string> dataReceivedHandler)
+        public async Task RunGenerator(string generatorPath, string pars, Action<string> dataReceivedHandler)
         {
             using (var generatorProcess = new ProcessHelper(
                 Console.WriteLine,
@@ -45,7 +42,7 @@ namespace UtilsTests.Helpers
                 null))
             {
                 generatorProcess.StartProcess(
-                    Path.Combine(ToolsPath, GeneratorName),
+                    generatorPath,
                     pars,
                     FolderPath,
                     _cancellationTokenSource.Token);

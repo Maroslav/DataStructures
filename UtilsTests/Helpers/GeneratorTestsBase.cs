@@ -16,6 +16,8 @@ namespace UtilsTests.FibHeap
     {
         #region Fields and constants
 
+        protected const string ToolsPath = @"Tools";
+
         private readonly string _logFolderName;
         private readonly string _logFileName;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +18,9 @@ namespace UtilsTests.FibHeap
         private const int BuilderSizeIncrement = 3000;
         private const int Seed = 82;
 
+        private const string GeneratorName = "FibHeapGenerator.exe";
         private const string LogFileName = "FibTreeLog";
+
         private const int ConsumerCount = 4;
         private int _currentJobsDone;
 
@@ -177,13 +180,7 @@ namespace UtilsTests.FibHeap
             Debug.Assert(t > 0);
 
             var pars = string.Format("-s {0} -t {1}", Seed, t);
-            return Generator.RunGenerator(pars, GenerateHandler);
-        }
-
-        public Task RunGeneratorSequential()
-        {
-            var pars = string.Format("-s {0} -b", Seed);
-            return Generator.RunGenerator(pars, GenerateHandler);
+            return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
         private void RunInternal(string runName, Task generatorTask)
@@ -198,70 +195,6 @@ namespace UtilsTests.FibHeap
             RunInternal("T_test_" + T, generatorTask);
         }
 
-        private void RunSeq()
-        {
-            var generatorTask = RunGeneratorSequential();
-            RunInternal("Seq_test", generatorTask);
-        }
-
         #endregion
-
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run10T()
-        {
-            RunSubset(10);
-        }
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run100T()
-        {
-            RunSubset(100);
-        }
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run1000T()
-        {
-            RunSubset(1000);
-        }
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run10000T()
-        {
-            RunSubset(10000);
-        }
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run100000T()
-        {
-            RunSubset(100000);
-        }
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void Run1000000T()
-        {
-            RunSubset(1000000);
-        }
-
-
-#if LONG_RUNNING_TESTS
-        [TestMethod]
-#endif
-        public void RunSequential()
-        {
-            RunSeq();
-        }
     }
 }
