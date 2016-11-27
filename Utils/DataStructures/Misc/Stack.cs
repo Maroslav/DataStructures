@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Utils.DataStructures
 {
     public class Stack<T>
+        : IEnumerable<T>
     {
         #region Constants, fields and properties
 
@@ -76,6 +79,21 @@ namespace Utils.DataStructures
                 Buffer[i] = default(T);
 
             _head = 0;
+        }
+
+        #endregion
+
+        #region Enumeration
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < Count; i++)
+                yield return Buffer[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion
