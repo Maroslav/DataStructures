@@ -183,6 +183,9 @@ namespace Utils.DataStructures
 
         public void Merge(FibonacciHeap<TKey, TValue> other)
         {
+            if (other.Count == 0)
+                return;
+
             Consolidate(other.FirstRoot);
             Count += other.Count;
 
@@ -253,6 +256,10 @@ namespace Utils.DataStructures
 
                 // Combine the nodes together, update the roots and minNode and create the new carry
                 AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
+
+                // Update the pointer to the first root
+                if (_roots.Buffer[currentOrder].ChildrenCount < FirstRoot.ChildrenCount)
+                    FirstRoot = _roots[currentOrder];
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).
