@@ -29,8 +29,8 @@ namespace Utils.DataStructures
 
         #region Fields
 
-        internal HeapNode FirstRoot;
-        internal HeapNode MinNode;
+        private HeapNode _firstRoot;
+        private HeapNode _minNode;
 
         // We use a stack for this because it has sufficiently convenient ops and is handcrafted (a requirement)
         private readonly Stack<HeapNode> _roots = new Stack<HeapNode>();
@@ -62,16 +62,16 @@ namespace Utils.DataStructures
 
             if (Count == 0)
             {
-                FirstRoot = newNode;
-                MinNode = FirstRoot;
+                _firstRoot = newNode;
+                _minNode = _firstRoot;
                 return newNode;
             }
 
             Consolidate(newNode); // We need to do this work at some point anyway.. This way, we keep the roots organized
             Count++;
 
-            if (Comparer.Compare(key, MinNode.Key) <= 0)
-                MinNode = newNode;
+            if (Comparer.Compare(key, _minNode.Key) <= 0)
+                _minNode = newNode;
 
             return newNode;
         }
@@ -81,7 +81,7 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return default(NodeItem<TKey, TValue>);
 
-            return MinNode;
+            return _minNode;
         }
 
         public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
@@ -101,10 +101,10 @@ namespace Utils.DataStructures
             nNode.Key = newKey;
 
             // Check if we have a new minimum
-            comp = Comparer.Compare(nNode.Key, MinNode.Key);
+            comp = Comparer.Compare(nNode.Key, _minNode.Key);
 
             if (comp < 0)
-                MinNode = nNode;
+                _minNode = nNode;
 
 
             // Check if we validated the heap property
@@ -155,13 +155,13 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return;
 
-            var min = MinNode;
+            var min = _minNode;
 
 
             // Cut the minimum from roots (preserves children)
-            MinNode.CutFromFamily();
+            _minNode.CutFromFamily();
             Count--;
-            MinNode = null;
+            _minNode = null;
 
 
             // Make min's children into roots
@@ -185,10 +185,10 @@ namespace Utils.DataStructures
             // Consolidation does not neccessarily keep the roots
             // interlinked correctly -- we need to go through the array
             var roots = _roots.Where(r => r != null);
-            FirstRoot = roots.First();
+            _firstRoot = roots.First();
             HeapNode lastRoot = null;
 
-            MinNode = roots.Aggregate((first, second) =>
+            _minNode = roots.Aggregate((first, second) =>
             {
                 lastRoot = second;
                 first.RightSibling = second;
@@ -196,7 +196,7 @@ namespace Utils.DataStructures
                 return comp <= 0 ? first : second;
             });
 
-            lastRoot.RightSibling = FirstRoot;
+            lastRoot.RightSibling = _firstRoot;
         }
 
         public override void Delete(NodeItem<TKey, TValue> node)
@@ -228,13 +228,13 @@ namespace Utils.DataStructures
             if (other.Count == 0)
                 return;
 
-            Consolidate(other.FirstRoot);
+            Consolidate(other._firstRoot);
             Count += other.Count;
 
-            int comp = Comparer.Compare(other.MinNode.Key, MinNode.Key);
+            int comp = Comparer.Compare(other._minNode.Key, _minNode.Key);
 
             if (comp < 0)
-                MinNode = other.MinNode;
+                _minNode = other._minNode;
         }
 
         #endregion
@@ -300,8 +300,8 @@ namespace Utils.DataStructures
                 AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
 
                 // Update the pointer to the first root
-                if (_roots.Buffer[currentOrder].ChildrenCount < FirstRoot.ChildrenCount)
-                    FirstRoot = _roots[currentOrder];
+                if (_roots.Buffer[currentOrder].ChildrenCount < _firstRoot.ChildrenCount)
+                    _firstRoot = _roots[currentOrder];
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).

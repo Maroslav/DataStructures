@@ -64,6 +64,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FibHeap\FibGeneratorTests.cs" />
+    <Compile Include="FibHeap\FibHeapTests.cs" />
     <Compile Include="Helpers\GeneratorTestsBase.cs" />
     <Compile Include="SplayTree\SplayGeneratorTests.cs" />
     <Compile Include="Helpers\MyCommandConsumer.cs" />

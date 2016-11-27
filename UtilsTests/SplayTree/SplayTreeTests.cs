@@ -139,6 +139,9 @@ namespace UtilsTests.SplayTree
                 Assert.AreEqual(ItemCount, _tree.Count);
                 _tree.Clear();
                 Assert.AreEqual(_tree.Count, 0);
+
+                Assert.IsTrue(_tree.Items.Count == 0);
+                Assert.IsTrue(!_tree.Items.Any());
             }
         }
 
