@@ -38,6 +38,15 @@
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_LongRunningTests|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug_LongRunningTests\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;LONG_RUNNING_TESTS</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -54,9 +63,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="SplayTree\GeneratorTests.cs" />
-    <Compile Include="SplayTree\MyCommandConsumer.cs" />
-    <Compile Include="SplayTree\MyCommandGenerator.cs" />
+    <Compile Include="FibHeap\FibGeneratorTests.cs" />
+    <Compile Include="Helpers\GeneratorTestsBase.cs" />
+    <Compile Include="SplayTree\SplayGeneratorTests.cs" />
+    <Compile Include="Helpers\MyCommandConsumer.cs" />
+    <Compile Include="Helpers\MyCommandGenerator.cs" />
     <Compile Include="SplayTree\NodeTests.cs" />
     <Compile Include="SplayTree\SplayTreeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -12,13 +12,13 @@ namespace Runner
 
             foreach (var t in ts)
             {
-                var test = new GeneratorTests(LogFolderName);
+                var test = new SplayGeneratorTests(LogFolderName);
                 test.RunSubset(t);
                 test.Dispose();
             }
 
             {
-                var test = new GeneratorTests(LogFolderName);
+                var test = new SplayGeneratorTests(LogFolderName);
                 test.RunSequential();
                 test.Dispose();
             }

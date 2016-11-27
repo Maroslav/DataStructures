@@ -4,25 +4,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Utils.DataStructures;
 
-namespace UtilsTests.SplayTree
+namespace UtilsTests.Helpers
 {
-    internal class MyCommandConsumer
+    public class MyCommandConsumer<TWorkItem>
     {
-        private readonly AsyncBuffer<Stack<int>> _buffer;
+        private readonly AsyncBuffer<TWorkItem> _buffer;
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private Action<Stack<int>> _callback;
+        private Action<TWorkItem> _callback;
 
         public Task RequestCollectionTask;
         public bool ExitWhenNoItems;
 
 
-        public MyCommandConsumer(AsyncBuffer<Stack<int>> buffer, CancellationTokenSource cts)
+        public MyCommandConsumer(AsyncBuffer<TWorkItem> buffer, CancellationTokenSource cts)
         {
             _buffer = buffer;
             _cancellationTokenSource = cts;
         }
 
-        public void Start(Action<Stack<int>> callback)
+        public void Start(Action<TWorkItem> callback)
         {
             _callback = callback;
             RequestCollectionTask = Task.Factory.StartNew(
@@ -39,7 +39,7 @@ namespace UtilsTests.SplayTree
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
-                Task<Stack<int>> task;
+                Task<TWorkItem> task;
 
                 // Get a new task to wait for
                 try
