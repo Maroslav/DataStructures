@@ -10,13 +10,19 @@ namespace UtilsTests.FibHeap
 {
     [TestClass]
     public class FibGeneratorTests
-        : GeneratorTestsBase<Stack<int>>
+        : GeneratorTestsBase<Tuple<Stack<byte>, Stack<int>>>
     {
         #region Fields and constants
 
-        private const int BuilderInitSize = 8000;
-        private const int BuilderSizeIncrement = 3000;
+        private const int BuilderInitSize = 120000;
+        private const int BuilderSizeIncrement = 100000;
         private const int Seed = 82;
+
+        private const byte InsKey = 2;
+        private const byte DelKey = 3;
+        private const byte DecKey = 4;
+
+        private readonly char[] _splitArray = { ' ', '\n' };
 
         private const string GeneratorName = "FibHeapGenerator.exe";
         private const string LogFileName = "FibHeapLog";
@@ -24,8 +30,8 @@ namespace UtilsTests.FibHeap
         private const int ConsumerCount = 4;
         private int _currentJobsDone;
 
-        private CommandState _state = CommandState.Init;
-        private Stack<int> _currentCommands = new Stack<int>(BuilderInitSize);
+        private Stack<byte> _currentCommands = new Stack<byte>(BuilderInitSize);
+        private Stack<int> _currentArguments = new Stack<int>(BuilderInitSize);
 
         private readonly SplayTree<int, float> _results = new SplayTree<int, float>();
 
@@ -44,14 +50,6 @@ namespace UtilsTests.FibHeap
 
         #region Processing
 
-        private enum CommandState
-        {
-            Init,
-            Starts,
-            Inserts,
-            Finds,
-        }
-
         private void GenerateHandler(string data)
         {
             if (data == null)
@@ -59,51 +57,55 @@ namespace UtilsTests.FibHeap
 
             try
             {
-                switch (data[0])
+                if (data[0] == '#')
                 {
-                    case '#':
-                        Debug.Assert(_state == CommandState.Init || _state == CommandState.Finds); // A race condition -- another DataReceivedHandler changed the state
+                    // Replace the builders by new instances and sent the batch to consumers
+                    var commands = _currentCommands;
+                    var arguments = _currentArguments;
 
-                        // Replace the builder by a new instance
-                        Stack<int> commands = _currentCommands;
+                    if (commands != null)
+                    {
+                        Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(commands, arguments));
 
-                        if (_state != CommandState.Init)
-                        {
-                            Buffer.Add(commands);
+                        _currentCommands = new Stack<byte>(commands.Count + Math.Min(commands.Count, BuilderSizeIncrement));
+                        _currentArguments = new Stack<int>(commands.Count * 2);
+                    }
 
-                            _currentCommands = new Stack<int>(commands.Count + BuilderSizeIncrement);
-                        }
+                    // Store the command count -- start gathering a new batch
+                    _currentArguments.Push(int.Parse(data.Substring(2)));
+                    return;
+                }
 
-                        // Start gathering a new batch
-                        _state = CommandState.Starts;
+                switch (data[2])
+                {
+                    case 'S': // INS
+                        _currentCommands.Push(InsKey);
                         break;
 
-                    case 'I':
-                        Debug.Assert(_state == CommandState.Inserts || _state == CommandState.Starts); // A race condition -- another DataReceivedHandler changed the state
+                    case 'L': // DEL
+                        _currentCommands.Push(DelKey);
+                        return; // Don't try to push more data
 
-                        if (_state == CommandState.Starts)
-                            _state = CommandState.Inserts;
-                        break;
-
-                    case 'F':
-                        Debug.Assert(_state == CommandState.Finds || _state == CommandState.Inserts); // A race condition -- another DataReceivedHandler changed the state
-
-                        if (_state == CommandState.Inserts)
-                            _state = CommandState.Finds;
+                    case 'C': // DEC
+                        _currentCommands.Push(DecKey);
                         break;
                 }
 
-                _currentCommands.Push(int.Parse(data.Substring(2)));
+                string[] line = data.Split(_splitArray, StringSplitOptions.RemoveEmptyEntries);
+                Debug.Assert(line.Length == 3);
+                _currentArguments.Push(int.Parse(line[1]));
+                _currentArguments.Push(int.Parse(line[2]));
             }
             catch (Exception ex)
             {
-                CancellationTokenSource.Cancel();
                 Console.WriteLine("Error in parsing generator data:\n" + ex.Message);
+                CancellationTokenSource.Cancel();
             }
         }
 
-        private void ProcessData(Stack<int> commands)
+        private void ProcessData(Tuple<Stack<byte>, Stack<int>> commands)
         {
+            /*
             var sw = Stopwatch.StartNew();
 
             int offset = 0;
@@ -157,13 +159,14 @@ namespace UtilsTests.FibHeap
                 findCount,
                 avgInsertDepth,
                 avgFindDepth);
+            */
         }
 
         private void Finished()
         {
             if (_currentCommands != null)
             {
-                Buffer.Add(_currentCommands);
+                Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(_currentCommands, _currentArguments));
                 _currentCommands = null;
             }
 
