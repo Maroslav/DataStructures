@@ -63,7 +63,7 @@ namespace Utils.Other
                     WorkingDirectory = workingDirectory,
                     Arguments = arguments,
                     UseShellExecute = false,
-                    CreateNoWindow = true,
+                    CreateNoWindow = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
