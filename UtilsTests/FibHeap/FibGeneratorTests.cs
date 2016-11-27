@@ -103,63 +103,62 @@ namespace UtilsTests.FibHeap
             }
         }
 
-        private void ProcessData(Tuple<Stack<byte>, Stack<int>> commands)
+        private void ProcessData(Tuple<Stack<byte>, Stack<int>> data)
         {
-            /*
             var sw = Stopwatch.StartNew();
 
-            int offset = 0;
+            var commands = data.Item1;
+            var arguments = data.Item2;
 
-            // Prepare the tree
-            var tree = new SplayTree<int, string>();
-            int insertCount = commands[offset++];
-            float insertDepthSum = 0;
+            int argOffset = 0;
+
+            // Prepare the heap
+            var heap = new FibonacciHeap<int, string>();
+            int insertCount = arguments[argOffset++];
+            float deleteDepthCount = 0;
 
             // Do insert commands
-            for (; offset < insertCount + 1; offset++)
+            foreach (byte command in commands)
             {
-                int key = commands[offset];
-                tree.Add(key, null);
+                switch (command)
+                {
+                    case InsKey:
+                        var insId = arguments[argOffset++];
+                        heap.Add(arguments[argOffset++], null);
+                        break;
 
-                insertDepthSum += tree.LastSplayDepth / (float)(Math.Log10(tree.Count + 1) * 3.321928);
-                // Normalized by the expected depth of a balanced binary tree; Plus one for when Count==1
-            }
+                    case DelKey:
+                        heap.DeleteMin();
+                        //deleteDepthCount += heap.LastSplayDepth / (float)(Math.Log10(heap.Count + 1) * 3.321928);
+                        break;
 
-            var findDepthSum = 0;
-            int findCount = 0;
-            offset--;
-
-            // Do find commands
-            while (++offset < commands.Count)
-            {
-                int key = commands[offset];
-                string val = tree[key];
-
-                findDepthSum += tree.LastSplayDepth;
-                findCount++;
+                    case DecKey:
+                        var decId = arguments[argOffset++];
+                        heap.DecreaseKey(null, arguments[argOffset++]);
+                        break;
+                }
             }
 
             // Cleanup and store the measurements
-            //tree.Clear(); // Disassembles tree node pointers .... not a good idea with a GC...
+            //heap.Clear(); // Disassembles tree node pointers .... not a good idea with a GC...
 
             sw.Stop();
 
-            float avgInsertDepth = insertDepthSum / insertCount;
-            float avgFindDepth = findDepthSum / (float)findCount;
+            float avgInsertDepth = deleteDepthCount / insertCount;
 
             lock (_results)
-                _results.Add(insertCount, avgFindDepth);
+                _results.Add(insertCount, avgInsertDepth);
 
             Interlocked.Increment(ref _currentJobsDone);
             Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4} adds/finds : {5:F}/{6:F} insert depth factor/find depth",
                 _currentJobsDone,
                 Buffer.WaitingItemCount,
-                sw.ElapsedMilliseconds * 0.001,
-                insertCount,
-                findCount,
-                avgInsertDepth,
-                avgFindDepth);
-            */
+                sw.ElapsedMilliseconds * 0.001
+                //insertCount,
+                //findCount,
+                //avgInsertDepth,
+                //avgFindDepth
+                );
         }
 
         private void Finished()
