@@ -267,6 +267,7 @@ namespace Utils.DataStructures
                 case Bits.First | Bits.Add | Bits.Carry:
                     var tmp = first;
                     first = carry;
+                    add.Parent = null;
                     carry = CombineNodes(tmp, add);
                     return;
 
@@ -275,6 +276,7 @@ namespace Utils.DataStructures
                     carry = null;
                     return;
                 case Bits.Add | Bits.Carry:
+                    add.Parent = null;
                     first = CombineNodes(add, carry);
                     carry = null;
                     return;
@@ -282,6 +284,7 @@ namespace Utils.DataStructures
                 case Bits.First:
                     return;
                 case Bits.Add:
+                    add.Parent = null;
                     first = add;
                     return;
                 case Bits.Carry:
