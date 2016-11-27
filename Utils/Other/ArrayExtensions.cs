@@ -5,6 +5,27 @@ namespace System
 {
     public static class ArrayExtensions
     {
+        public static void CopyTo<T>(this IEnumerable<T> source, int sourceCount, T[] array, int arrayIndex)
+        {
+            if (array == null)
+                throw new ArgumentNullException("array");
+            if (arrayIndex < 0)
+                throw new ArgumentOutOfRangeException("arrayIndex", "The arrayIndex must not be negative.");
+            if (array.Length - arrayIndex < sourceCount)
+                throw new ArgumentException("Not enough space in the array.", "array");
+
+            int i = arrayIndex;
+
+            foreach (var keyValuePair in source)
+                array[i++] = keyValuePair;
+        }
+
+        public static void CopyTo<T>(this T[] source, T[] array, int arrayIndex)
+        {
+            source.CopyTo(source.Length, array, arrayIndex);
+        }
+
+
         public static bool IsNullOrEmpty<T>(this T[] self)
         {
             return self == null || self.Length == 0;
@@ -44,6 +65,7 @@ namespace System
             return better;
         }
 
+
         /**
          * Do a binary search in an array of interval limits, each member is the interval threshold.
          * 
@@ -55,7 +77,8 @@ namespace System
          */
         public static int BinaryIntervalSearch<T>(this T[] self, T value) where T : IComparable<T>
         {
-            if (self.Length == 0) return 0;
+            if (self.Length == 0)
+                return 0;
             if (self.Length == 1)
             {
                 return value.CompareTo(self[0]) > 0 ? 1 : 0;
@@ -332,7 +355,7 @@ namespace System
             int count = seg.Count;
 
             Debug.Assert(!(max <= min
-                // max - min > 0 required to avoid overflow
+                   // max - min > 0 required to avoid overflow
                    || (count > max - min && max - min > 0)),
                 // need to use 64-bit to support big ranges (negative min, positive max)
                 "Range " + min + " to " + max + " (" + ((Int64)max - (Int64)min) + " values), or count " + count + " is illegal");
@@ -381,7 +404,7 @@ namespace System
             int count = seg.Count;
 
             Debug.Assert(!(max <= min
-                // max - min > 0 required to avoid overflow
+                   // max - min > 0 required to avoid overflow
                    || (count > max - min && max - min > 0)),
                 // need to use 64-bit to support big ranges (negative min, positive max)
                 "Range " + min + " to " + max + " (" + ((Int64)max - (Int64)min) + " values), or count " + count + " is illegal");
@@ -458,7 +481,7 @@ namespace System
             int count = seg.Count;
 
             Debug.Assert(!(max <= min
-                // max - min > 0 required to avoid overflow
+                   // max - min > 0 required to avoid overflow
                    || (count > max - min && max - min > 0)),
                 // need to use 64-bit to support big ranges (negative min, positive max)
                 "Range " + min + " to " + max + " (" + ((Int64)max - (Int64)min) + " values), or count " + count + " is illegal");
@@ -483,7 +506,7 @@ namespace System
             int count = seg.Count;
 
             Debug.Assert(!(max <= min
-                // max - min > 0 required to avoid overflow
+                   // max - min > 0 required to avoid overflow
                    || (count > max - min && max - min > 0)),
                 // need to use 64-bit to support big ranges (negative min, positive max)
                 "Range " + min + " to " + max + " (" + ((Int64)max - (Int64)min) + " values), or count " + count + " is illegal");

@@ -259,26 +259,7 @@ namespace Utils.DataStructures
 
         public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            CopyTo(this, Count, array, arrayIndex);
-        }
-
-        #endregion
-
-        #region Helpers
-
-        private static void CopyTo<T>(IEnumerable<T> source, int sourceCount, T[] array, int arrayIndex)
-        {
-            if (array == null)
-                throw new ArgumentNullException("array");
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException("arrayIndex", "The arrayIndex must not be negative.");
-            if (array.Length - arrayIndex < sourceCount)
-                throw new ArgumentException("Not enough space in the array.", "array");
-
-            int i = arrayIndex;
-
-            foreach (var keyValuePair in source)
-                array[i++] = keyValuePair;
+            this.CopyTo(Count, array, arrayIndex);
         }
 
         #endregion
