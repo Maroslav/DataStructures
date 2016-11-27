@@ -66,7 +66,7 @@ namespace Utils.DataStructures
                 return newNode;
             }
 
-            FirstRoot.InsertBefore(newNode);
+            Consolidate(newNode);
             Count++;
 
             if (Comparer.Compare(key, MinNode.Key) <= 0)
@@ -182,6 +182,11 @@ namespace Utils.DataStructures
         {
             Consolidate(other.FirstRoot);
             Count += other.Count;
+
+            int comp = Comparer.Compare(other.MinNode.Key, MinNode.Key);
+
+            if (comp < 0)
+                MinNode = other.MinNode;
         }
 
         #endregion
@@ -197,7 +202,7 @@ namespace Utils.DataStructures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Consolidate(HeapNode firstNode, bool checkMin = false)
+        private void Consolidate(HeapNode firstNode)
         {
             Debug.Assert(firstNode != null);
 
@@ -244,7 +249,7 @@ namespace Utils.DataStructures
                     inputs |= Bits.Carry;
 
                 // Combine the nodes together, update the roots and minNode and create the new carry
-                AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs, checkMin);
+                AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).
@@ -252,7 +257,7 @@ namespace Utils.DataStructures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddNodes(ref HeapNode first, HeapNode add, ref HeapNode carry, Bits inputs, bool checkMin = false)
+        private void AddNodes(ref HeapNode first, HeapNode add, ref HeapNode carry, Bits inputs)
         {
             Debug.Assert(inputs > 0);
 
@@ -262,15 +267,15 @@ namespace Utils.DataStructures
                 case Bits.First | Bits.Add | Bits.Carry:
                     var tmp = first;
                     first = carry;
-                    carry = CombineNodes(tmp, add, checkMin);
+                    carry = CombineNodes(tmp, add);
                     return;
 
                 case Bits.First | Bits.Carry:
-                    first = CombineNodes(first, carry, checkMin);
+                    first = CombineNodes(first, carry);
                     carry = null;
                     return;
                 case Bits.Add | Bits.Carry:
-                    first = CombineNodes(add, carry, checkMin);
+                    first = CombineNodes(add, carry);
                     carry = null;
                     return;
 
@@ -290,7 +295,7 @@ namespace Utils.DataStructures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private HeapNode CombineNodes(HeapNode first, HeapNode add, bool checkMin = false)
+        private HeapNode CombineNodes(HeapNode first, HeapNode add)
         {
             int comp = Comparer.Compare(first.Key, add.Key);
 
@@ -301,10 +306,6 @@ namespace Utils.DataStructures
                 Swap(ref smaller, ref other);
 
             smaller.AddChild(other);
-
-            if (checkMin && Comparer.Compare(smaller.Key, MinNode.Key) < 0)
-                MinNode = smaller;
-
             return smaller;
         }
 
