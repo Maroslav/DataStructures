@@ -118,28 +118,34 @@ namespace Utils.DataStructures
             // Heap property is invalid -- cut the node from its parent and make it one of our roots
             nNode.IsMarked = false;
             nNode.CutFromFamily();
-            FirstRoot.InsertBefore(nNode);
+            // We consolidate all the cut nodes at once later
 
-            if (parent == null)
-                return;
-
-
-            // Recursively mark and cut parents, end at root
-            while (parent.Parent != null)
+            try
             {
-                if (!parent.IsMarked)
+                if (parent == null)
+                    return;
+
+                // Recursively mark and cut parents, end at root
+                while (parent.Parent != null)
                 {
-                    parent.IsMarked = true;
-                    break;
+                    if (!parent.IsMarked)
+                    {
+                        parent.IsMarked = true;
+                        break;
+                    }
+
+                    // The parent is marked -- unmark and cut it
+                    var p = parent;
+                    parent = (HeapNode)parent.Parent;
+
+                    p.IsMarked = false;
+                    p.CutFromFamily();
+                    nNode.InsertBefore(p); // Insert as the last node -- parents are always at least as big as their children
                 }
-
-                // The parent is marked -- unmark and cut it
-                var p = parent;
-                parent = (HeapNode)parent.Parent;
-
-                p.IsMarked = false;
-                p.CutFromFamily();
-                FirstRoot.InsertBefore(p);
+            }
+            finally
+            {
+                Consolidate(nNode);
             }
         }
 
@@ -254,15 +260,15 @@ namespace Utils.DataStructures
                 case Bits.First | Bits.Add | Bits.Carry:
                     var tmp = first;
                     first = carry;
-                    carry = Join(tmp, add, checkMin);
+                    carry = CombineNodes(tmp, add, checkMin);
                     return;
 
                 case Bits.First | Bits.Carry:
-                    first = Join(first, carry, checkMin);
+                    first = CombineNodes(first, carry, checkMin);
                     carry = null;
                     return;
                 case Bits.Add | Bits.Carry:
-                    first = Join(add, carry, checkMin);
+                    first = CombineNodes(add, carry, checkMin);
                     carry = null;
                     return;
 
@@ -282,7 +288,7 @@ namespace Utils.DataStructures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private HeapNode Join(HeapNode first, HeapNode add, bool checkMin = false)
+        private HeapNode CombineNodes(HeapNode first, HeapNode add, bool checkMin = false)
         {
             int comp = Comparer.Compare(first.Key, add.Key);
 
