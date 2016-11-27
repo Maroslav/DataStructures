@@ -159,6 +159,7 @@ namespace Utils.DataStructures
 
         public override void Delete(NodeItem<TKey, TValue> node)
         {
+            throw new NotImplementedException("TODO");
         }
 
         public override void Merge(IPriorityQueue<TKey, TValue> other)
@@ -172,7 +173,9 @@ namespace Utils.DataStructures
         }
 
         public override void Clear()
-        { }
+        {
+            throw new NotImplementedException("TODO");
+        }
 
         #endregion
 
