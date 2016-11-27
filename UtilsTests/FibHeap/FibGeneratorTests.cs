@@ -19,7 +19,7 @@ namespace UtilsTests.FibHeap
         private const int Seed = 82;
 
         private const string GeneratorName = "FibHeapGenerator.exe";
-        private const string LogFileName = "FibTreeLog";
+        private const string LogFileName = "FibHeapLog";
 
         private const int ConsumerCount = 4;
         private int _currentJobsDone;
