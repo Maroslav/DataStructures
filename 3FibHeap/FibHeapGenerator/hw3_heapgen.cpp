@@ -1,4 +1,4 @@
-// Generates data
+// Generates data for a Fibonacci heap
 
 #include <string.h>
 #include <stdio.h>
@@ -24,8 +24,9 @@ static void usage(void)
 
 /* Consolidate into one tree with high order and restore the heap structure after that
 */
-static void expensive_loop(int N) {
-    for (int i = 0; i<(N ^ 2); i++) {
+static void expensive_loop(int loops) {
+    //     fprintf(stderr,"expensive loop for loop=%d\n",loop);
+    for (int i = 0; i < loops; i++) {
         printf("INS 1 1\n");
         printf("INS 2 2\n");
         printf("DEL\n");
@@ -36,15 +37,14 @@ static void expensive_loop(int N) {
 /* Construct a star with n nodes and root index r
 */
 static void star(int n, int r, bool consolidate, int c, int N) {
+    //     fprintf(stderr,"star size %d from %d\n", n,r);
     if (n == 1) {
         //add a single node
         printf("INS %d %d\n", r, r);
 
-        //if there is a significant number of stars with order 1,2,3,..., do some expensive moves
-        if (c >= sqrt(N)) expensive_loop(N);
-
         //consolidate everything if this is the second star of size 1 added
         if (consolidate) {
+            //             fprintf(stderr,"consolidate\n");
             printf("INS 1 1\n");
             printf("DEL\n");
         }
@@ -55,11 +55,13 @@ static void star(int n, int r, bool consolidate, int c, int N) {
         star(n - 1, r + n - 1, true, c + 1, N);
 
         //delete unnecessary parts
-        for (int l = r + n; l<r + 2 * n - 2; l++) {
+        for (int l = r + n; l < r + 2 * n - 2; l++) {
+            //             fprintf(stderr,"delete node %d\n",l);
             printf("DEC %d %d\n", l, 1);
             printf("DEL\n");
         }
     }
+
 }
 
 /* generates a sequence on which non-cascading heaps need lots of time
@@ -75,13 +77,17 @@ static void ncascade_gen_mod(void)
         nr = from + N*(N + 1) / 2; //the number of needed elements
 
         printf("# %i\n", nr);
+        //         fprintf(stderr,"test of size %i for N=%i\n",nr,N);
+
         //construct N stars of size n
         for (int n = N; n >= 1; n--) {
             star(n, from, false, 0, N);
             from += n;
         }
+
+        //         fprintf(stderr,"starting expensive loop\n");
         //do some more expensive loops
-        expensive_loop(nr);
+        expensive_loop(10 * (1 << N));
     }//end main loop
 }
 
@@ -95,31 +101,32 @@ static void random_gen(int bias)
     int next, op, j, nr_del, nr_dec;
 
     for (int length = MIN_LEN; length <= MAX_LEN; length += DIF_LEN) {
-        for (int i = 0; i<length; i++) // initialize some random elements to insert
+        for (int i = 0; i < length; i++) // initialize some random elements to insert
             a[i] = ((int)rand()) % length;
 
+        //         fprintf(stderr,"test of length %i\n",length);
         printf("# %d\n", length);
         next = 0; //next element to insert
         nr_del = floor(length / (bias + 1.6));
         nr_dec = floor(2 * length + 5.2*nr_del);
 
-        while (next<10) { //insert the first few elements to have something to work with
+        while (next < 10) { //insert the first few elements to have something to work with
             printf("INS %d %d\n", next, a[next]);
             next++;
         }
 
-        while (next<length) {
+        while (next < length) {
             op = ((int)rand()) % (length + nr_dec + nr_del); //choose an operation at random
 
-            if (op<length) { //insert the next element
+            if (op < length) { //insert the next element
                 printf("INS %d %d\n", next, a[next]);
                 next++;
             }
-            else if (op<length + nr_dec) { //decrease the key of some element
+            else if (op < length + nr_dec) { //decrease the key of some element
                 j = ((int)rand()) % next;
                 if (a[j] > 0) { //key of element can be decreased
-                    a[j] -= (((int)rand()) % 10) + 1; //subtract some small positive number
-                    if (a[j]<0) a[j] = 0;
+                    a[j] -= (((int)rand()) % next) + 1; //subtract some positive number
+                    if (a[j] < 0) a[j] = 0;
                     printf("DEC %d %d\n", j, a[j]);
                 }
             }
@@ -128,6 +135,7 @@ static void random_gen(int bias)
             }
         }
     }
+
 }
 
 int main(int argc, char* argv[])
