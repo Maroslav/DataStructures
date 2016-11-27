@@ -112,7 +112,7 @@ namespace Utils.DataStructures
 
             // Heap property is invalid -- cut the node from its parent and make it one of our roots
             nNode.IsMarked = false;
-            nNode.CutFromParent();
+            nNode.CutFromFamily();
             FirstRoot.InsertBefore(nNode);
 
             if (parent == null)
@@ -133,7 +133,7 @@ namespace Utils.DataStructures
                 parent = (HeapNode)parent.Parent;
 
                 p.IsMarked = false;
-                p.CutFromParent();
+                p.CutFromFamily();
                 FirstRoot.InsertBefore(p);
             }
         }

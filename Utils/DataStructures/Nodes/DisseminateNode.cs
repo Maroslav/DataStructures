@@ -63,14 +63,22 @@ namespace Utils.DataStructures.Nodes
 
         public void AddChild(DisseminateNode<TKey, TValue> child)
         {
-
             child.Parent = this;
+
+            if (FirstChild == null)
+            {
+                FirstChild = child;
+                return;
+            }
+
+            // Always add it as the last child
+            FirstChild.InsertBefore(child);
         }
 
         /// <summary>
         /// Gracefully remove this node from the parent -- connect neighbouring siblings and update the parent.
         /// </summary>
-        public void CutFromParent()
+        public void CutFromFamily()
         {
             LeftSibling.RightSibling = RightSibling; // The other direction is updated automagically
 
