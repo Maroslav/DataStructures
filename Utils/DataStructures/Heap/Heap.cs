@@ -136,14 +136,6 @@ namespace Utils.DataStructures
             return swapIdx;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Swap<T>(ref T one, ref T two)
-        {
-            T tmp = one;
-            one = two;
-            two = tmp;
-        }
-
         #endregion
     }
 }

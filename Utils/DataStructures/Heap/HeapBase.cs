@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures
@@ -47,6 +48,18 @@ namespace Utils.DataStructures
         public abstract void Delete(NodeItem<TKey, TValue> node);
 
         public abstract void Merge(IPriorityQueue<TKey, TValue> other);
+
+        #endregion
+
+        #region Helpers
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void Swap<T>(ref T one, ref T two)
+        {
+            T tmp = one;
+            one = two;
+            two = tmp;
+        }
 
         #endregion
     }
