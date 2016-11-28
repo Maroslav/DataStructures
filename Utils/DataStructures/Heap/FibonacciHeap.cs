@@ -90,6 +90,12 @@ namespace Utils.DataStructures
         {
             var newNode = new HeapNode(key, value);
 
+#if VERBOSE
+            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine();
+            Console.WriteLine(">> Add >> " + newNode);
+#endif
+
             if (Count == 0)
             {
                 _firstRoot = newNode;
@@ -120,6 +126,12 @@ namespace Utils.DataStructures
 
         public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
         {
+#if VERBOSE
+            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine();
+            Console.WriteLine(">> Decrease key >> {0} >> {1}", node, newKey);
+#endif
+
             var nNode = node as HeapNode;
 
             if (nNode == null)
@@ -184,6 +196,14 @@ namespace Utils.DataStructures
 
         public override void DeleteMin()
         {
+#if VERBOSE
+            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine();
+            Console.WriteLine(">> Delete-Min");
+#endif
+
+            LastConsolidateDepth = 0;
+
             if (Count == 0)
                 return;
 
@@ -325,10 +345,15 @@ namespace Utils.DataStructures
         private void Consolidate(HeapNode firstAdd)
         {
 #if VERBOSE
-            var addNodes = firstAdd.GetSiblings().Cast<HeapNode>().ToArray();
-            var adds = addNodes.Aggregate("", (a, s) => a + s + "\n").Trim();
-            Console.WriteLine("Nodes to consolidate:");
-            Console.WriteLine(adds);
+            var nodes = firstAdd.GetSiblings().Cast<HeapNode>().ToArray();
+            var str = nodes.Aggregate("", (a, s) => a + s + "\n").Trim();
+            Console.WriteLine("Nodes to consolidate ({0}):", nodes.Length);
+            Console.WriteLine(str);
+
+            nodes = _roots.Where(r => r != null).ToArray();
+            str = nodes.Aggregate("", (a, s) => a + s + "\n").Trim();
+            Console.WriteLine("Roots in heap ({0}):", nodes.Length);
+            Console.WriteLine(str);
 #endif
 
             Debug.Assert(firstAdd != null);
