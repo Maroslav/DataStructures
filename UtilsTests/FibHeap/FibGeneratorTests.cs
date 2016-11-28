@@ -122,34 +122,37 @@ namespace UtilsTests.FibHeap
             // Do insert commands
             foreach (byte command in commands)
             {
+                int id, key;
+                NodeItem<int, int> node;
+
                 switch (command)
                 {
                     case InsKey:
-                        var insId = arguments[argOffset++];
-                        var key = arguments[argOffset++];
-                        var insNode = heap.Add(key, insId);
+                        id = arguments[argOffset++];
+                        key = arguments[argOffset++];
+                        node = heap.Add(key, id);
 
-                        Debug.Assert(insertedNodes[insId] == null);
-                        insertedNodes[insId] = insNode;
+                        Debug.Assert(insertedNodes[id] == null);
+                        insertedNodes[id] = node;
                         break;
 
                     case DelKey:
-                        var min = heap.PeekMin();
-                        insertedNodes[min.Value] = null;
+                        node = heap.PeekMin();
+                        insertedNodes[node.Value] = null;
 
                         heap.DeleteMin();
                         //deleteDepthCount += heap.LastSplayDepth / (float)(Math.Log10(heap.Count + 1) * 3.321928);
                         break;
 
                     case DecKey:
-                        var decId = arguments[argOffset++];
-                        var newKey = arguments[argOffset++];
-                        var decNode = insertedNodes[decId];
+                        id = arguments[argOffset++];
+                        key = arguments[argOffset++];
+                        node = insertedNodes[id];
 
-                        if (decNode == null || newKey > decNode.Key)
+                        if (node == null || key > node.Key)
                             break;
 
-                        heap.DecreaseKey(decNode, newKey);
+                        heap.DecreaseKey(node, key);
                         break;
                 }
             }
