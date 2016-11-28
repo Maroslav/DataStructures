@@ -105,7 +105,7 @@ namespace Utils.DataStructures
             if (_head < Capacity)
                 return;
 
-            int newCapacity = (int)(Capacity * ReallocateFactor);
+            int newCapacity = Math.Max(_head, (int)(Capacity * ReallocateFactor));
             T[] newBuffer = new T[newCapacity];
             Array.Copy(Buffer, newBuffer, _head);
 
@@ -113,6 +113,18 @@ namespace Utils.DataStructures
                 Buffer[i] = default(T);
 
             Buffer = newBuffer;
+        }
+
+        /// <summary>
+        /// Sets head to capacity.
+        /// If larger than Count, pushes capacity-Count nulls; reallocates if neccessary.
+        /// This enables directly indexing items up to capacity.
+        /// </summary>
+        /// <param name="capacity">The new capacity and item cound.</param>
+        internal void Stretch(int capacity)
+        {
+            _head = capacity;
+            CheckReallocate();
         }
 
         #endregion
