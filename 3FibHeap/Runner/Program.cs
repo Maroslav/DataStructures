@@ -1,4 +1,5 @@
-﻿using UtilsTests.SplayTree;
+﻿
+using UtilsTests.FibHeap;
 
 namespace Runner
 {
@@ -8,20 +9,17 @@ namespace Runner
 
         static void Main(string[] args)
         {
-            int[] ts = { 10, 100, 1000, 10000, 100000, 1000000 };
+            var test = new FibGeneratorTests(LogFolderName);
+            test.BalancedTest();
+            test.Dispose();
 
-            foreach (var t in ts)
-            {
-                var test = new SplayGeneratorTests(LogFolderName);
-                test.RunSubset(t);
-                test.Dispose();
-            }
+            test = new FibGeneratorTests(LogFolderName);
+            test.ImbalancedTest();
+            test.Dispose();
 
-            {
-                var test = new SplayGeneratorTests(LogFolderName);
-                test.RunSequential();
-                test.Dispose();
-            }
+            test = new FibGeneratorTests(LogFolderName);
+            test.MaliciousTest();
+            test.Dispose();
         }
     }
 }

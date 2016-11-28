@@ -200,11 +200,9 @@ namespace UtilsTests.FibHeap
 
         #region Running
 
-        public Task RunGeneratorSubset(int t)
+        public Task RunGenerator(string option)
         {
-            Debug.Assert(t > 0);
-
-            var pars = string.Format("-s {0} -t {1}", Seed, t);
+            var pars = string.Format("-s {0} {1}", Seed, option);
             return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
@@ -214,12 +212,28 @@ namespace UtilsTests.FibHeap
             Run(runName, generatorTask);
         }
 
-        public void RunSubset(int T)
+        #endregion
+
+
+        [TestMethod]
+        public void BalancedTest()
         {
-            var generatorTask = RunGeneratorSubset(T);
-            RunInternal("T_test_" + T, generatorTask);
+            var generatorTask = RunGenerator("-r");
+            RunInternal("Balanced_test", generatorTask);
         }
 
-        #endregion
+        [TestMethod]
+        public void ImbalancedTest()
+        {
+            var generatorTask = RunGenerator("-b");
+            RunInternal("Imbalanced_test", generatorTask);
+        }
+
+        [TestMethod]
+        public void MaliciousTest()
+        {
+            var generatorTask = RunGenerator("-x");
+            RunInternal("Malicious_test", generatorTask);
+        }
     }
 }
