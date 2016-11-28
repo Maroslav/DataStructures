@@ -122,7 +122,8 @@ namespace UtilsTests.FibHeap
             var heap = new FibonacciHeap<int, int>();
             int insertCount = arguments[argOffset++];
             NodeItem<int, int>[] insertedNodes = new NodeItem<int, int>[insertCount];
-            float deleteDepthCount = 0;
+            int deleteDepthCount = 0;
+            int deleteCount = 0;
 
             // Do insert commands
             foreach (byte command in commands)
@@ -143,10 +144,12 @@ namespace UtilsTests.FibHeap
 
                     case DelKey:
                         node = heap.PeekMin();
+                        Debug.Assert(insertedNodes[node.Value] != null);
                         insertedNodes[node.Value] = null;
                         heap.DeleteMin();
 
-                        //deleteDepthCount += heap.LastSplayDepth / (float)(Math.Log10(heap.Count + 1) * 3.321928);
+                        deleteDepthCount += heap.LastConsolidateDepth;
+                        deleteCount++;
                         break;
 
                     case DecKey:
@@ -167,17 +170,20 @@ namespace UtilsTests.FibHeap
 
             sw.Stop();
 
-            float avgDeleteDepthCount = deleteDepthCount / insertCount;
+            float avgDeleteDepthCount = 0;
+
+            if (deleteCount > 0)
+                avgDeleteDepthCount = deleteDepthCount / (float)deleteCount;
 
             lock (_results)
-                _results.Add(insertCount, avgDeleteDepthCount);
+                _results.Add(deleteCount, avgDeleteDepthCount);
 
             Interlocked.Increment(ref _currentJobsDone);
-            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4:F} adds/delete depth average",
+            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4:F} deletes/delete depth average",
                 _currentJobsDone,
                 Buffer.WaitingItemCount,
                 sw.ElapsedMilliseconds * 0.001,
-                insertCount,
+                deleteCount,
                 avgDeleteDepthCount);
         }
 

@@ -40,6 +40,9 @@ namespace Utils.DataStructures
         private HeapNode _firstRoot;
         private HeapNode _minNode;
 
+        internal int LastConsolidateDepth;
+
+
         // We use a stack for this because it has sufficiently convenient ops and is handcrafted (a requirement)
         private readonly Stack<HeapNode> _roots = new Stack<HeapNode>();
 
@@ -81,6 +84,7 @@ namespace Utils.DataStructures
                 });
 
                 _firstRoot.Sift(_traversalActions);
+                Debug.Assert(i == Count);
                 return new ItemCollection<NodeItem<TKey, TValue>>(items, Count);
             }
         }
@@ -91,7 +95,7 @@ namespace Utils.DataStructures
             var newNode = new HeapNode(key, value);
 
 #if VERBOSE
-            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
             Console.WriteLine();
             Console.WriteLine(">> Add >> " + newNode);
 #endif
@@ -127,7 +131,7 @@ namespace Utils.DataStructures
         public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
         {
 #if VERBOSE
-            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
             Console.WriteLine();
             Console.WriteLine(">> Decrease key >> {0} >> {1}", node, newKey);
 #endif
@@ -197,7 +201,7 @@ namespace Utils.DataStructures
         public override void DeleteMin()
         {
 #if VERBOSE
-            Console.WriteLine("Current min >> " + PeekMin());
+            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
             Console.WriteLine();
             Console.WriteLine(">> Delete-Min");
 #endif
@@ -213,6 +217,7 @@ namespace Utils.DataStructures
                 _minNode = null;
                 _firstRoot = null;
                 _roots.Stretch(0);
+                Count = 0;
                 return;
             }
 
@@ -232,7 +237,6 @@ namespace Utils.DataStructures
                 HeapNode children = (HeapNode)min.FirstChild;
                 min.FirstChild = null;
                 children.Parent = null;
-
 
                 Consolidate(children);
             }
@@ -310,7 +314,7 @@ namespace Utils.DataStructures
             // Prepare stuff for the first root
             _firstRoot = roots.First();
 
-            if (_minNode == null || updateMin && Comparer.Compare(_firstRoot.Key, _minNode.Key) < 0)
+            if (updateMin)
                 _minNode = _firstRoot;
 
             // Go through the rest
@@ -321,6 +325,7 @@ namespace Utils.DataStructures
                 Debug.Assert(root.Order >= lastRoot.Order);
                 lastRoot.RightSibling = root;
                 lastRoot = root;
+                lastRoot.Parent = null;
 
                 if (updateMin && Comparer.Compare(root.Key, _minNode.Key) < 0)
                     _minNode = root;
@@ -328,7 +333,14 @@ namespace Utils.DataStructures
 
             // Connect the roots to make them cyclic again
             lastRoot.RightSibling = _firstRoot;
+            lastRoot.Parent = null;
             _roots.Stretch(lastRoot.Order + 1);
+
+#if VERBOSE
+            Console.WriteLine("Roots after fixing links:");
+            foreach (var siblingNode in _firstRoot.GetSiblings())
+                Console.WriteLine(siblingNode);
+#endif
         }
 
 
@@ -393,6 +405,7 @@ namespace Utils.DataStructures
                     // Set the Add node for this iteration -- it is only valid if it is of the current order
                     add = firstAdd;
                     inputs |= Bits.Add;
+                    LastConsolidateDepth++;
 
                     // Update firstNode for the next iteration; we work with add in this iteration
                     firstAdd = (HeapNode)firstAdd.RightSibling;
@@ -416,11 +429,7 @@ namespace Utils.DataStructures
 #if VERBOSE
                 var f = _roots.Buffer[currentOrder];
                 if (f != null)
-                {
                     Console.WriteLine("Writing into root slot: " + f);
-                    if (f.Order == 4)
-                        Console.WriteLine("Special root ({4}) left/right || parent/child || child count: {0} ::: {1} || {2} ::: {3} || {5}", f.LeftSibling, f.RightSibling, f.Parent, f.FirstChild, f, f.ChildrenCount);
-                }
 
                 if (carry != null)
                     Console.WriteLine("Have carry: " + carry);
@@ -485,6 +494,9 @@ namespace Utils.DataStructures
             other.Cut();
             smaller.AddChild(other);
             smaller.Order++;
+            LastConsolidateDepth++;
+
+            Debug.Assert(smaller.ChildrenCount <= smaller.Order);
 
 #if VERBOSE
             Console.WriteLine("Merging tree under another: {0} (under {1})", other, smaller);
