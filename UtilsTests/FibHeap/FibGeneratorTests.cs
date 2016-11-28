@@ -69,7 +69,7 @@ namespace UtilsTests.FibHeap
                     var commands = _currentCommands;
                     var arguments = _currentArguments;
 
-                    if (commands != null)
+                    if (commands.Count > 0)
                     {
                         Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(commands, arguments));
 
