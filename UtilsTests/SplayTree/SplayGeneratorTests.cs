@@ -34,6 +34,11 @@ namespace UtilsTests.SplayTree
 
         #region Genesis
 
+        // Needed because of unit testing
+        public SplayGeneratorTests()
+            : this(null)
+        { }
+
         public SplayGeneratorTests(string logFolderName)
             : base(logFolderName, LogFileName, ConsumerCount)
         {

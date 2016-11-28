@@ -36,7 +36,7 @@ namespace UtilsTests.FibHeap
 
         public GeneratorTestsBase(string logFolderName, string logFileName, int consumerCount)
         {
-            _logFolderName = logFolderName;
+            _logFolderName = logFolderName ?? @"Log";
             _logFileName = logFileName;
 
             CancellationTokenSource = new CancellationTokenSource();

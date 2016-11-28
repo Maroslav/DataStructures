@@ -40,6 +40,11 @@ namespace UtilsTests.FibHeap
 
         #region Genesis
 
+        // Needed because of unit testing
+        public FibGeneratorTests()
+            : this(null)
+        { }
+
         public FibGeneratorTests(string logFolderName)
             : base(logFolderName, LogFileName, ConsumerCount)
         {
