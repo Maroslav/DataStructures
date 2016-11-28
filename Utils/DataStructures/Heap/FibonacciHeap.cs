@@ -419,13 +419,13 @@ namespace Utils.DataStructures
                     return;
 
                 case Bits.First | Bits.Carry:
-                    first = CombineNodes(first, carry);
-                    carry = null;
+                    carry = CombineNodes(first, carry);
+                    first = null;
                     return;
                 case Bits.Add | Bits.Carry:
                     add.Parent = null;
-                    first = CombineNodes(add, carry);
-                    carry = null;
+                    carry = CombineNodes(add, carry);
+                    first = null;
                     return;
 
                 case Bits.Add:
