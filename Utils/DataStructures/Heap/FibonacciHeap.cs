@@ -20,6 +20,12 @@ namespace Utils.DataStructures
         {
             internal bool IsMarked { get; set; }
 
+            public int Order
+            {
+                get { return ChildrenCount; }
+                set { ChildrenCount = value; }
+            }
+
             public HeapNode(TKey key, TValue value)
                 : base(key, value)
             { }
@@ -150,6 +156,8 @@ namespace Utils.DataStructures
                 if (parent == null)
                     return;
 
+                parent.Order++; // CutFromFamily decreased it; it has to remain the same
+
                 // Recursively mark and cut parents, end at root
                 while (parent.Parent != null)
                 {
@@ -165,7 +173,8 @@ namespace Utils.DataStructures
 
                     p.IsMarked = false;
                     p.CutFromFamily();
-                    nNode.InsertBefore(p); // Insert as the last node -- parents are always at least as big as their children
+                    parent.Order++; // CutFromFamily decreased it; it has to remain the same
+                    nNode.InsertBefore(p); // Insert as the last (biggest) node -- parents are always at least as big as their children
                 }
             }
             finally
@@ -182,7 +191,7 @@ namespace Utils.DataStructures
             var min = _minNode;
 
 
-            // Cut the minimum from roots (preserves children)
+            // Cut the minimum from roots (preserves children, has no parent -- cannot destroy Order)
             _minNode.CutFromFamily();
             Count--;
             _minNode = null;
@@ -307,7 +316,7 @@ namespace Utils.DataStructures
             Debug.Assert(firstNode != null);
 
             // Update the pointer to the first root
-            if (firstNode.ChildrenCount < _firstRoot.ChildrenCount)
+            if (firstNode.Order < _firstRoot.Order)
                 _firstRoot = firstNode;
 
 
@@ -321,8 +330,8 @@ namespace Utils.DataStructures
                 // Set the order for the current iteration
                 if (carry != null)
                     currentOrder++; // The carry propagates only to the next order
-                else if (firstNode.ChildrenCount > currentOrder)
-                    currentOrder = firstNode.ChildrenCount; // If there is no carry, we handle the next node in the list
+                else if (firstNode.Order > currentOrder)
+                    currentOrder = firstNode.Order; // If there is no carry, we handle the next node in the list
 
                 // Assert root array size
                 if (_roots.Count == currentOrder)
@@ -336,7 +345,7 @@ namespace Utils.DataStructures
                 if (_roots[currentOrder] != null)
                     inputs |= Bits.First;
 
-                if (firstNode != null && firstNode.ChildrenCount == currentOrder)
+                if (firstNode != null && firstNode.Order == currentOrder)
                 {
                     // Set the Add node for this iteration -- it is only valid if it is of the current order
                     add = firstNode;

@@ -24,7 +24,7 @@ namespace Utils.DataStructures.Nodes
 
         #region Properties
 
-        public int ChildrenCount { get; private set; }
+        public int ChildrenCount { get; protected set; }
 
         private new DisseminateNode<TKey, TValue> LeftSibling
         {
@@ -66,6 +66,7 @@ namespace Utils.DataStructures.Nodes
         public void AddChild(DisseminateNode<TKey, TValue> child)
         {
             child.Parent = this;
+            ChildrenCount++;
 
             if (FirstChild == null)
             {
