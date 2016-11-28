@@ -6,14 +6,6 @@ using Utils.DataStructures.Internal;
 
 namespace Utils.DataStructures.Nodes
 {
-    internal enum BinaryNodeAction
-    {
-        Sift,
-        InAction,
-        PostAction,
-    }
-
-
     internal class BinaryNode<TKey, TValue>
             : NodeItem<TKey, TValue>
         where TKey : struct
@@ -310,13 +302,13 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        public BinaryNode<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        public BinaryNode<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.Sift));
 
             try
             {
@@ -339,7 +331,7 @@ namespace Utils.DataStructures.Nodes
 
                     if (nextNode == null)
                         return null;
-                    stack.Push(GetNodeTraversalToken(nextNode, BinaryNodeAction.Sift));
+                    stack.Push(GetNodeTraversalToken(nextNode, NodeTraversalAction.Sift));
                 }
             }
             finally
@@ -357,7 +349,7 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        internal BinaryNode<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        internal BinaryNode<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
         {
             if (!nodeActions.InvokeKeyPreAction(this, searchKey))
                 return null;
@@ -395,7 +387,7 @@ namespace Utils.DataStructures.Nodes
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
         /// <returns>False if an early termination of the recursion is requested.</returns>
-        public bool SiftLeft(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        public bool SiftLeft(NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
         {
             return Sift<NoFlip>(nodeActions);
         }
@@ -405,7 +397,7 @@ namespace Utils.DataStructures.Nodes
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
         /// <returns>False if an early termination of the recursion is requested.</returns>
-        public bool SiftRight(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        public bool SiftRight(NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
         {
             return Sift<DoFlip>(nodeActions);
         }
@@ -415,14 +407,14 @@ namespace Utils.DataStructures.Nodes
         /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
         /// nodes are iterated from the largest to the smallest key (right to left).
         /// </summary>
-        private bool Sift<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        private bool Sift<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
             where T : FlipBase<T>
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.Sift));
 
             try
             {
@@ -432,17 +424,17 @@ namespace Utils.DataStructures.Nodes
 
                     switch (token.Action)
                     {
-                        case BinaryNodeAction.Sift:
+                        case NodeTraversalAction.Sift:
                             if (!token.Node.HandleSift<T>(stack, nodeActions))
                                 return false;
                             break;
 
-                        case BinaryNodeAction.InAction:
+                        case NodeTraversalAction.InAction:
                             if (!nodeActions.InvokeInAction(token.Node))
                                 return false;
                             break;
 
-                        case BinaryNodeAction.PostAction:
+                        case NodeTraversalAction.PostAction:
                             if (!nodeActions.InvokePostAction(token.Node))
                                 return false;
                             break;
@@ -461,7 +453,9 @@ namespace Utils.DataStructures.Nodes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleSift<T>(Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> stack, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        private bool HandleSift<T>(
+            Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, NodeTraversalAction>> stack,
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
             where T : FlipBase<T>
         {
             // First and only visit to this node
@@ -475,20 +469,19 @@ namespace Utils.DataStructures.Nodes
 
             if (right != null)
             {
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
-                stack.Push(GetNodeTraversalToken(right, BinaryNodeAction.Sift));
                 if (nodeActions.HasPostAction)
+                    stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.PostAction));
+                stack.Push(GetNodeTraversalToken(right, NodeTraversalAction.Sift));
             }
-            else if (left != null)
             else if (left != null && nodeActions.HasPostAction)
                 // We need to store the action (it has to be executed after sifting through Left)
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
+                stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.PostAction));
 
             if (left != null)
             {
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.InAction));
-                stack.Push(GetNodeTraversalToken(left, BinaryNodeAction.Sift));
                 if (nodeActions.HasInAction)
+                    stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.InAction));
+                stack.Push(GetNodeTraversalToken(left, NodeTraversalAction.Sift));
             }
             else
             {
@@ -509,7 +502,7 @@ namespace Utils.DataStructures.Nodes
         /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
         /// nodes are iterated from the largest to the smallest key (right to left).
         /// </summary>
-        internal bool SiftRecursive<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
+        internal bool SiftRecursive<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction> nodeActions)
             where T : FlipBase<T>
         {
             if (!nodeActions.InvokePreAction(this))
@@ -545,43 +538,43 @@ namespace Utils.DataStructures.Nodes
             StringBuilder prefix = new StringBuilder();
             StringBuilder sb = new StringBuilder();
 
-            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction preAction = node =>
-            {
-                Debug.Assert(node == this || node.Parent != null);
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction>.NodeTraversalAction preAction = node =>
+             {
+                 Debug.Assert(node == this || node.Parent != null);
 
-                // Compute new prefix for the right child
-                prefix.Append(node.Parent != null && node.IsLeftChild() ? ExtendPrefix : EmptyPrefix);
-                return true;
-            };
+                 // Compute new prefix for the right child
+                 prefix.Append(node.Parent != null && node.IsLeftChild() ? ExtendPrefix : EmptyPrefix);
+                 return true;
+             };
 
-            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction inAction = node =>
-            {
-                // Get the old prefix (revert the preAction)
-                prefix.Length -= ExtendPrefix.Length;
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction>.NodeTraversalAction inAction = node =>
+             {
+                 // Get the old prefix (revert the preAction)
+                 prefix.Length -= ExtendPrefix.Length;
 
-                bool isLeftChild = node.Parent == null || node.IsLeftChild();
+                 bool isLeftChild = node.Parent == null || node.IsLeftChild();
 
-                // Output a new line
-                sb.Append(prefix);
-                if (node.Parent == null)
-                    sb.Append(RootFork);
-                else
-                    sb.Append(isLeftChild ? LeftFork : RightFork);
-                sb.AppendLine(node.Key.ToString());
+                 // Output a new line
+                 sb.Append(prefix);
+                 if (node.Parent == null)
+                     sb.Append(RootFork);
+                 else
+                     sb.Append(isLeftChild ? LeftFork : RightFork);
+                 sb.AppendLine(node.Key.ToString());
 
-                // Compute new prefix for the left child
-                prefix.Append(isLeftChild ? EmptyPrefix : ExtendPrefix);
-                return true;
-            };
+                 // Compute new prefix for the left child
+                 prefix.Append(isLeftChild ? EmptyPrefix : ExtendPrefix);
+                 return true;
+             };
 
-            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction postAction = node =>
-            {
-                // Get the old prefix (revert the inAction)
-                prefix.Length -= ExtendPrefix.Length;
-                return true;
-            };
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction>.NodeTraversalAction postAction = node =>
+             {
+                 // Get the old prefix (revert the inAction)
+                 prefix.Length -= ExtendPrefix.Length;
+                 return true;
+             };
 
-            var nodeActions = new NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>(); // We do not need to pass the owner's comparer -- Sift does not use it (only Find does)
+            var nodeActions = new NodeTraversalActions<TKey, TValue, BinaryNode<TKey, TValue>, NodeTraversalAction>(); // We do not need to pass the owner's comparer -- Sift does not use it (only Find does)
             nodeActions.SetActions(preAction, inAction, postAction);
             SiftRight(nodeActions);
 
@@ -594,9 +587,10 @@ namespace Utils.DataStructures.Nodes
 
         #region Helpers
 
-        private NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction> GetNodeTraversalToken(BinaryNode<TKey, TValue> node, BinaryNodeAction action)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private NodeTraversalToken<BinaryNode<TKey, TValue>, NodeTraversalAction> GetNodeTraversalToken(BinaryNode<TKey, TValue> node, NodeTraversalAction action)
         {
-            return new NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>(node, action);
+            return new NodeTraversalToken<BinaryNode<TKey, TValue>, NodeTraversalAction>(node, action);
         }
 
         #endregion

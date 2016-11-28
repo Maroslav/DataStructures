@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Utils.DataStructures.Internal;
@@ -119,13 +120,13 @@ namespace Utils.DataStructures.Nodes
         /// <summary>
         /// Traverses the graph starting with each nodes children, followed by siblings.
         /// </summary>
-        private bool Sift(NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, BinaryNodeAction> nodeActions)
+        public bool Sift(NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, NodeTraversalAction> nodeActions)
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.Sift));
 
             try
             {
@@ -135,22 +136,18 @@ namespace Utils.DataStructures.Nodes
 
                     switch (token.Action)
                     {
-                        case BinaryNodeAction.Sift:
-                            if (!token.Node.HandleSift(stack, nodeActions))
+                        case NodeTraversalAction.Sift:
+                        case NodeTraversalAction.SiftIgnoreSiblings:
+                            if (!token.Node.HandleSift(stack, nodeActions, token.Action != NodeTraversalAction.SiftIgnoreSiblings))
                                 return false;
                             break;
 
-                        case BinaryNodeAction.InAction:
-                            if (!nodeActions.InvokeInAction(token.Node))
-                                return false;
-                            break;
-
-                        case BinaryNodeAction.PostAction:
+                        case NodeTraversalAction.PostAction:
                             if (!nodeActions.InvokePostAction(token.Node))
                                 return false;
                             break;
 
-                        default:
+                        default: // No inAction here
                             throw new ArgumentOutOfRangeException();
                     }
                 }
@@ -164,7 +161,10 @@ namespace Utils.DataStructures.Nodes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleSift(Stack<NodeTraversalToken<DisseminateNode<TKey, TValue>, BinaryNodeAction>> stack, NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, BinaryNodeAction> nodeActions)
+        private bool HandleSift(
+            Stack<NodeTraversalToken<DisseminateNode<TKey, TValue>, NodeTraversalAction>> stack,
+            NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, NodeTraversalAction> nodeActions,
+            bool addSiblings)
         {
             // First and only visit to this node
             if (!nodeActions.InvokePreAction(this))
@@ -172,40 +172,31 @@ namespace Utils.DataStructures.Nodes
 
 
             // Push actions in reverse order
-            var right = RightSibling;
-            var left = LeftSibling;
+            // Push all siblings
+            if (addSiblings && RightSibling != this)
+                foreach (var siblingNode in GetSiblingsReverse().Where(s => s != this))
+                    // Notify that when being sifted, don't try to add all siblings again
+                    stack.Push(GetNodeTraversalToken((DisseminateNode<TKey, TValue>)siblingNode, NodeTraversalAction.SiftIgnoreSiblings));
 
-            if (right != null)
-            {
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
-                stack.Push(GetNodeTraversalToken(right, BinaryNodeAction.Sift));
-            }
-            else if (left != null)
-                // We need to store the action (it has to be executed after sifting through Left)
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
 
-            if (left != null)
+            // Push the child
+            if (FirstChild != null)
             {
-                stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.InAction));
-                stack.Push(GetNodeTraversalToken(left, BinaryNodeAction.Sift));
-            }
-            else
-            {
-                // Handle missing children -- we can only invoke actions right away if children are null from left to right
-                if (!nodeActions.InvokeInAction(this))
-                    return false;
+                if (nodeActions.HasPostAction)
+                    stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.PostAction));
 
-                if (right == null)
-                    if (!nodeActions.InvokePostAction(this))
-                        return false;
+                stack.Push(GetNodeTraversalToken(FirstChild, NodeTraversalAction.Sift));
             }
+            else if (!nodeActions.InvokePostAction(this)) // Handle missing children -- we can invoke actions right away
+                return false;
 
             return true;
         }
 
-        private NodeTraversalToken<DisseminateNode<TKey, TValue>, BinaryNodeAction> GetNodeTraversalToken(DisseminateNode<TKey, TValue> node, BinaryNodeAction action)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private NodeTraversalToken<DisseminateNode<TKey, TValue>, NodeTraversalAction> GetNodeTraversalToken(DisseminateNode<TKey, TValue> node, NodeTraversalAction action)
         {
-            return new NodeTraversalToken<DisseminateNode<TKey, TValue>, BinaryNodeAction>(node, action);
+            return new NodeTraversalToken<DisseminateNode<TKey, TValue>, NodeTraversalAction>(node, action);
         }
 
         #endregion
