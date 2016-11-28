@@ -57,7 +57,7 @@ namespace Utils.DataStructures
         {
             get
             {
-                FixLinks();
+                FixLinks(false);
 
                 return new ItemCollection<NodeItem<TKey, TValue>>(/* Enumerable of all children */null, Count);
             }
@@ -191,7 +191,7 @@ namespace Utils.DataStructures
 
 
             // Find the new minimum and fix links
-            FixLinks();
+            FixLinks(true);
         }
 
         public override void Delete(NodeItem<TKey, TValue> node)
@@ -236,7 +236,7 @@ namespace Utils.DataStructures
 
         #region Helpers
 
-        private void FixLinks()
+        private void FixLinks(bool updateMin)
         {
             // Consolidation does not neccessarily keep the roots
             // interlinked correctly -- we need to go through the array
@@ -248,6 +248,10 @@ namespace Utils.DataStructures
             {
                 lastRoot = second;
                 first.RightSibling = second;
+
+                if (!updateMin) // Skip comparison
+                    return _minNode;
+
                 int comp = Comparer.Compare(first.Key, second.Key);
                 return comp <= 0 ? first : second;
             });
