@@ -193,10 +193,14 @@ namespace UtilsTests.FibHeap
             for (int i = 0; i < Rounds; i++)
             {
                 var items = AddItems(ItemCount);
-
                 var treeItems = _heap.Items;
-                Debug.WriteLine(treeItems.ToString(n => n.Key.ToString()));
                 var treeItemsCollection = treeItems.ToArray();
+
+                Assert.AreEqual(ItemCount, _heap.Count);
+                Assert.AreEqual(ItemCount, treeItems.Count);
+                Assert.AreEqual(ItemCount, treeItemsCollection.Length);
+
+                Debug.WriteLine(treeItems.ToString(n => n.Key.ToString()));
 
                 CollectionAssert.AllItemsAreNotNull(treeItemsCollection);
                 CollectionAssert.IsSubsetOf(treeItemsCollection, items);
