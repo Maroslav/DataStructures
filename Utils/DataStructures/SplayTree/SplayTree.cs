@@ -17,7 +17,7 @@ namespace Utils.DataStructures
         internal int LastSplayDepth;
 
         // Local variable to reduce stack load during recursion (we assume single-threaded usage)
-        private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
+        private readonly NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> _traversalActions;
 
         #endregion
 
@@ -25,7 +25,7 @@ namespace Utils.DataStructures
 
         public SplayTree(IComparer<TKey> keyComparer = null)
         {
-            _traversalActions = new NodeTraversalActions<TKey, TValue>(keyComparer);
+            _traversalActions = new NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>(keyComparer);
         }
 
         #endregion

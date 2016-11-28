@@ -1,6 +1,7 @@
 ﻿namespace Utils.DataStructures.Internal
 {
     internal struct NodeTraversalToken<TNode, TAction>
+        where TAction : struct
     {
         public readonly TNode Node;
         public readonly TAction Action;

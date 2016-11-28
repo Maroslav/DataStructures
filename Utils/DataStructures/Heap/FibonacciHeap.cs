@@ -35,7 +35,7 @@ namespace Utils.DataStructures
         // We use a stack for this because it has sufficiently convenient ops and is handcrafted (a requirement)
         private readonly Stack<HeapNode> _roots = new Stack<HeapNode>();
 
-        private readonly NodeTraversalActions<TKey, TValue> _traversalActions;
+        private readonly NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, BinaryNodeAction> _traversalActions;
 
         #endregion
 
@@ -44,7 +44,7 @@ namespace Utils.DataStructures
         public FibonacciHeap(IComparer<TKey> keyComparer = null)
             : base(keyComparer)
         {
-            _traversalActions = new NodeTraversalActions<TKey, TValue>();
+            _traversalActions = new NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, BinaryNodeAction>();
         }
 
         #endregion

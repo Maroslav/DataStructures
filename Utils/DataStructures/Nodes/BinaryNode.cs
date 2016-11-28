@@ -310,7 +310,7 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        public BinaryNode<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
+        public BinaryNode<TKey, TValue> Find(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
             // and it's impractical to change it.....
@@ -357,7 +357,7 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         /// <returns>The first node that matches the <see cref="searchKey"/> or null if the key
         /// is not present in the tree.</returns>
-        internal BinaryNode<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue> nodeActions)
+        internal BinaryNode<TKey, TValue> FindRecursive(TKey searchKey, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
         {
             if (!nodeActions.InvokeKeyPreAction(this, searchKey))
                 return null;
@@ -395,7 +395,7 @@ namespace Utils.DataStructures.Nodes
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
         /// <returns>False if an early termination of the recursion is requested.</returns>
-        public bool SiftLeft(NodeTraversalActions<TKey, TValue> nodeActions)
+        public bool SiftLeft(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
         {
             return Sift<NoFlip>(nodeActions);
         }
@@ -405,7 +405,7 @@ namespace Utils.DataStructures.Nodes
         /// The False return value of the action functions will result in early termination of the traversal.
         /// </summary>
         /// <returns>False if an early termination of the recursion is requested.</returns>
-        public bool SiftRight(NodeTraversalActions<TKey, TValue> nodeActions)
+        public bool SiftRight(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
         {
             return Sift<DoFlip>(nodeActions);
         }
@@ -415,7 +415,7 @@ namespace Utils.DataStructures.Nodes
         /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
         /// nodes are iterated from the largest to the smallest key (right to left).
         /// </summary>
-        private bool Sift<T>(NodeTraversalActions<TKey, TValue> nodeActions)
+        private bool Sift<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
             where T : FlipBase<T>
         {
             // We have to use an iterative way because the default stack size of .net apps is 1MB
@@ -461,7 +461,7 @@ namespace Utils.DataStructures.Nodes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleSift<T>(Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> stack, NodeTraversalActions<TKey, TValue> nodeActions)
+        private bool HandleSift<T>(Stack<NodeTraversalToken<BinaryNode<TKey, TValue>, BinaryNodeAction>> stack, NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
             where T : FlipBase<T>
         {
             // First and only visit to this node
@@ -506,7 +506,7 @@ namespace Utils.DataStructures.Nodes
         /// to the largest key (left to right); if the parameter is <see cref="DoFlip"/>,
         /// nodes are iterated from the largest to the smallest key (right to left).
         /// </summary>
-        internal bool SiftRecursive<T>(NodeTraversalActions<TKey, TValue> nodeActions)
+        internal bool SiftRecursive<T>(NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction> nodeActions)
             where T : FlipBase<T>
         {
             if (!nodeActions.InvokePreAction(this))
@@ -542,7 +542,7 @@ namespace Utils.DataStructures.Nodes
             StringBuilder prefix = new StringBuilder();
             StringBuilder sb = new StringBuilder();
 
-            NodeTraversalActions<TKey, TValue>.NodeTraversalAction preAction = node =>
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction preAction = node =>
             {
                 Debug.Assert(node == this || node.Parent != null);
 
@@ -551,7 +551,7 @@ namespace Utils.DataStructures.Nodes
                 return true;
             };
 
-            NodeTraversalActions<TKey, TValue>.NodeTraversalAction inAction = node =>
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction inAction = node =>
             {
                 // Get the old prefix (revert the preAction)
                 prefix.Length -= ExtendPrefix.Length;
@@ -571,14 +571,14 @@ namespace Utils.DataStructures.Nodes
                 return true;
             };
 
-            NodeTraversalActions<TKey, TValue>.NodeTraversalAction postAction = node =>
+            NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>.NodeTraversalAction postAction = node =>
             {
                 // Get the old prefix (revert the inAction)
                 prefix.Length -= ExtendPrefix.Length;
                 return true;
             };
 
-            var nodeActions = new NodeTraversalActions<TKey, TValue>(); // We do not need to pass the owner's comparer -- Sift does not use it (only Find does)
+            var nodeActions = new NodeTraversalActions<TKey, TValue, BinaryNode<TKey,TValue>, BinaryNodeAction>(); // We do not need to pass the owner's comparer -- Sift does not use it (only Find does)
             nodeActions.SetActions(preAction, inAction, postAction);
             SiftRight(nodeActions);
 
