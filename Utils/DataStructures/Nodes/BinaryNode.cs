@@ -477,8 +477,10 @@ namespace Utils.DataStructures.Nodes
             {
                 stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
                 stack.Push(GetNodeTraversalToken(right, BinaryNodeAction.Sift));
+                if (nodeActions.HasPostAction)
             }
             else if (left != null)
+            else if (left != null && nodeActions.HasPostAction)
                 // We need to store the action (it has to be executed after sifting through Left)
                 stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.PostAction));
 
@@ -486,6 +488,7 @@ namespace Utils.DataStructures.Nodes
             {
                 stack.Push(GetNodeTraversalToken(this, BinaryNodeAction.InAction));
                 stack.Push(GetNodeTraversalToken(left, BinaryNodeAction.Sift));
+                if (nodeActions.HasInAction)
             }
             else
             {

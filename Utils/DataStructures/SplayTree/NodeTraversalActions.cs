@@ -15,6 +15,8 @@ namespace Utils.DataStructures.Internal
         public delegate bool NodeKeyTraversalAction(TNode node, TKey searchKey);
 
 
+        #region Fields
+
         private NodeTraversalAction _preAction;
         private NodeTraversalAction _inAction;
         private NodeTraversalAction _postAction;
@@ -24,6 +26,13 @@ namespace Utils.DataStructures.Internal
 
         private Stack<NodeTraversalToken<TNode, TNodeAction>> _traversalStack;
 
+        #endregion
+
+        #region Properties
+
+        public bool HasPreAction { get { return _preAction != null; } }
+        public bool HasInAction { get { return _inAction != null; } }
+        public bool HasPostAction { get { return _postAction != null; } }
 
         public IComparer<TKey> KeyComparer { get; private set; }
 
@@ -32,12 +41,16 @@ namespace Utils.DataStructures.Internal
             get { return _traversalStack = _traversalStack ?? new Stack<NodeTraversalToken<TNode, TNodeAction>>(); }
         }
 
+        #endregion
+
 
         public NodeTraversalActions(IComparer<TKey> keyComparer = null)
         {
             KeyComparer = keyComparer ?? Comparer<TKey>.Default;
         }
 
+
+        #region Action setters
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetActions(NodeTraversalAction preAction = null, NodeTraversalAction inAction = null, NodeTraversalAction postAction = null)
@@ -54,23 +67,26 @@ namespace Utils.DataStructures.Internal
             _keyPostAction = keyPostAction;
         }
 
+        #endregion
+
+        #region Action invokation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InvokePreAction(TNode node)
         {
-            return _preAction == null || _preAction(node);
+            return !HasPreAction || _preAction(node);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InvokeInAction(TNode node)
         {
-            return _inAction == null || _inAction(node);
+            return !HasInAction || _inAction(node);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InvokePostAction(TNode node)
         {
-            return _postAction == null || _postAction(node);
+            return !HasPostAction || _postAction(node);
         }
 
 
@@ -85,5 +101,7 @@ namespace Utils.DataStructures.Internal
         {
             return _keyPostAction == null || _keyPostAction(node, searchKey);
         }
+
+        #endregion
     }
 }
