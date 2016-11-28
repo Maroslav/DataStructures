@@ -57,9 +57,23 @@ namespace Utils.DataStructures
         {
             get
             {
+                NodeItem<TKey, TValue>[] items = new NodeItem<TKey, TValue>[Count];
+
+                if (Count == 0)
+                    return new ItemCollection<NodeItem<TKey, TValue>>(items, 0);
+
                 FixLinks(false);
 
-                return new ItemCollection<NodeItem<TKey, TValue>>(/* Enumerable of all children */null, Count);
+                int i = 0;
+
+                _traversalActions.SetActions(preAction: n =>
+                {
+                    items[i++] = n;
+                    return true;
+                });
+
+                _firstRoot.Sift(_traversalActions);
+                return new ItemCollection<NodeItem<TKey, TValue>>(items, Count);
             }
         }
 
@@ -211,7 +225,22 @@ namespace Utils.DataStructures
 
         public override void Clear()
         {
-            throw new NotImplementedException("TODO");
+            if (Count == 0)
+                return;
+
+            _traversalActions.SetActions(postAction: n =>
+            {
+                n.Dispose();
+                return true;
+            });
+
+            // Start Dispose from the last node
+            _firstRoot.Sift(_traversalActions);
+
+            _roots.Clear();
+            _firstRoot = null;
+            _minNode = null;
+            Count = 0;
         }
 
         #endregion
