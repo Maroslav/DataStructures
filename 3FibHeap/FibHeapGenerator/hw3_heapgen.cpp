@@ -14,6 +14,8 @@
 #define NAIVE_MIN (1)
 #define NAIVE_DIF (1)
 
+#define RAND() (((rand()) << 16) | (rand()))
+
 int a[MAX_LEN + 1];
 
 static void usage(void)
@@ -102,7 +104,7 @@ static void random_gen(int bias)
 
     for (int length = MIN_LEN; length <= MAX_LEN; length += DIF_LEN) {
         for (int i = 0; i < length; i++) // initialize some random elements to insert
-            a[i] = ((int)rand()) % length;
+            a[i] = ((int)RAND()) % length;
 
         //         fprintf(stderr,"test of length %i\n",length);
         printf("# %d\n", length);
@@ -116,16 +118,16 @@ static void random_gen(int bias)
         }
 
         while (next < length) {
-            op = ((int)rand()) % (length + nr_dec + nr_del); //choose an operation at random
+            op = ((int)RAND()) % (length + nr_dec + nr_del); //choose an operation at random
 
             if (op < length) { //insert the next element
                 printf("INS %d %d\n", next, a[next]);
                 next++;
             }
             else if (op < length + nr_dec) { //decrease the key of some element
-                j = ((int)rand()) % next;
+                j = ((int)RAND()) % next;
                 if (a[j] > 0) { //key of element can be decreased
-                    a[j] -= (((int)rand()) % next) + 1; //subtract some positive number
+                    a[j] -= (((int)RAND()) % next) + 1; //subtract some positive number
                     if (a[j] < 0) a[j] = 0;
                     printf("DEC %d %d\n", j, a[j]);
                 }
