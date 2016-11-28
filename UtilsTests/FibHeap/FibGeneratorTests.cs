@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.DataStructures;
+using Utils.DataStructures.Nodes;
 
 namespace UtilsTests.FibHeap
 {
@@ -113,8 +114,9 @@ namespace UtilsTests.FibHeap
             int argOffset = 0;
 
             // Prepare the heap
-            var heap = new FibonacciHeap<int, string>();
+            var heap = new FibonacciHeap<int, int>();
             int insertCount = arguments[argOffset++];
+            NodeItem<int, int>[] insertedNodes = new NodeItem<int, int>[insertCount];
             float deleteDepthCount = 0;
 
             // Do insert commands
@@ -124,17 +126,30 @@ namespace UtilsTests.FibHeap
                 {
                     case InsKey:
                         var insId = arguments[argOffset++];
-                        heap.Add(arguments[argOffset++], null);
+                        var key = arguments[argOffset++];
+                        var insNode = heap.Add(key, insId);
+
+                        Debug.Assert(insertedNodes[insId] == null);
+                        insertedNodes[insId] = insNode;
                         break;
 
                     case DelKey:
+                        var min = heap.PeekMin();
+                        insertedNodes[min.Value] = null;
+
                         heap.DeleteMin();
                         //deleteDepthCount += heap.LastSplayDepth / (float)(Math.Log10(heap.Count + 1) * 3.321928);
                         break;
 
                     case DecKey:
                         var decId = arguments[argOffset++];
-                        heap.DecreaseKey(null, arguments[argOffset++]);
+                        var newKey = arguments[argOffset++];
+                        var decNode = insertedNodes[decId];
+
+                        if (decNode == null || newKey > decNode.Key)
+                            break;
+
+                        heap.DecreaseKey(decNode, newKey);
                         break;
                 }
             }
