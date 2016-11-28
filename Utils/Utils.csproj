@@ -42,6 +42,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_VERBOSE|x64'">
     <OutputPath>bin\x64\Debug_VERBOSE\</OutputPath>
     <DefineConstants>TRACE;DEBUG;LONG_RUNNING_TESTS, VERBOSE</DefineConstants>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
