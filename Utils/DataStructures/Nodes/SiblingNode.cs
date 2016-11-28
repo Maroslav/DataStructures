@@ -27,8 +27,8 @@ namespace Utils.DataStructures.Nodes
             set
             {
                 _leftSibling = value;
-                if (_leftSibling != null)
-                    _leftSibling._rightSibling = this;
+                Debug.Assert(_leftSibling != null);
+                _leftSibling._rightSibling = this;
             }
         }
 
@@ -38,8 +38,8 @@ namespace Utils.DataStructures.Nodes
             set
             {
                 _rightSibling = value;
-                if (_rightSibling != null)
-                    _rightSibling._leftSibling = this;
+                Debug.Assert(_rightSibling != null);
+                _rightSibling._leftSibling = this;
             }
         }
 
@@ -50,7 +50,7 @@ namespace Utils.DataStructures.Nodes
         public SiblingNode(TKey key, TValue value)
             : base(key, value)
         {
-            LeftSibling = this; // Sets right sibling..
+            LeftSibling = this; // Sets the right sibling too..
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,8 +107,8 @@ namespace Utils.DataStructures.Nodes
             {
                 Debug.Assert(nextSibling != null);
                 actSibling = nextSibling;
+                nextSibling = actSibling.RightSibling; // Store the pointer to the next one because it might change after yielding
                 yield return actSibling;
-                nextSibling = actSibling.RightSibling;
             }
         }
 
