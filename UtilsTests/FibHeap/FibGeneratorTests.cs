@@ -28,7 +28,7 @@ namespace UtilsTests.FibHeap
         private const string GeneratorName = "FibHeapGenerator.exe";
         private const string LogFileName = "FibHeapLog";
 
-        private const int ConsumerCount = 4;
+        private const int ConsumerCount = 2;
         private int _currentJobsDone;
 
         private Stack<byte> _currentCommands = new Stack<byte>(BuilderInitSize);
@@ -48,7 +48,7 @@ namespace UtilsTests.FibHeap
         public FibGeneratorTests(string logFolderName)
             : base(logFolderName, LogFileName, ConsumerCount)
         {
-            OnFinished += Finished;
+            OnGeneratorFinished += GeneratorFinished;
             StartConsumers(ProcessData);
         }
 
@@ -209,7 +209,7 @@ namespace UtilsTests.FibHeap
                 avgDeleteDepthCount);
         }
 
-        private void Finished()
+        private void GeneratorFinished()
         {
             if (_currentCommands != null)
             {

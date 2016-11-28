@@ -28,7 +28,7 @@ namespace UtilsTests.FibHeap
         protected readonly MyCommandConsumer<TWorkItem>[] Consumers;
 
         private TextWriter _log;
-        protected event Action OnFinished;
+        protected event Action OnGeneratorFinished;
 
         #endregion
 
@@ -106,8 +106,8 @@ namespace UtilsTests.FibHeap
                 }
             }
 
-            if (OnFinished != null)
-                OnFinished();
+            if (OnGeneratorFinished != null)
+                OnGeneratorFinished();
 
             Assert.IsFalse(CancellationTokenSource.IsCancellationRequested);
         }
@@ -134,6 +134,7 @@ namespace UtilsTests.FibHeap
 
         protected void StartConsumers(Action<TWorkItem> processingAction)
         {
+            Console.WriteLine();
             Console.WriteLine("Starting " + Consumers.Length + " workers.");
             for (int i = 0; i < Consumers.Length; i++)
             {

@@ -42,7 +42,7 @@ namespace UtilsTests.SplayTree
         public SplayGeneratorTests(string logFolderName)
             : base(logFolderName, LogFileName, ConsumerCount)
         {
-            OnFinished += Finished;
+            OnGeneratorFinished += GeneratorFinished;
             StartConsumers(ProcessDataHandler);
         }
 
@@ -165,7 +165,7 @@ namespace UtilsTests.SplayTree
                 avgFindDepth);
         }
 
-        private void Finished()
+        private void GeneratorFinished()
         {
             if (_currentCommands != null)
             {
