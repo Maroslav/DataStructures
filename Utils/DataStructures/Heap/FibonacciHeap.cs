@@ -324,11 +324,12 @@ namespace Utils.DataStructures
 
         private void Consolidate(HeapNode firstAdd)
         {
+#if VERBOSE
             var addNodes = firstAdd.GetSiblings().Cast<HeapNode>().ToArray();
             var adds = addNodes.Aggregate("", (a, s) => a + s + "\n").Trim();
             Console.WriteLine("Nodes to consolidate:");
             Console.WriteLine(adds);
-
+#endif
 
             Debug.Assert(firstAdd != null);
 
@@ -387,6 +388,7 @@ namespace Utils.DataStructures
                     (_roots.Buffer[currentOrder] == null && carry != null) // A non-null first implies a carry (otherwise there were three null inputs, which we don't allow)
                     || _roots.Buffer[currentOrder].Order == currentOrder);
 
+#if VERBOSE
                 var f = _roots.Buffer[currentOrder];
                 if (f != null)
                 {
@@ -397,6 +399,7 @@ namespace Utils.DataStructures
 
                 if (carry != null)
                     Console.WriteLine("Have carry: " + carry);
+#endif
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).
@@ -455,14 +458,16 @@ namespace Utils.DataStructures
 
             Debug.Assert(smaller.Order == other.Order);
             other.Cut();
-            smaller.AddChild(other); // Increases smaller's order
+            smaller.AddChild(other);
             smaller.Order++;
 
+#if VERBOSE
             Console.WriteLine("Merging tree under another: {0} (under {1})", other, smaller);
 
             Console.WriteLine("All siblings ({0}): ", smaller.ChildrenCount);
             foreach (var siblingNode in smaller.FirstChild.GetSiblings().Take(4))
                 Console.WriteLine(siblingNode);
+#endif
 
             if (other == _firstRoot)
                 _firstRoot = smaller;

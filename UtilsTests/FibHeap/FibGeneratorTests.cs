@@ -130,6 +130,7 @@ namespace UtilsTests.FibHeap
                 int id, key;
                 NodeItem<int, int> node;
 
+#if VERBOSE
                 switch (command)
                 {
                     case InsKey:
@@ -144,13 +145,16 @@ namespace UtilsTests.FibHeap
                 }
 
                 Console.WriteLine("Have min: " + heap.PeekMin());
+#endif
 
                 switch (command)
                 {
                     case InsKey:
                         id = arguments[argOffset++];
                         key = arguments[argOffset++];
+#if VERBOSE
                         Console.WriteLine("Args - id/new key : {0} : {1}", id, key);
+#endif
                         node = heap.Add(key, id);
 
                         Debug.Assert(insertedNodes[id] == null);
@@ -172,14 +176,18 @@ namespace UtilsTests.FibHeap
 
                         if (node == null || key > node.Key)
                             break;
+#if VERBOSE
                         Console.WriteLine("Args id/new key : {0} : {1}", id, key);
+#endif
 
                         heap.DecreaseKey(node, key);
                         break;
                 }
 
+#if VERBOSE
                 Console.WriteLine("Left with min: " + heap.PeekMin());
                 Console.WriteLine();
+#endif
             }
 
             // Cleanup and store the measurements
