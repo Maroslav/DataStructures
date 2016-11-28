@@ -106,6 +106,23 @@ namespace Utils.DataStructures.Nodes
             }
         }
 
+        public IEnumerable<SiblingNode<TKey, TValue>> GetSiblingsReverse()
+        {
+            var actSibling = this;
+            var nextSibling = actSibling.LeftSibling;
+            Debug.Assert(LeftSibling != null);
+
+            yield return actSibling;
+
+            while (nextSibling != this)
+            {
+                Debug.Assert(nextSibling != null);
+                actSibling = nextSibling;
+                yield return actSibling;
+                nextSibling = actSibling.LeftSibling;
+            }
+        }
+
         #endregion
     }
 }
