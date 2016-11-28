@@ -119,11 +119,12 @@ namespace UtilsTests.FibHeap
         [TestMethod]
         public void TestRootSeqUp()
         {
-            var min = AddItems(1).First();
+            var min = NewNode(-1);
+            _heap.Add(min.Key, min.Value);
 
             for (int i = 0; i < Rounds; i++)
             {
-                Assert.AreEqual(i, _heap.Count);
+                Assert.AreEqual(i + 1, _heap.Count);
 
                 var temp = NewNode(i);
                 _heap.Add(temp.Key, temp.Value);
@@ -136,18 +137,39 @@ namespace UtilsTests.FibHeap
         [TestMethod]
         public void TestRootRandom()
         {
-            var min = AddItems(1).First();
+            var min = AddItems(1).First().Key;
 
             for (int i = 0; i < Rounds; i++)
             {
-                Assert.AreEqual(i, _heap.Count);
+                Assert.AreEqual(i + 1, _heap.Count);
 
                 var temp = NewNode();
                 _heap.Add(temp.Key, temp.Value);
 
-                Assert.AreEqual(_heap.PeekMin().Key, min.Key);
-                Assert.AreEqual(_heap.PeekMin().Value, min.Value);
+                if (temp.Key <= min)
+                    min = temp.Key;
+
+                Assert.AreEqual(_heap.PeekMin().Key, min);
             }
+        }
+
+        [TestMethod]
+        public void TestDelayedPeekMinRandom()
+        {
+            var min = AddItems(1).First().Key;
+
+            for (int i = 0; i < Rounds; i++)
+            {
+                Assert.AreEqual(i + 1, _heap.Count);
+
+                var temp = NewNode();
+                _heap.Add(temp.Key, temp.Value);
+
+                if (temp.Key <= min)
+                    min = temp.Key;
+            }
+
+            Assert.AreEqual(_heap.PeekMin().Key, min);
         }
 
         [TestMethod]
