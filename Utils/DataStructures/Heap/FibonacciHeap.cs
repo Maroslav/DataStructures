@@ -322,13 +322,19 @@ namespace Utils.DataStructures
             Carry = 4,
         }
 
-        private void Consolidate(HeapNode firstNode)
+        private void Consolidate(HeapNode firstAdd)
         {
-            Debug.Assert(firstNode != null);
+            var addNodes = firstAdd.GetSiblings().Cast<HeapNode>().ToArray();
+            var adds = addNodes.Aggregate("", (a, s) => a + s + "\n").Trim();
+            Console.WriteLine("Nodes to consolidate:");
+            Console.WriteLine(adds);
 
-            // Update the pointer to the first root
-            if (firstNode.Order < _firstRoot.Order)
-                _firstRoot = firstNode;
+
+            Debug.Assert(firstAdd != null);
+
+            // Update the pointer to the first root. It will be first even after a carry
+            if (firstAdd.Order < _firstRoot.Order)
+                _firstRoot = firstAdd;
 
 
             // Nodes should be ordered from the smallest -- this makes it the same as binary digit addition
@@ -336,17 +342,17 @@ namespace Utils.DataStructures
             int currentOrder = 0;
 
             // We end when we reach the end of the list and when there is no leftover carry
-            while (firstNode != null || carry != null)
+            while (firstAdd != null || carry != null)
             {
                 // Set the order for the current iteration
                 if (carry != null)
                     currentOrder++; // The carry propagates only to the next order
-                else if (firstNode.Order > currentOrder)
-                    currentOrder = firstNode.Order; // If there is no carry, we handle the next node in the list
+                else if (firstAdd.Order > currentOrder)
+                    currentOrder = firstAdd.Order; // If there is no carry, we handle the next node in the list
 
                 // Assert root array size
-                if (_roots.Count == currentOrder)
-                    _roots.Push(null); // Forces resize; will be replaced by the joined node
+                if (_roots.Count <= currentOrder)
+                    _roots.Stretch(currentOrder + 1); // Forces resize
 
 
                 // Setup the not-null flag -- inputs
@@ -356,19 +362,19 @@ namespace Utils.DataStructures
                 if (_roots[currentOrder] != null)
                     inputs |= Bits.First;
 
-                if (firstNode != null && firstNode.Order == currentOrder)
+                if (firstAdd != null && firstAdd.Order == currentOrder)
                 {
                     // Set the Add node for this iteration -- it is only valid if it is of the current order
-                    add = firstNode;
+                    add = firstAdd;
                     inputs |= Bits.Add;
 
                     // Update firstNode for the next iteration; we work with add in this iteration
-                    firstNode = (HeapNode)firstNode.RightSibling;
+                    firstAdd = (HeapNode)firstAdd.RightSibling;
 
-                    if (firstNode != add)
-                        firstNode.CutFromFamily(); // Remove it from the list
+                    if (firstAdd != add)
+                        firstAdd.CutFromFamily(); // Remove it from the list
                     else
-                        firstNode = null; // This is the only node left in the list -- set it to null to signal exit
+                        firstAdd = null; // This is the only node left in the list -- set it to null to signal exit
                 }
 
                 if (carry != null)
@@ -377,6 +383,20 @@ namespace Utils.DataStructures
 
                 // Combine the nodes together, update the roots and minNode and create the new carry
                 AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
+                Debug.Assert(
+                    (_roots.Buffer[currentOrder] == null && carry != null) // A non-null first implies a carry (otherwise there were three null inputs, which we don't allow)
+                    || _roots.Buffer[currentOrder].Order == currentOrder);
+
+                var f = _roots.Buffer[currentOrder];
+                if (f != null)
+                {
+                    Console.WriteLine("Writing into root slot: " + f);
+                    if (f.Order == 4)
+                        Console.WriteLine("Special root ({4}) left/right || parent/child || child count: {0} ::: {1} || {2} ::: {3} || {5}", f.LeftSibling, f.RightSibling, f.Parent, f.FirstChild, f, f.ChildrenCount);
+                }
+
+                if (carry != null)
+                    Console.WriteLine("Have carry: " + carry);
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).
@@ -437,6 +457,12 @@ namespace Utils.DataStructures
             other.Cut();
             smaller.AddChild(other); // Increases smaller's order
             smaller.Order++;
+
+            Console.WriteLine("Merging tree under another: {0} (under {1})", other, smaller);
+
+            Console.WriteLine("All siblings ({0}): ", smaller.ChildrenCount);
+            foreach (var siblingNode in smaller.FirstChild.GetSiblings().Take(4))
+                Console.WriteLine(siblingNode);
 
             if (other == _firstRoot)
                 _firstRoot = smaller;
