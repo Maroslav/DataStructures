@@ -158,8 +158,6 @@ namespace Utils.DataStructures
                 if (parent == null)
                     return;
 
-                parent.Order++; // CutFromFamily decreased it; it has to remain the same
-
                 // Recursively mark and cut parents, end at root
                 while (parent.Parent != null)
                 {
@@ -175,7 +173,6 @@ namespace Utils.DataStructures
 
                     p.IsMarked = false;
                     p.CutFromFamily();
-                    parent.Order++; // CutFromFamily decreased it; it has to remain the same
                     nNode.InsertBefore(p); // Insert as the last (biggest) node -- parents are always at least as big as their children
                 }
             }
@@ -190,10 +187,20 @@ namespace Utils.DataStructures
             if (Count == 0)
                 return;
 
+            if (Count == 1)
+            {
+                _minNode.Dispose();
+                _minNode = null;
+                _firstRoot = null;
+                _roots.Stretch(0);
+                return;
+            }
+
+            Debug.Assert(_minNode != null);
             var min = _minNode;
 
-
-            // Cut the minimum from roots (preserves children, has no parent -- cannot destroy Order)
+            // Cut the minimum from roots (preserves children)
+            _roots[_minNode.Order] = null;
             _minNode.CutFromFamily();
             Count--;
             _minNode = null;
@@ -204,16 +211,11 @@ namespace Utils.DataStructures
             {
                 HeapNode children = (HeapNode)min.FirstChild;
                 min.FirstChild = null;
+                children.Parent = null;
 
-                if (children != null)
-                {
-                    children.Parent = null;
-                    Consolidate(children);
-                }
+
+                Consolidate(children);
             }
-
-            if (Count == 0)
-                return;
 
 
             // Find the new minimum and fix links
@@ -284,22 +286,29 @@ namespace Utils.DataStructures
             // Consolidation does not neccessarily keep the roots
             // interlinked correctly -- we need to go through the array
             var roots = _roots.Where(r => r != null);
+
+            // Prepare stuff for the first root
             _firstRoot = roots.First();
+
+            if (_minNode == null || updateMin && Comparer.Compare(_firstRoot.Key, _minNode.Key) < 0)
+                _minNode = _firstRoot;
+
+            // Go through the rest
             HeapNode lastRoot = _firstRoot;
 
-            _minNode = roots.Aggregate((first, second) =>
+            foreach (var root in roots.Skip(1))
             {
-                lastRoot = second;
-                first.RightSibling = second;
+                Debug.Assert(root.Order >= lastRoot.Order);
+                lastRoot.RightSibling = root;
+                lastRoot = root;
 
-                if (!updateMin) // Skip comparison
-                    return _minNode;
+                if (updateMin && Comparer.Compare(root.Key, _minNode.Key) < 0)
+                    _minNode = root;
+            }
 
-                int comp = Comparer.Compare(first.Key, second.Key);
-                return comp <= 0 ? first : second;
-            });
-
+            // Connect the roots to make them cyclic again
             lastRoot.RightSibling = _firstRoot;
+            _roots.Stretch(lastRoot.Order + 1);
         }
 
 
@@ -399,8 +408,6 @@ namespace Utils.DataStructures
                     carry = null;
                     return;
 
-                case Bits.First:
-                    return;
                 case Bits.Add:
                     add.Parent = null;
                     first = add;
@@ -410,7 +417,7 @@ namespace Utils.DataStructures
                     carry = null;
                     return;
 
-                default:
+                case Bits.First:
                     throw new ArgumentOutOfRangeException("inputs", inputs, "This should not happen..");
             }
         }
@@ -426,7 +433,10 @@ namespace Utils.DataStructures
             if (comp > 0)
                 Swap(ref smaller, ref other);
 
-            smaller.AddChild(other);
+            Debug.Assert(smaller.Order == other.Order);
+            other.Cut();
+            smaller.AddChild(other); // Increases smaller's order
+            smaller.Order++;
 
             if (other == _firstRoot)
                 _firstRoot = smaller;
