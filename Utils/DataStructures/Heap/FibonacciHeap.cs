@@ -37,8 +37,8 @@ namespace Utils.DataStructures
 
         #region Fields
 
-        private HeapNode _firstRoot;
         private HeapNode _minNode;
+        private HeapNode _consolidateRoots;
 
         internal int LastConsolidateDepth;
 
@@ -73,8 +73,6 @@ namespace Utils.DataStructures
                 if (Count == 0)
                     return new ItemCollection<NodeItem<TKey, TValue>>(items, 0);
 
-                FixLinks(false);
-
                 int i = 0;
 
                 _traversalActions.SetActions(preAction: n =>
@@ -83,7 +81,13 @@ namespace Utils.DataStructures
                     return true;
                 });
 
-                _firstRoot.Sift(_traversalActions);
+                foreach (var root in GetRoots())
+                    root.Sift(_traversalActions);
+
+                if (_consolidateRoots != null)
+                    foreach (var root in _consolidateRoots.GetSiblings().Cast<HeapNode>())
+                        root.Sift(_traversalActions);
+
                 Debug.Assert(i == Count);
                 return new ItemCollection<NodeItem<TKey, TValue>>(items, Count);
             }
@@ -102,19 +106,20 @@ namespace Utils.DataStructures
 
             if (Count == 0)
             {
-                _firstRoot = newNode;
-                _minNode = _firstRoot;
                 Debug.Assert(_roots.Count == 0);
+                _minNode = newNode;
                 _roots.Push(_minNode);
-                Count++;
+                Count = 1;
                 return newNode;
             }
 
-            Consolidate(newNode); // We need to do this work at some point anyway.. This way, we keep the roots organized
-            Count++;
-
+            // Check for an improved minimum
             if (Comparer.Compare(key, _minNode.Key) <= 0)
                 _minNode = newNode;
+
+            // Only store the node for a later consolidation
+            AddForConsolidation(newNode);
+            Count++;
 
             return newNode;
         }
@@ -167,6 +172,7 @@ namespace Utils.DataStructures
 
             nNode.IsMarked = false;
             nNode.CutFromFamily();
+            Debug.Assert(nNode.LeftSibling == nNode.RightSibling && nNode.RightSibling == nNode);
             // We consolidate all the cut nodes at once later
 
             try
@@ -194,7 +200,7 @@ namespace Utils.DataStructures
             }
             finally
             {
-                Consolidate(nNode);
+                AddForConsolidation(nNode);
             }
         }
 
@@ -206,6 +212,9 @@ namespace Utils.DataStructures
             Console.WriteLine(">> Delete-Min");
 #endif
 
+            var snapshot = Items.ToArray();
+            var TMPMIN = _minNode;
+
             LastConsolidateDepth = 0;
 
             if (Count == 0)
@@ -213,37 +222,47 @@ namespace Utils.DataStructures
 
             if (Count == 1)
             {
+                Debug.Assert(_minNode.FirstChild == null);
+                Debug.Assert(_minNode.LeftSibling == _minNode.RightSibling && _minNode.RightSibling == _minNode);
                 _minNode.Dispose();
                 _minNode = null;
-                _firstRoot = null;
+                _consolidateRoots = null;
+                Debug.Assert(_roots.Count == 1);
                 _roots.Stretch(0);
                 Count = 0;
                 return;
             }
 
             Debug.Assert(_minNode != null);
-            var min = _minNode;
+            Debug.Assert(_minNode.LeftSibling != null && _minNode.RightSibling != null);
 
-            // Cut the minimum from roots (preserves children)
-            _roots[_minNode.Order] = null;
+            // Cut the minimum from roots
+            if (_roots[_minNode.Order] == _minNode)
+                _roots[_minNode.Order] = null;
+            else
+                // MinNode must be among nodes to be consolidated
+                Debug.Assert(_consolidateRoots.GetSiblings().Contains(_minNode));
+
+            // Remove min from its list and gut it
+            var children = (HeapNode)_minNode.FirstChild;
+
+            // Remove from family -- preserves children
             _minNode.CutFromFamily();
-            Count--;
+            _minNode.Dispose();
             _minNode = null;
+            Count--;
 
 
             // Make min's children into roots
-            if (min.FirstChild != null)
+            if (children != null)
             {
-                HeapNode children = (HeapNode)min.FirstChild;
-                min.FirstChild = null;
+                Debug.Assert(children.LeftSibling != null && children.RightSibling != null);
                 children.Parent = null;
-
-                Consolidate(children);
+                AddForConsolidation(children);
             }
 
-
-            // Find the new minimum and fix links
-            FixLinks(true);
+            // Combine roots and find the new minimum
+            Consolidate();
         }
 
         public override void Delete(NodeItem<TKey, TValue> node)
@@ -273,12 +292,15 @@ namespace Utils.DataStructures
                 return true;
             });
 
-            // Start Dispose from the last node
-            _firstRoot.Sift(_traversalActions);
+            // Start Dispose from the last node (postAction)
+            _consolidateRoots.Sift(_traversalActions);
+
+            foreach (var root in GetRoots())
+                root.Sift(_traversalActions);
 
             _roots.Clear();
-            _firstRoot = null;
             _minNode = null;
+            _consolidateRoots = null;
             Count = 0;
         }
 
@@ -291,9 +313,17 @@ namespace Utils.DataStructures
             if (other.Count == 0)
                 return;
 
-            Consolidate(other._firstRoot);
+            // Loot the other heap
+            foreach (var root in other.GetRoots())
+                AddForConsolidation(root);
+
+            if (other._consolidateRoots != null)
+                AddForConsolidation(other._consolidateRoots);
+
+            // We make order only during deleteMin, not here
             Count += other.Count;
 
+            // Check for an improved min
             int comp = Comparer.Compare(other._minNode.Key, _minNode.Key);
 
             if (comp < 0)
@@ -304,179 +334,102 @@ namespace Utils.DataStructures
 
         #region Helpers
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FixLinks(bool updateMin)
+        internal IEnumerable<HeapNode> GetRoots()
         {
-            // Consolidation does not neccessarily keep the roots
-            // interlinked correctly -- we need to go through the array
-            var roots = _roots.Where(r => r != null);
+            HeapNode last = null;
 
-            // Prepare stuff for the first root
-            _firstRoot = roots.First();
-
-            if (updateMin)
-                _minNode = _firstRoot;
-
-            // Go through the rest
-            HeapNode lastRoot = _firstRoot;
-
-            foreach (var root in roots.Skip(1))
+            foreach (var root in _roots)
             {
-                Debug.Assert(root.Order >= lastRoot.Order);
-                lastRoot.RightSibling = root;
-                lastRoot = root;
-                lastRoot.Parent = null;
+                if (root == null)
+                    continue;
 
-                if (updateMin && Comparer.Compare(root.Key, _minNode.Key) < 0)
-                    _minNode = root;
+                last = root;
+                yield return root;
             }
 
-            // Connect the roots to make them cyclic again
-            lastRoot.RightSibling = _firstRoot;
-            lastRoot.Parent = null;
-            _roots.Stretch(lastRoot.Order + 1);
-
-#if VERBOSE
-            Console.WriteLine("Roots after fixing links:");
-            foreach (var siblingNode in _firstRoot.GetSiblings())
-                Console.WriteLine(siblingNode);
-#endif
+            if (Count > 0)
+            {
+                Debug.Assert(last != null);
+                _roots.Stretch(last.Order + 1); // Shrink the roots down (no resizing)
+            }
         }
 
 
         #region Node consolidation
 
-        [Flags]
-        private enum Bits
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AddForConsolidation(HeapNode nodeList)
         {
-            First = 1,
-            Add = 2,
-            Carry = 4,
+            Debug.Assert(nodeList != null);
+            Debug.Assert(nodeList.LeftSibling != null && nodeList.RightSibling != null);
+
+            nodeList.Parent = null;
+
+            if (_consolidateRoots == null)
+                _consolidateRoots = nodeList;
+            else
+                _consolidateRoots.InsertBefore(nodeList);
         }
 
-        private void Consolidate(HeapNode firstAdd)
+        private void Consolidate()
         {
-#if VERBOSE
-            var nodes = firstAdd.GetSiblings().Cast<HeapNode>().ToArray();
-            var str = nodes.Aggregate("", (a, s) => a + s + "\n").Trim();
-            Console.WriteLine("Nodes to consolidate ({0}):", nodes.Length);
-            Console.WriteLine(str);
-
-            nodes = _roots.Where(r => r != null).ToArray();
-            str = nodes.Aggregate("", (a, s) => a + s + "\n").Trim();
-            Console.WriteLine("Roots in heap ({0}):", nodes.Length);
-            Console.WriteLine(str);
-#endif
-
-            Debug.Assert(firstAdd != null);
-
-            // Update the pointer to the first root. It will be first even after a carry
-            if (firstAdd.Order < _firstRoot.Order)
-                _firstRoot = firstAdd;
-
-
-            // Nodes should be ordered from the smallest -- this makes it the same as binary digit addition
-            HeapNode carry = null;
-            int currentOrder = 0;
-
-            // We end when we reach the end of the list and when there is no leftover carry
-            while (firstAdd != null || carry != null)
+            try
             {
-                // Set the order for the current iteration
-                if (carry != null)
-                    currentOrder++; // The carry propagates only to the next order
-                else if (firstAdd.Order > currentOrder)
-                    currentOrder = firstAdd.Order; // If there is no carry, we handle the next node in the list
+                if (_consolidateRoots == null)
+                    return;
 
-                // Assert root array size
-                if (_roots.Count <= currentOrder)
-                    _roots.Stretch(currentOrder + 1); // Forces resize
-
-
-                // Setup the not-null flag -- inputs
-                HeapNode add = null;
-                Bits inputs = 0;
-
-                if (_roots[currentOrder] != null)
-                    inputs |= Bits.First;
-
-                if (firstAdd != null && firstAdd.Order == currentOrder)
+                // Go through our messy nodes and add them one by one into our roots.
+                // Solve any chain of carry bits right away. This does not increase the
+                // complexity wrt. adding of sorted lists. We need to do the work anyway.
+                foreach (var consolidateNode in _consolidateRoots.GetSiblings().Cast<HeapNode>())
                 {
-                    // Set the Add node for this iteration -- it is only valid if it is of the current order
-                    add = firstAdd;
-                    inputs |= Bits.Add;
-                    LastConsolidateDepth++;
+                    HeapNode carry = AddNode(consolidateNode);
 
-                    // Update firstNode for the next iteration; we work with add in this iteration
-                    firstAdd = (HeapNode)firstAdd.RightSibling;
-
-                    if (firstAdd != add)
-                        firstAdd.CutFromFamily(); // Remove it from the list
-                    else
-                        firstAdd = null; // This is the only node left in the list -- set it to null to signal exit
+                    while (carry != null)
+                        carry = AddNode(carry);
                 }
 
-                if (carry != null)
-                    inputs |= Bits.Carry;
+                _consolidateRoots = null;
+            }
+            finally
+            {
+                // We have to find the new minNode...
+                var roots = GetRoots();
 
+                _minNode = roots.First();
 
-                // Combine the nodes together, update the roots and minNode and create the new carry
-                AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
-                Debug.Assert(
-                    (_roots.Buffer[currentOrder] == null && carry != null) // A non-null first implies a carry (otherwise there were three null inputs, which we don't allow)
-                    || _roots.Buffer[currentOrder].Order == currentOrder);
-
-#if VERBOSE
-                var f = _roots.Buffer[currentOrder];
-                if (f != null)
-                    Console.WriteLine("Writing into root slot: " + f);
-
-                if (carry != null)
-                    Console.WriteLine("Have carry: " + carry);
-#endif
-
-                // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
-                // This saves us going through all the roots (we now go only through the NEW roots).
+                foreach (var root in roots.Skip(1)) // There was at least something to consolidate (count>0)
+                    if (Comparer.Compare(root.Key, _minNode.Key) < 0)
+                        _minNode = root;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddNodes(ref HeapNode first, HeapNode add, ref HeapNode carry, Bits inputs)
+        private HeapNode AddNode(HeapNode add)
         {
-            Debug.Assert(inputs > 0);
+            Debug.Assert(add != null);
 
-            switch (inputs)
+            // Do not keep links between root nodes (they are harder to maintain)
+            add.Parent = null;
+            add.LeftSibling = add;
+
+            // Assert enough capacity for our roots -- force resize
+            if (_roots.Count <= add.Order)
+                _roots.Stretch(add.Order + 1);
+
+            // Insert Add to our roots
+            HeapNode first = _roots[add.Order];
+
+            if (first == null)
             {
-                case Bits.First | Bits.Add:
-                case Bits.First | Bits.Add | Bits.Carry:
-                    var tmp = first;
-                    first = carry;
-                    add.Parent = null;
-                    carry = CombineNodes(tmp, add);
-                    return;
-
-                case Bits.First | Bits.Carry:
-                    carry = CombineNodes(first, carry);
-                    first = null;
-                    return;
-                case Bits.Add | Bits.Carry:
-                    add.Parent = null;
-                    carry = CombineNodes(add, carry);
-                    first = null;
-                    return;
-
-                case Bits.Add:
-                    add.Parent = null;
-                    first = add;
-                    return;
-                case Bits.Carry:
-                    first = carry;
-                    carry = null;
-                    return;
-
-                case Bits.First:
-                    throw new ArgumentOutOfRangeException("inputs", inputs, "This should not happen..");
+                // Directly insert Add to its place
+                _roots[add.Order] = add;
+                return null; // There is no carry
             }
+
+            // Return the combination as a carry that will be propagated to a higher tier
+            _roots[add.Order] = null;
+            return CombineNodes(first, add);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -505,9 +458,6 @@ namespace Utils.DataStructures
             foreach (var siblingNode in smaller.FirstChild.GetSiblings().Take(4))
                 Console.WriteLine(siblingNode);
 #endif
-
-            if (other == _firstRoot)
-                _firstRoot = smaller;
 
             return smaller;
         }

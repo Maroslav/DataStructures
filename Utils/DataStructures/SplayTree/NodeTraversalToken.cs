@@ -6,7 +6,7 @@
     {
         Sift,
         // Used when sifting through sibling nodes with circular references
-        SiftIgnoreSiblings,
+        SiftOnlySiblings,
         InAction,
         PostAction,
     }
