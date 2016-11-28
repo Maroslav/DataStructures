@@ -64,6 +64,7 @@ namespace Utils.DataStructures
             {
                 _firstRoot = newNode;
                 _minNode = _firstRoot;
+                Count++;
                 return newNode;
             }
 
