@@ -56,7 +56,7 @@ namespace UtilsTests.FibHeap
         {
             var keys = Enumerable.Range(0, itemCount).Select(c => NewKey()).ToArray();
 
-            return keys.Select((i, k) =>
+            return keys.Select((k, i) =>
             {
                 Assert.AreEqual(i + countOffset, _heap.Count);
                 return (NodeType)_heap.Add(k, k.ToString());
