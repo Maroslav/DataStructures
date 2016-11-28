@@ -86,6 +86,8 @@ namespace Utils.DataStructures
             {
                 _firstRoot = newNode;
                 _minNode = _firstRoot;
+                Debug.Assert(_roots.Count == 0);
+                _roots.Push(_minNode);
                 Count++;
                 return newNode;
             }
@@ -106,6 +108,7 @@ namespace Utils.DataStructures
 
             return _minNode;
         }
+
 
         public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
         {
@@ -213,6 +216,7 @@ namespace Utils.DataStructures
             throw new NotImplementedException("TODO");
         }
 
+
         public override void Merge(IPriorityQueue<TKey, TValue> other)
         {
             var heap = other as FibonacciHeap<TKey, TValue>;
@@ -265,13 +269,14 @@ namespace Utils.DataStructures
 
         #region Helpers
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FixLinks(bool updateMin)
         {
             // Consolidation does not neccessarily keep the roots
             // interlinked correctly -- we need to go through the array
             var roots = _roots.Where(r => r != null);
             _firstRoot = roots.First();
-            HeapNode lastRoot = null;
+            HeapNode lastRoot = _firstRoot;
 
             _minNode = roots.Aggregate((first, second) =>
             {
@@ -299,7 +304,6 @@ namespace Utils.DataStructures
             Carry = 4,
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Consolidate(HeapNode firstNode)
         {
             Debug.Assert(firstNode != null);
