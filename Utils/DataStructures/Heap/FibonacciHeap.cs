@@ -134,9 +134,7 @@ namespace Utils.DataStructures
 
 
             // Check if we validated the heap property
-            comp = Comparer.Compare(nNode.Key, nNode.Parent.Key);
-
-            if (nNode.Parent == null || comp >= 0)
+            if (nNode.Parent == null || Comparer.Compare(nNode.Key, nNode.Parent.Key) >= 0)
                 return; // Heap property is OK
 
 
