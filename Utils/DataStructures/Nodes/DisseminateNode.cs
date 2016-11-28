@@ -109,8 +109,8 @@ namespace Utils.DataStructures.Nodes
             finally
             {
                 Parent = null;
-                LeftSibling = null;
-                RightSibling = null;
+                LeftSibling = this;
+                RightSibling = this;
             }
         }
 
