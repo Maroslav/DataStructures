@@ -53,7 +53,15 @@ namespace Utils.DataStructures
 
         public override bool IsReadOnly { get { return false; } }
 
-        public override ItemCollection<NodeItem<TKey, TValue>> Items { get { return new ItemCollection<NodeItem<TKey, TValue>>(/* Enumerable of all children */null, Count); } }
+        public override ItemCollection<NodeItem<TKey, TValue>> Items
+        {
+            get
+            {
+                FixLinks();
+
+                return new ItemCollection<NodeItem<TKey, TValue>>(/* Enumerable of all children */null, Count);
+            }
+        }
 
 
         public override NodeItem<TKey, TValue> Add(TKey key, TValue value)
@@ -182,22 +190,8 @@ namespace Utils.DataStructures
                 return;
 
 
-            // Find the new minimum
-            // Consolidation does not neccessarily keep the roots
-            // interlinked correctly -- we need to go through the array
-            var roots = _roots.Where(r => r != null);
-            _firstRoot = roots.First();
-            HeapNode lastRoot = null;
-
-            _minNode = roots.Aggregate((first, second) =>
-            {
-                lastRoot = second;
-                first.RightSibling = second;
-                int comp = Comparer.Compare(first.Key, second.Key);
-                return comp <= 0 ? first : second;
-            });
-
-            lastRoot.RightSibling = _firstRoot;
+            // Find the new minimum and fix links
+            FixLinks();
         }
 
         public override void Delete(NodeItem<TKey, TValue> node)
@@ -241,6 +235,28 @@ namespace Utils.DataStructures
         #endregion
 
         #region Helpers
+
+        private void FixLinks()
+        {
+            // Consolidation does not neccessarily keep the roots
+            // interlinked correctly -- we need to go through the array
+            var roots = _roots.Where(r => r != null);
+            _firstRoot = roots.First();
+            HeapNode lastRoot = null;
+
+            _minNode = roots.Aggregate((first, second) =>
+            {
+                lastRoot = second;
+                first.RightSibling = second;
+                int comp = Comparer.Compare(first.Key, second.Key);
+                return comp <= 0 ? first : second;
+            });
+
+            lastRoot.RightSibling = _firstRoot;
+        }
+
+
+        #region Node consolidation
 
         [Flags]
         private enum Bits
