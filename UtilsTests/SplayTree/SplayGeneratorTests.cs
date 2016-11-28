@@ -195,22 +195,16 @@ namespace UtilsTests.SplayTree
             return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
-        private void RunInternal(string runName, Task generatorTask)
-        {
-            StartConsumers(ProcessDataHandler);
-            Run(runName, generatorTask);
-        }
-
         public void RunSubset(int T)
         {
             var generatorTask = RunGeneratorSubset(T);
-            RunInternal("T_test_" + T, generatorTask);
+            Run("T_test_" + T, generatorTask);
         }
 
         private void RunSeq()
         {
             var generatorTask = RunGeneratorSequential();
-            RunInternal("Seq_test", generatorTask);
+            Run("Seq_test", generatorTask);
         }
 
         #endregion

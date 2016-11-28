@@ -206,12 +206,6 @@ namespace UtilsTests.FibHeap
             return Generator.RunGenerator(Path.Combine(ToolsPath, GeneratorName), pars, GenerateHandler);
         }
 
-        private void RunInternal(string runName, Task generatorTask)
-        {
-            StartConsumers(ProcessData);
-            Run(runName, generatorTask);
-        }
-
         #endregion
 
 
@@ -219,21 +213,21 @@ namespace UtilsTests.FibHeap
         public void BalancedTest()
         {
             var generatorTask = RunGenerator("-r");
-            RunInternal("Balanced_test", generatorTask);
+            Run("Balanced_test", generatorTask);
         }
 
         [TestMethod]
         public void ImbalancedTest()
         {
             var generatorTask = RunGenerator("-b");
-            RunInternal("Imbalanced_test", generatorTask);
+            Run("Imbalanced_test", generatorTask);
         }
 
         [TestMethod]
         public void MaliciousTest()
         {
             var generatorTask = RunGenerator("-x");
-            RunInternal("Malicious_test", generatorTask);
+            Run("Malicious_test", generatorTask);
         }
     }
 }
