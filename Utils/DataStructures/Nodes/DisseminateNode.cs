@@ -84,34 +84,27 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         public void CutFromFamily()
         {
-            LeftSibling.RightSibling = RightSibling; // The other direction is updated automagically
+            Cut();
 
-            try
+            if (Parent == null)
+                return;
+
+            // Update the parent
+            if (Parent.ChildrenCount == 1)
             {
-                if (Parent == null)
-                    return;
-
-                // Update the parent
-                if (Parent.ChildrenCount == 1)
-                {
-                    // We are the only child
-                    Debug.Assert(LeftSibling == RightSibling && RightSibling == this);
-                    Parent.FirstChild = null;
-                    Parent.ChildrenCount = 0;
-                    return;
-                }
-
-                if (Parent.FirstChild == this)
-                    Parent.FirstChild = RightSibling;
-
-                Parent.ChildrenCount--;
-            }
-            finally
-            {
+                // We are the only child
+                Debug.Assert(LeftSibling == RightSibling && RightSibling == this);
+                Parent.FirstChild = null;
+                Parent.ChildrenCount = 0;
                 Parent = null;
-                LeftSibling = this;
-                RightSibling = this;
+                return;
             }
+
+            if (Parent.FirstChild == this)
+                Parent.FirstChild = RightSibling;
+
+            Parent.ChildrenCount--;
+            Parent = null;
         }
 
         #endregion

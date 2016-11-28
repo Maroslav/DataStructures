@@ -85,6 +85,12 @@ namespace Utils.DataStructures.Nodes
             nextLocal.LeftSibling = lastTheir; // Opposite directions are set in setters
         }
 
+        public void Cut()
+        {
+            LeftSibling.RightSibling = RightSibling;
+            LeftSibling = this; // The other directions are set in setters
+        }
+
         #endregion
 
         #region Traversal
