@@ -133,8 +133,24 @@ namespace UtilsTests.FibHeap
                 switch (command)
                 {
                     case InsKey:
+                        Console.WriteLine("INS");
+                        break;
+                    case DelKey:
+                        Console.WriteLine("DEL");
+                        break;
+                    case DecKey:
+                        Console.WriteLine("DEC");
+                        break;
+                }
+
+                Console.WriteLine("Have min: " + heap.PeekMin());
+
+                switch (command)
+                {
+                    case InsKey:
                         id = arguments[argOffset++];
                         key = arguments[argOffset++];
+                        Console.WriteLine("Args - id/new key : {0} : {1}", id, key);
                         node = heap.Add(key, id);
 
                         Debug.Assert(insertedNodes[id] == null);
@@ -144,8 +160,8 @@ namespace UtilsTests.FibHeap
                     case DelKey:
                         node = heap.PeekMin();
                         insertedNodes[node.Value] = null;
-
                         heap.DeleteMin();
+
                         //deleteDepthCount += heap.LastSplayDepth / (float)(Math.Log10(heap.Count + 1) * 3.321928);
                         break;
 
@@ -156,10 +172,14 @@ namespace UtilsTests.FibHeap
 
                         if (node == null || key > node.Key)
                             break;
+                        Console.WriteLine("Args id/new key : {0} : {1}", id, key);
 
                         heap.DecreaseKey(node, key);
                         break;
                 }
+
+                Console.WriteLine("Left with min: " + heap.PeekMin());
+                Console.WriteLine();
             }
 
             // Cleanup and store the measurements
@@ -167,21 +187,18 @@ namespace UtilsTests.FibHeap
 
             sw.Stop();
 
-            float avgInsertDepth = deleteDepthCount / insertCount;
+            float avgDeleteDepthCount = deleteDepthCount / insertCount;
 
             lock (_results)
-                _results.Add(insertCount, avgInsertDepth);
+                _results.Add(insertCount, avgDeleteDepthCount);
 
             Interlocked.Increment(ref _currentJobsDone);
-            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4} adds/finds : {5:F}/{6:F} insert depth factor/find depth",
+            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4:F} adds/delete depth average",
                 _currentJobsDone,
                 Buffer.WaitingItemCount,
-                sw.ElapsedMilliseconds * 0.001
-                //insertCount,
-                //findCount,
-                //avgInsertDepth,
-                //avgFindDepth
-                );
+                sw.ElapsedMilliseconds * 0.001,
+                insertCount,
+                avgDeleteDepthCount);
         }
 
         private void Finished()
