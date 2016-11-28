@@ -20,15 +20,17 @@ namespace Utils.DataStructures
         {
             internal bool IsMarked { get; set; }
 
-            public int Order
-            {
-                get { return ChildrenCount; }
-                set { ChildrenCount = value; }
-            }
+            public int Order;
 
             public HeapNode(TKey key, TValue value)
                 : base(key, value)
             { }
+
+            public override string ToString()
+            {
+                // Debug version
+                return string.Format("{0} :: {1} : {2}", Order, Key, Value);
+            }
         }
 
         #endregion
