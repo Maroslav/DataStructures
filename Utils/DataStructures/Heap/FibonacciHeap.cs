@@ -255,6 +255,11 @@ namespace Utils.DataStructures
         {
             Debug.Assert(firstNode != null);
 
+            // Update the pointer to the first root
+            if (firstNode.ChildrenCount < _firstRoot.ChildrenCount)
+                _firstRoot = firstNode;
+
+
             // Nodes should be ordered from the smallest -- this makes it the same as binary digit addition
             HeapNode carry = null;
             int currentOrder = 0;
@@ -271,6 +276,7 @@ namespace Utils.DataStructures
                 // Assert root array size
                 if (_roots.Count == currentOrder)
                     _roots.Push(null); // Forces resize; will be replaced by the joined node
+
 
                 // Setup the not-null flag -- inputs
                 HeapNode add = null;
@@ -297,12 +303,9 @@ namespace Utils.DataStructures
                 if (carry != null)
                     inputs |= Bits.Carry;
 
+
                 // Combine the nodes together, update the roots and minNode and create the new carry
                 AddNodes(ref _roots.Buffer[currentOrder], add, ref carry, inputs);
-
-                // Update the pointer to the first root
-                if (_roots.Buffer[currentOrder].ChildrenCount < _firstRoot.ChildrenCount)
-                    _firstRoot = _roots[currentOrder];
 
                 // NOTE: We don't really need to store correct links between roots.. They are used only for enumeration.
                 // This saves us going through all the roots (we now go only through the NEW roots).
@@ -362,8 +365,14 @@ namespace Utils.DataStructures
                 Swap(ref smaller, ref other);
 
             smaller.AddChild(other);
+
+            if (other == _firstRoot)
+                _firstRoot = smaller;
+
             return smaller;
         }
+
+        #endregion
 
         #endregion
     }
