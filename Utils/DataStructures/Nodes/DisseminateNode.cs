@@ -18,7 +18,7 @@ namespace Utils.DataStructures.Nodes
 
         // Children are kept with cyclic pointers (one child has itself as siblings)
         // We store the left-most child; to reach the last child, we can get the left sibling of the child
-        internal DisseminateNode<TKey, TValue> FirstChild;
+        internal DisseminateNode<TKey, TValue> FirstChild { get; private set; }
 
         #endregion
 
@@ -51,6 +51,7 @@ namespace Utils.DataStructures.Nodes
         {
             Parent = null;
             FirstChild = null;
+            ChildrenCount = 0;
         }
 
         public override void Dispose()
@@ -84,27 +85,42 @@ namespace Utils.DataStructures.Nodes
         /// </summary>
         public void CutFromFamily()
         {
-            Cut();
-
-            if (Parent == null)
-                return;
-
-            // Update the parent
-            if (Parent.ChildrenCount == 1)
+            try
             {
-                // We are the only child
-                Debug.Assert(LeftSibling == RightSibling && RightSibling == this);
-                Parent.FirstChild = null;
-                Parent.ChildrenCount = 0;
-                Parent = null;
-                return;
+                Debug.Assert(LeftSibling != null && RightSibling != null);
+
+                if (LeftSibling == this)
+                    Debug.Assert(RightSibling == this);
+
+                if (RightSibling == this)
+                    Debug.Assert(LeftSibling == this);
+
+                if (Parent == null)
+                    return;
+
+                // Update the parent
+                if (Parent.ChildrenCount == 1)
+                {
+                    // We are the only child
+                    Debug.Assert(LeftSibling == RightSibling && RightSibling == this);
+                    Parent.FirstChild = null;
+                    Parent.ChildrenCount = 0;
+                    return;
+                }
+
+                if (Parent.FirstChild == this)
+                {
+                    Debug.Assert(RightSibling != this); // We already checked that we are not the only child
+                    Parent.FirstChild = RightSibling;
+                }
+
+                Parent.ChildrenCount--;
             }
-
-            if (Parent.FirstChild == this)
-                Parent.FirstChild = RightSibling;
-
-            Parent.ChildrenCount--;
-            Parent = null;
+            finally
+            {
+                Parent = null;
+                Cut();
+            }
         }
 
         #endregion
@@ -120,7 +136,7 @@ namespace Utils.DataStructures.Nodes
             // and it's impractical to change it.....
             var stack = nodeActions.TraversalStack;
             Debug.Assert(stack.Count == 0);
-            stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.Sift));
+            stack.Push(GetNodeTraversalToken(this, NodeTraversalAction.SiftOnlySiblings));
 
             try
             {
@@ -131,8 +147,8 @@ namespace Utils.DataStructures.Nodes
                     switch (token.Action)
                     {
                         case NodeTraversalAction.Sift:
-                        case NodeTraversalAction.SiftIgnoreSiblings:
-                            if (!token.Node.HandleSift(stack, nodeActions, token.Action != NodeTraversalAction.SiftIgnoreSiblings))
+                        case NodeTraversalAction.SiftOnlySiblings:
+                            if (!token.Node.HandleSift(stack, nodeActions, token.Action != NodeTraversalAction.SiftOnlySiblings))
                                 return false;
                             break;
 
@@ -170,7 +186,7 @@ namespace Utils.DataStructures.Nodes
             if (addSiblings && RightSibling != this)
                 foreach (var siblingNode in GetSiblingsReverse().Where(s => s != this))
                     // Notify that when being sifted, don't try to add all siblings again
-                    stack.Push(GetNodeTraversalToken((DisseminateNode<TKey, TValue>)siblingNode, NodeTraversalAction.SiftIgnoreSiblings));
+                    stack.Push(GetNodeTraversalToken((DisseminateNode<TKey, TValue>)siblingNode, NodeTraversalAction.SiftOnlySiblings));
 
 
             // Push the child
