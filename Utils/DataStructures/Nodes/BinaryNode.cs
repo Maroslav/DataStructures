@@ -8,8 +8,6 @@ namespace Utils.DataStructures.Nodes
 {
     internal class BinaryNode<TKey, TValue>
             : NodeItem<TKey, TValue>
-        where TKey : struct
-        where TValue : IEquatable<TValue>
     {
         #region Nested classes
 

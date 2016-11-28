@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Utils.DataStructures.Nodes;
 
 namespace Utils.DataStructures.Internal
 {
     internal class NodeTraversalActions<TKey, TValue, TNode, TNodeAction>
-        where TKey : struct
-        where TValue : IEquatable<TValue>
         where TNode : NodeItem<TKey, TValue>
         where TNodeAction : struct
     {

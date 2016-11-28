@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Utils.DataStructures.Internal;
 using Utils.DataStructures.Nodes;
@@ -8,8 +7,6 @@ namespace Utils.DataStructures
 {
     public class SplayTree<TKey, TValue>
         : DictionaryBase<TKey, TValue>
-        where TKey : struct
-        where TValue : IEquatable<TValue>
     {
         #region Fields
 
