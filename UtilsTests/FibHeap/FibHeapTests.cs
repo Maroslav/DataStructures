@@ -228,9 +228,73 @@ namespace UtilsTests.FibHeap
         }
 
         [TestMethod]
-        public void TestRemove()
+        public void TestRemoveStraight()
         {
+            for (int i = 0; i < Rounds; i++)
+            {
+                var items = AddItems(ItemCount);
 
+                for (int j = 0; j < items.Length; j++)
+                {
+                    int expectedCount = items.Length - j;
+                    Assert.AreEqual(_heap.Count, expectedCount);
+
+                    _heap.DeleteMin();
+                    Assert.AreEqual(_heap.Count, expectedCount - 1);
+                }
+
+                Assert.IsNull(_heap.PeekMin());
+                Assert.AreEqual(_heap.Count, 0);
+            }
+        }
+
+        [TestMethod]
+        public void TestRemoveZig()
+        {
+            for (int i = 0; i < Rounds; i++)
+            {
+                var item = NewNode();
+                _heap.Add(item.Key, item.Value);
+                Assert.AreEqual(_heap.Count, 1);
+
+                _heap.DeleteMin();
+                Assert.AreEqual(_heap.Count, 0);
+                Assert.IsNull(_heap.PeekMin());
+            }
+        }
+
+        [TestMethod]
+        public void TestDecreaseKey()
+        {
+            var items = AddItems(ItemCount);
+
+            for (int i = 0; i < Rounds; i++)
+                foreach (var heapNode in items)
+                {
+                    _heap.DecreaseKey(heapNode, heapNode.Key - _rnd.Next(15) - 1);
+                    Assert.AreEqual(_heap.Count, items.Length);
+                }
+        }
+
+        [TestMethod]
+        public void TestDecreaseKeySingle()
+        {
+            for (int i = 0; i < Rounds; i++)
+            {
+                AddItems(ItemCount - 1);
+
+                var newNode = NewNode();
+                var item = _heap.Add(newNode.Key, newNode.Value);
+
+                for (int j = 0; j < ItemCount; j++)
+                {
+                    _heap.DecreaseKey(item, item.Key - _rnd.Next(15) - 1);
+                    Assert.AreEqual(_heap.Count, ItemCount);
+                    Assert.IsTrue(item.Key < newNode.Key);
+                }
+
+                _heap.Clear();
+            }
         }
     }
 }
