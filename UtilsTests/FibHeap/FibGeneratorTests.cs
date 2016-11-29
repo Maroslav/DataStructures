@@ -179,10 +179,11 @@ namespace UtilsTests.FibHeap
                 _results.Add(deleteCount, avgDeleteDepthCount);
 
             Interlocked.Increment(ref _currentJobsDone);
-            Log("{0}/{1} done/waiting :: {2:F} sec :: {3}/{4:F} deletes/delete depth average",
+            Log("{0}/{1} done/waiting :: {2:F} sec :: {3} inserts :: {4}/{5:F} deletes/delete depth average",
                 _currentJobsDone,
                 Buffer.WaitingItemCount,
                 sw.ElapsedMilliseconds * 0.001,
+                insertedNodes,
                 deleteCount,
                 avgDeleteDepthCount);
         }

@@ -29,7 +29,7 @@ namespace Utils.DataStructures
             public override string ToString()
             {
                 // Debug version
-                return string.Format("{0} :: {1} : {2}", Order, Key, Value);
+                return string.Format("{0} {1} {2} : {3}", Order, IsMarked ? "**" : "::", Key, Value);
             }
         }
 
@@ -99,8 +99,11 @@ namespace Utils.DataStructures
             var newNode = new HeapNode(key, value);
 
 #if VERBOSE
-            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
-            Console.WriteLine();
+            Console.WriteLine("Current min ({0}:{1}:{2}) >>",
+                _roots.Count(r => r != null),
+                _consolidateRoots == null ? 0 : _consolidateRoots.GetSiblings().Count(),
+                Count);
+            Console.WriteLine(_minNode == null ? string.Empty : _minNode.ToString(_traversalActions));
             Console.WriteLine(">> Add >> " + newNode);
 #endif
 
@@ -136,8 +139,11 @@ namespace Utils.DataStructures
         public override void DecreaseKey(NodeItem<TKey, TValue> node, TKey newKey)
         {
 #if VERBOSE
-            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
-            Console.WriteLine();
+            Console.WriteLine("Current min ({0}:{1}:{2}) >>",
+                _roots.Count(r => r != null),
+                _consolidateRoots == null ? 0 : _consolidateRoots.GetSiblings().Count(),
+                Count);
+            Console.WriteLine(_minNode == null ? string.Empty : _minNode.ToString(_traversalActions));
             Console.WriteLine(">> Decrease key >> {0} >> {1}", node, newKey);
 #endif
 
@@ -207,13 +213,13 @@ namespace Utils.DataStructures
         public override void DeleteMin()
         {
 #if VERBOSE
-            Console.WriteLine("Current min ({0}) >> {1}", _roots.Count(r => r != null), PeekMin());
-            Console.WriteLine();
+            Console.WriteLine("Current min ({0}:{1}:{2}) >>",
+                _roots.Count(r => r != null),
+                _consolidateRoots == null ? 0 : _consolidateRoots.GetSiblings().Count(),
+                Count);
+            Console.WriteLine(_minNode == null ? string.Empty : _minNode.ToString(_traversalActions));
             Console.WriteLine(">> Delete-Min");
 #endif
-
-            var snapshot = Items.ToArray();
-            var TMPMIN = _minNode;
 
             LastConsolidateDepth = 0;
 
@@ -378,6 +384,12 @@ namespace Utils.DataStructures
                 if (_consolidateRoots == null)
                     return;
 
+
+#if VERBOSE
+                Console.Write("Consolidating:");
+                Console.WriteLine(_consolidateRoots.GetSiblings().Aggregate("", (cum, root) => cum + '\n' + root));
+#endif
+
                 // Go through our messy nodes and add them one by one into our roots.
                 // Solve any chain of carry bits right away. This does not increase the
                 // complexity wrt. adding of sorted lists. We need to do the work anyway.
@@ -424,10 +436,16 @@ namespace Utils.DataStructures
             {
                 // Directly insert Add to its place
                 _roots[add.Order] = add;
+#if VERBOSE
+                Console.WriteLine("Filling node spot: " + _roots[add.Order]);
+#endif
                 return null; // There is no carry
             }
 
             // Return the combination as a carry that will be propagated to a higher tier
+#if VERBOSE
+            Console.WriteLine("Erasing node spot: " + _roots[add.Order]);
+#endif
             _roots[add.Order] = null;
             return CombineNodes(first, add);
         }
@@ -453,7 +471,6 @@ namespace Utils.DataStructures
 
 #if VERBOSE
             Console.WriteLine("Merging tree under another: {0} (under {1})", other, smaller);
-
             Console.WriteLine("All siblings ({0}): ", smaller.ChildrenCount);
             foreach (var siblingNode in smaller.FirstChild.GetSiblings().Take(4))
                 Console.WriteLine(siblingNode);

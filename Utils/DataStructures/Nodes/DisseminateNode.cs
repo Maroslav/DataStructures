@@ -77,6 +77,7 @@ namespace Utils.DataStructures.Nodes
 
             // Always add it as the last child
             FirstChild.InsertBefore(child);
+            Debug.Assert(RightSibling != null && LeftSibling != null);
         }
 
         /// <summary>
@@ -207,6 +208,34 @@ namespace Utils.DataStructures.Nodes
         private NodeTraversalToken<DisseminateNode<TKey, TValue>, NodeTraversalAction> GetNodeTraversalToken(DisseminateNode<TKey, TValue> node, NodeTraversalAction action)
         {
             return new NodeTraversalToken<DisseminateNode<TKey, TValue>, NodeTraversalAction>(node, action);
+        }
+
+        #endregion
+
+        #region ToString
+
+        public string ToString(NodeTraversalActions<TKey, TValue, DisseminateNode<TKey, TValue>, NodeTraversalAction> traversalActions)
+        {
+            var sb = new StringBuilder();
+            var indent = new StringBuilder();
+
+            const string ind = "   ";
+
+            traversalActions.SetActions(preAction: node =>
+                {
+                    indent.Append(ind);
+                    sb.Append(indent);
+                    sb.AppendLine(node.ToString());
+                    return true;
+                },
+                postAction: node =>
+                {
+                    indent.Length -= ind.Length;
+                    return true;
+                });
+
+            Sift(traversalActions);
+            return sb.ToString();
         }
 
         #endregion
