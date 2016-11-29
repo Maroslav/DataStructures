@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,7 +12,7 @@ namespace UtilsTests.FibHeap
 {
     [TestClass]
     public class FibGeneratorTests
-        : GeneratorTestsBase<Tuple<Stack<byte>, Stack<int>>>
+        : GeneratorTestsBase<Tuple<Stack<byte>, Stack<Stack<int>>>>
     {
         #region Fields and constants
 
@@ -32,6 +33,7 @@ namespace UtilsTests.FibHeap
         private int _currentJobsDone;
 
         private Stack<byte> _currentCommands = new Stack<byte>(BuilderInitSize);
+        private Stack<Stack<int>> _currentArgList = new Stack<Stack<int>>();
         private Stack<int> _currentArguments = new Stack<int>(BuilderInitSize);
 
         private readonly SplayTree<int, float> _results = new SplayTree<int, float>();
@@ -67,20 +69,26 @@ namespace UtilsTests.FibHeap
                 if (data[0] == '#')
                 {
                     // Replace the builders by new instances and sent the batch to consumers
-                    var commands = _currentCommands;
-                    var arguments = _currentArguments;
-
-                    if (commands.Count > 0)
+                    if (_currentCommands.Count > 0)
                     {
-                        Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(commands, arguments));
+                        _currentArgList.Push(_currentArguments);
+                        Buffer.Add(new Tuple<Stack<byte>, Stack<Stack<int>>>(_currentCommands, _currentArgList));
 
-                        _currentCommands = new Stack<byte>(commands.Count + Math.Min(commands.Count, BuilderSizeIncrement));
-                        _currentArguments = new Stack<int>(commands.Count * 2);
+                        _currentCommands = new Stack<byte>(_currentCommands.Count + Math.Min(_currentCommands.Count, BuilderSizeIncrement));
+                        _currentArgList = new Stack<Stack<int>>();
+                        _currentArguments = new Stack<int>(_currentCommands.Capacity * 2);
                     }
 
                     // Store the command count -- start gathering a new batch
                     _currentArguments.Push(int.Parse(data.Substring(2)));
                     return;
+                }
+
+                if (_currentArguments.Count / sizeof(int) > 100000000) // 100 MBs
+                {
+                    int sz = _currentArguments.Count;
+                    _currentArgList.Push(_currentArguments);
+                    _currentArguments = new Stack<int>(sz);
                 }
 
                 switch (data[2])
@@ -110,7 +118,21 @@ namespace UtilsTests.FibHeap
             }
         }
 
-        private void ProcessData(Tuple<Stack<byte>, Stack<int>> data)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetNextArg(ref int offset, Stack<Stack<int>> argList, ref int listOffset)
+        {
+            var args = argList[listOffset];
+
+            if (offset == args.Count)
+            {
+                args = argList[listOffset++];
+                offset = 0;
+            }
+
+            return args[offset++];
+        }
+
+        private void ProcessData(Tuple<Stack<byte>, Stack<Stack<int>>> data)
         {
             var sw = Stopwatch.StartNew();
 
@@ -118,27 +140,31 @@ namespace UtilsTests.FibHeap
             var arguments = data.Item2;
 
             int argOffset = 0;
+            int listOffset = 0;
 
             // Prepare the heap
             var heap = new FibonacciHeap<int, int>();
-            int insertCount = arguments[argOffset++];
+            int insertCount = GetNextArg(ref argOffset, arguments, ref listOffset);
             NodeItem<int, int>[] insertedNodes = new NodeItem<int, int>[insertCount];
             int deleteDepthCount = 0;
             int deleteCount = 0;
 
             // Do insert commands
+            int id = 0, key = 0;
+            NodeItem<int, int> node;
+
             foreach (byte command in commands)
             {
-                int id, key;
-                NodeItem<int, int> node;
+                if (command != DelKey)
+                {
+                    id = GetNextArg(ref argOffset, arguments, ref listOffset);
+                    key = GetNextArg(ref argOffset, arguments, ref listOffset);
+                }
 
                 switch (command)
                 {
                     case InsKey:
-                        id = arguments[argOffset++];
-                        key = arguments[argOffset++];
                         node = heap.Add(key, id);
-
                         Debug.Assert(insertedNodes[id] == null);
                         insertedNodes[id] = node;
                         break;
@@ -154,8 +180,6 @@ namespace UtilsTests.FibHeap
                         break;
 
                     case DecKey:
-                        id = arguments[argOffset++];
-                        key = arguments[argOffset++];
                         node = insertedNodes[id];
 
                         if (node == null || key > node.Key)
@@ -193,7 +217,8 @@ namespace UtilsTests.FibHeap
         {
             if (_currentCommands != null)
             {
-                Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(_currentCommands, _currentArguments));
+                _currentArgList.Push(_currentArguments);
+                Buffer.Add(new Tuple<Stack<byte>, Stack<Stack<int>>>(_currentCommands, _currentArgList));
                 _currentCommands = null;
             }
         }
