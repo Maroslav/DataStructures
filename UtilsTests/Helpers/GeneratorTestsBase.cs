@@ -29,6 +29,7 @@ namespace UtilsTests.FibHeap
 
         private TextWriter _log;
         protected event Action OnGeneratorFinished;
+        protected event Action OnFinished;
 
         #endregion
 
@@ -84,6 +85,9 @@ namespace UtilsTests.FibHeap
         {
             await generatorTask.ConfigureAwait(false);
 
+            if (OnGeneratorFinished != null)
+                OnGeneratorFinished();
+
             // Signal the finish to consumers
             foreach (var c in Consumers)
                 c.ExitWhenNoItems = true;
@@ -106,8 +110,8 @@ namespace UtilsTests.FibHeap
                 }
             }
 
-            if (OnGeneratorFinished != null)
-                OnGeneratorFinished();
+            if (OnFinished != null)
+                OnFinished();
 
             Assert.IsFalse(CancellationTokenSource.IsCancellationRequested);
         }

@@ -49,6 +49,7 @@ namespace UtilsTests.FibHeap
             : base(logFolderName, LogFileName, ConsumerCount)
         {
             OnGeneratorFinished += GeneratorFinished;
+            OnFinished += Finished;
             StartConsumers(ProcessData);
         }
 
@@ -195,7 +196,10 @@ namespace UtilsTests.FibHeap
                 Buffer.Add(new Tuple<Stack<byte>, Stack<int>>(_currentCommands, _currentArguments));
                 _currentCommands = null;
             }
+        }
 
+        private void Finished()
+        {
             string result = _results.Items.ToString(n => '\n' + n.Key.ToString() + ':' + n.Value.ToString());
             Log("\nResults:\n" + result + '\n');
         }
