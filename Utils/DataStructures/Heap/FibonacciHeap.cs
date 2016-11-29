@@ -188,6 +188,9 @@ namespace Utils.DataStructures
             Debug.Assert(nNode.LeftSibling == nNode.RightSibling && nNode.RightSibling == nNode);
 
 
+#if __NAIVE
+            if (false)
+#endif
             // Recursively mark and cut parents, end at root
             while (parent.Parent != null)
             {
