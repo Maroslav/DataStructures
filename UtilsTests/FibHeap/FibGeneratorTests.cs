@@ -183,7 +183,7 @@ namespace UtilsTests.FibHeap
                 _currentJobsDone,
                 Buffer.WaitingItemCount,
                 sw.ElapsedMilliseconds * 0.001,
-                insertedNodes,
+                insertCount,
                 deleteCount,
                 avgDeleteDepthCount);
         }
