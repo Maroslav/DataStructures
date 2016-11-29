@@ -167,47 +167,46 @@ namespace Utils.DataStructures
             if (comp < 0)
                 _minNode = nNode;
 
-
-            // Check if we validated the heap property
-            if (nNode.Parent == null || Comparer.Compare(nNode.Key, nNode.Parent.Key) >= 0)
+            if (nNode.Parent == null)
                 return; // Heap property is OK
 
+            // Check if we validated the heap property. If we have a new minimum, we have to make it a root
+            if (Comparer.Compare(nNode.Key, nNode.Parent.Key) >= 0)
+            {
+                Debug.Assert(_minNode != nNode);
+                return; // Heap property is ok
+            }
 
-            // Heap property is invalid -- cut the node from its parent and make it one of our roots
+
+            // Cut the node from its parent and make it one of our roots
             var parent = (HeapNode)nNode.Parent;
-
             nNode.IsMarked = false;
             nNode.CutFromFamily();
-            Debug.Assert(nNode.LeftSibling == nNode.RightSibling && nNode.RightSibling == nNode);
             // We consolidate all the cut nodes at once later
 
-            try
-            {
-                if (parent == null)
-                    return;
+            Debug.Assert(parent.FirstChild == null || !parent.FirstChild.GetSiblings().Contains(nNode));
+            Debug.Assert(nNode.LeftSibling == nNode.RightSibling && nNode.RightSibling == nNode);
 
-                // Recursively mark and cut parents, end at root
-                while (parent.Parent != null)
+
+            // Recursively mark and cut parents, end at root
+            while (parent.Parent != null)
+            {
+                if (!parent.IsMarked)
                 {
-                    if (!parent.IsMarked)
-                    {
-                        parent.IsMarked = true;
-                        break;
-                    }
-
-                    // The parent is marked -- unmark and cut it
-                    var p = parent;
-                    parent = (HeapNode)parent.Parent;
-
-                    p.IsMarked = false;
-                    p.CutFromFamily();
-                    nNode.InsertBefore(p); // Insert as the last (biggest) node -- parents are always at least as big as their children
+                    parent.IsMarked = true;
+                    break;
                 }
+
+                // The parent is marked -- unmark and cut it
+                var p = parent;
+                parent = (HeapNode)parent.Parent;
+
+                p.IsMarked = false;
+                p.CutFromFamily();
+                nNode.InsertBefore(p); // Insert as the last node
             }
-            finally
-            {
-                AddForConsolidation(nNode);
-            }
+
+            AddForConsolidation(nNode);
         }
 
         public override void DeleteMin()
@@ -242,15 +241,23 @@ namespace Utils.DataStructures
             Debug.Assert(_minNode != null);
             Debug.Assert(_minNode.LeftSibling != null && _minNode.RightSibling != null);
 
+
+            // Remove min from its list and gut it
+            var children = (HeapNode)_minNode.FirstChild;
+
             // Cut the minimum from roots
             if (_roots[_minNode.Order] == _minNode)
                 _roots[_minNode.Order] = null;
             else
+            {
                 // MinNode must be among nodes to be consolidated
                 Debug.Assert(_consolidateRoots.GetSiblings().Contains(_minNode));
 
-            // Remove min from its list and gut it
-            var children = (HeapNode)_minNode.FirstChild;
+                if (_minNode.RightSibling == _minNode)
+                    _consolidateRoots = null; // It is the only consolidated root -- remove it
+                else
+                    _consolidateRoots = (HeapNode)_minNode.RightSibling;
+            }
 
             // Remove from family -- preserves children
             _minNode.CutFromFamily();
@@ -364,17 +371,22 @@ namespace Utils.DataStructures
         #region Node consolidation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddForConsolidation(HeapNode nodeList)
+        private void AddForConsolidation(HeapNode newRoots)
         {
-            Debug.Assert(nodeList != null);
-            Debug.Assert(nodeList.LeftSibling != null && nodeList.RightSibling != null);
+            Debug.Assert(newRoots != null);
 
-            nodeList.Parent = null;
+            foreach (var root in newRoots.GetSiblings())
+                Debug.Assert(root.LeftSibling != null && root.RightSibling != null);
+
+            newRoots.Parent = null;
 
             if (_consolidateRoots == null)
-                _consolidateRoots = nodeList;
+                _consolidateRoots = newRoots;
             else
-                _consolidateRoots.InsertBefore(nodeList);
+                _consolidateRoots.InsertBefore(newRoots);
+
+            foreach (var root in newRoots.GetSiblings())
+                Debug.Assert(root.LeftSibling != null && root.RightSibling != null);
         }
 
         private void Consolidate()
@@ -393,9 +405,9 @@ namespace Utils.DataStructures
                 // Go through our messy nodes and add them one by one into our roots.
                 // Solve any chain of carry bits right away. This does not increase the
                 // complexity wrt. adding of sorted lists. We need to do the work anyway.
-                foreach (var consolidateNode in _consolidateRoots.GetSiblings().Cast<HeapNode>())
+                foreach (var newRoot in _consolidateRoots.GetSiblings().Cast<HeapNode>())
                 {
-                    HeapNode carry = AddNode(consolidateNode);
+                    HeapNode carry = AddNode(newRoot);
 
                     while (carry != null)
                         carry = AddNode(carry);
@@ -405,7 +417,7 @@ namespace Utils.DataStructures
             }
             finally
             {
-                // We have to find the new minNode...
+                // We have to find the new minNode because consolidation is done always after DeleteMin...
                 var roots = GetRoots();
 
                 _minNode = roots.First();
