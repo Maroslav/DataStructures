@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "..\Utils\Utils.csproj", "{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsTests", "..\UtilsTests\UtilsTests.csproj", "{4796B32E-1F19-4CE4-A51C-6A1695A3A167}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CacheSimulator", "CacheSimulator\CacheSimulator.vcxproj", "{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runner", "Runner\Runner.csproj", "{A68BD693-9136-4EF0-95B3-D785A3A59134}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_LongRunningTests|x64 = Debug_LongRunningTests|x64
+		Debug_VERBOSE|x64 = Debug_VERBOSE|x64
+		Debug|x64 = Debug|x64
+		Release_Naive|x64 = Release_Naive|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug_LongRunningTests|x64.ActiveCfg = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug_LongRunningTests|x64.Build.0 = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug_VERBOSE|x64.ActiveCfg = Debug_VERBOSE|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug_VERBOSE|x64.Build.0 = Debug_VERBOSE|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|x64.ActiveCfg = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Debug|x64.Build.0 = Debug|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release_Naive|x64.ActiveCfg = Release_Naive|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release_Naive|x64.Build.0 = Release_Naive|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.ActiveCfg = Release|x64
+		{464F0CCF-EEB9-45D0-B96F-D0AAD3D86A53}.Release|x64.Build.0 = Release|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug_LongRunningTests|x64.ActiveCfg = Debug_LongRunningTests|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug_LongRunningTests|x64.Build.0 = Debug_LongRunningTests|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug_VERBOSE|x64.ActiveCfg = Debug|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug_VERBOSE|x64.Build.0 = Debug|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug|x64.ActiveCfg = Debug|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Debug|x64.Build.0 = Debug|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release_Naive|x64.ActiveCfg = Release|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release_Naive|x64.Build.0 = Release|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.ActiveCfg = Release|x64
+		{4796B32E-1F19-4CE4-A51C-6A1695A3A167}.Release|x64.Build.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug_LongRunningTests|x64.ActiveCfg = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug_LongRunningTests|x64.Deploy.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug_VERBOSE|x64.ActiveCfg = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug_VERBOSE|x64.Deploy.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug|x64.ActiveCfg = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Debug|x64.Deploy.0 = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Release_Naive|x64.ActiveCfg = Release|x64
+		{EA56F4D6-E8BF-4168-A4B2-9A2E8F476E71}.Release|x64.ActiveCfg = Release|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug_LongRunningTests|x64.ActiveCfg = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug_LongRunningTests|x64.Build.0 = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug_VERBOSE|x64.ActiveCfg = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug_VERBOSE|x64.Build.0 = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug|x64.ActiveCfg = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Debug|x64.Build.0 = Debug|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Release_Naive|x64.ActiveCfg = Release_Naive|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Release_Naive|x64.Build.0 = Release_Naive|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Release|x64.ActiveCfg = Release|x64
+		{A68BD693-9136-4EF0-95B3-D785A3A59134}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
