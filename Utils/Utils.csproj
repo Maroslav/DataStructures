@@ -65,6 +65,7 @@
     <Compile Include="DataStructures\Nodes\SiblingNode.cs" />
     <Compile Include="DataStructures\Misc\Stack.cs" />
     <Compile Include="DataStructures\SplayTree\NodeTraversalToken.cs" />
+    <Compile Include="Structures\Matrix.cs" />
     <Compile Include="Other\ArrayExtensions.cs" />
     <Compile Include="DataStructures\Misc\AsyncBuffer.cs" />
     <Compile Include="DataStructures\DictionaryBase.cs" />
