@@ -22,15 +22,17 @@ namespace Utils.Structures
         }
 
 
+        #region Genesis
+
 #if NONCLEAN
         // 
-        internal StreamWriter SwapLog;
+        internal Action<string> SwapCallback = s => { }; // Do nothing by default
 
-        public Matrix(Stream swapLog, int width, int height)
+        public Matrix(Action<string> swapCallback, int width, int height)
             : this(width, height)
         {
-            SwapLog = new StreamWriter(swapLog);
-            SwapLog.WriteLine("N {0}", width); // Width should be height
+            SwapCallback = swapCallback;
+            SwapCallback(string.Format("N {0}", width)); // Width should be height
         }
 #endif
 
@@ -51,6 +53,10 @@ namespace Utils.Structures
             Buffer.BlockCopy(elements, 0, _elements, 0, elements.Length * Marshal.SizeOf(typeof(T)));
         }
 
+        public Matrix(int size)
+            : this(size, size)
+        { }
+
         public Matrix(int width, int height)
         {
             if (width <= 0 || height <= 0)
@@ -62,6 +68,7 @@ namespace Utils.Structures
             _elements = new T[width * height];
         }
 
+        #endregion
 
         #region Indexing
 
@@ -162,7 +169,7 @@ namespace Utils.Structures
             }
 
 #if NONCLEAN
-            SwapLog.WriteLine('E');
+            SwapCallback("E");
 #endif
         }
 
@@ -305,7 +312,7 @@ namespace Utils.Structures
             int s1 = idxOne / Width;
             int r2 = idxTwo % Width;
             int s2 = idxTwo / Width;
-            SwapLog.WriteLine("X {0} {1} {2} {3}", r2, s1, r2, s2);
+            SwapCallback(string.Format("X {0} {1} {2} {3}", r1, s1, r2, s2));
 #endif
             Swap(ref _elements[idxOne], ref _elements[idxTwo]);
         }
