@@ -70,8 +70,7 @@ namespace Utils.Structures
 #if __NAIVE
             TransposeInternalNaive();
 #else
-            TransposeInternalNaive();
-            //TransposeInternal();
+            TransposeInternal();
 #endif
         }
 
@@ -135,7 +134,7 @@ namespace Utils.Structures
 
         #region Complex
 
-        private const int NaiveThreshold = 24;
+        private const int NaiveThreshold = 16 * 16;
 
         internal void TransposeInternal()
         {
@@ -231,7 +230,7 @@ namespace Utils.Structures
 
                 for (int offset = baseOffset + xSkip; offset < baseOffset + dims.Width; offset++) // Iterate over right half's columns
                 {
-                    Swap(ref _elements[offset], ref _elements[transOffset]);
+                    Swap(offset, transOffset);
                     transOffset += Width; // Move by a line
                 }
 
@@ -259,10 +258,7 @@ namespace Utils.Structures
 
                 for (int offset = baseOffset; offset < baseOffset + a.Width; offset++) // Iterate over a's columns
                 {
-#if VERBOSE
-                    Debug.WriteLine("Swap: {0}::{1}", offset, transOffset);
-#endif
-                    Swap(ref _elements[offset], ref _elements[transOffset]);
+                    Swap(offset, transOffset);
                     transOffset += Width; // Move by a line
                 }
 
@@ -279,6 +275,15 @@ namespace Utils.Structures
 
         #endregion
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Swap(int idxOne, int idxTwo)
+        {
+#if VERBOSE
+                    Debug.WriteLine("Swap: {0}::{1}", idxOne, idxTwo);
+#endif
+            Swap(ref _elements[idxOne], ref _elements[idxTwo]);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void Swap<TT>(ref TT one, ref TT two)
