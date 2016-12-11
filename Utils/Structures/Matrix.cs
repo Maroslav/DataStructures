@@ -149,8 +149,12 @@ namespace Utils.Structures
             TransposeInternal(ref dims);
         }
 
-        // We do the check before recursing instead of at the start of the recursive func 
-        // to reduce the recursion depth by one (it can save us nearly 3/4 of recursive calls)
+        // The recursion ends when the split submatrices are small enough. This saves us
+        // a lot of work caused by recursion. We do the recursion end check before recursing 
+        // instead of at the start of the recursive func to reduce the recursion depth by one
+        // (it can further save us a lot of recursive calls -- with the tree branching 
+        // factor of ~4 the number of leaves in the recursion tree is very high compared to
+        // the number of internal nodes.
         private void TransposeInternal(ref SubmatrixDims dims)
         {
             // 1. Prepare the submatrices
