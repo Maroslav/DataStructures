@@ -242,21 +242,27 @@ namespace UtilsTests.FibHeap
         #endregion
 
 
+#if LONG_RUNNING_TESTS
         [TestMethod]
+#endif
         public void BalancedTest()
         {
             var generatorTask = RunGenerator("-r");
             Run("Balanced_test", generatorTask);
         }
 
+#if LONG_RUNNING_TESTS
         [TestMethod]
+#endif
         public void ImbalancedTest()
         {
             var generatorTask = RunGenerator("-b");
             Run("Imbalanced_test", generatorTask);
         }
 
+#if LONG_RUNNING_TESTS
         [TestMethod]
+#endif
         public void MaliciousTest()
         {
             var generatorTask = RunGenerator("-x");
