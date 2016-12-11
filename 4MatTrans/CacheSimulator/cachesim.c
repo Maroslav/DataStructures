@@ -194,6 +194,13 @@ int main(int argc, char **argv)
     char line[256];
     while (fgets(line, sizeof(line), stdin))
     {
+        if (line[0] == '\n' || line[0] == '\0')
+        {
+            if (N)
+                error("Misplaced E command");
+            exit(0);
+        }
+
         lino++;
         char *nl = strchr(line, '\n');
         if (!nl)
