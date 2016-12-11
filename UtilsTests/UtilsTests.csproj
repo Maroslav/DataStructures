@@ -66,6 +66,7 @@
     <Compile Include="FibHeap\FibGeneratorTests.cs" />
     <Compile Include="FibHeap\FibHeapTests.cs" />
     <Compile Include="Helpers\GeneratorTestsBase.cs" />
+    <Compile Include="Matrix\MatrixTests.cs" />
     <Compile Include="SplayTree\SplayGeneratorTests.cs" />
     <Compile Include="Helpers\MyCommandConsumer.cs" />
     <Compile Include="Helpers\MyCommandGenerator.cs" />

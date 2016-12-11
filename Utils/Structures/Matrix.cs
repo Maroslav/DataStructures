@@ -266,6 +266,13 @@ namespace Utils.Structures
             }
         }
 
+        internal void TransposeAndSwapTest()
+        {
+            var dims = new SubmatrixDims(0, 0, Width, Height);
+            TransposeAndSwapNaive(ref dims, ref dims);
+            // The result should be the original matrix
+        }
+
         #endregion
 
 
