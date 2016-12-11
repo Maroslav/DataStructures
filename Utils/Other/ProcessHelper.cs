@@ -50,7 +50,7 @@ namespace Utils.Other
         #endregion
 
 
-        public void StartProcess(string process, string arguments, string workingDirectory, CancellationToken token)
+        public void StartProcess(string process, string arguments, string workingDirectory, CancellationToken token, bool redirectStdIn = false)
         {
             LogVerbose("*** StartProcess: " + process + " ***");
 
@@ -65,21 +65,22 @@ namespace Utils.Other
                     UseShellExecute = false,
                     CreateNoWindow = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    RedirectStandardInput = redirectStdIn,
                 }
             };
 
             _p.OutputDataReceived += _processOutputDataReceived;
-            _p.ErrorDataReceived += _processErrorDataReceived;
             _p.ErrorDataReceived += (sender, args) =>
             {
                 if (args.Data != null)
                 {
                     _noError = false;
 
-                    LogVerbose(String.Format("*** {0} error: {1}", process, args.Data));
+                    LogVerbose(string.Format("*** {0} error: {1}", process, args.Data));
                 }
             };
+            _p.ErrorDataReceived += _processErrorDataReceived;
             _p.Exited += _processExited;
             _p.Exited += (sender, args) => LogVerbose(string.Format("*** {0} exited ***", process));
 
@@ -105,6 +106,16 @@ namespace Utils.Other
         {
             if (_verboseLog != null)
                 _verboseLog(message);
+        }
+
+        public void WriteLineToStdIn(string message)
+        {
+            _p.StandardInput.WriteLine(message);
+        }
+
+        public void WriteLineToStdIn(string format, params object[] arg)
+        {
+            _p.StandardInput.WriteLine(format, arg);
         }
 
         public async Task<WaitResult> Wait(int msTimeout)

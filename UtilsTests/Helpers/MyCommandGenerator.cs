@@ -20,6 +20,8 @@ namespace UtilsTests.Helpers
 
         private readonly CancellationTokenSource _cancellationTokenSource;
 
+        public ProcessHelper Process { get; private set; }
+
         #endregion
 
         #region Genesis
@@ -33,27 +35,29 @@ namespace UtilsTests.Helpers
 
         #region Generating
 
-        public async Task RunGenerator(string generatorPath, string pars, Action<string> dataReceivedHandler)
+        public async Task RunGenerator(string generatorPath, string pars, Action<string> dataReceivedHandler, bool redirectStdIn = false)
         {
-            using (var generatorProcess = new ProcessHelper(
+            using (Process = new ProcessHelper(
                 Console.WriteLine,
                 (sender, eventArgs) => dataReceivedHandler(eventArgs.Data),
+                //(sender, args) => Console.WriteLine("Error: " + args.Data),
                 (sender, args) => Thread.CurrentThread.Abort(),
                 null))
             {
-                generatorProcess.StartProcess(
+                Process.StartProcess(
                     generatorPath,
                     pars,
                     FolderPath,
-                    _cancellationTokenSource.Token);
+                    _cancellationTokenSource.Token,
+                    redirectStdIn);
 
-                var result = await generatorProcess.Wait(TimeOut).ConfigureAwait(false);
+                var result = await Process.Wait(TimeOut).ConfigureAwait(false);
 
                 if (result != WaitResult.Ok)
                     _cancellationTokenSource.Cancel();
 
                 Assert.IsTrue(result.HasFlag(WaitResult.Ok), "Generator process error: " + result);
-                Console.WriteLine("Generator finished. Running time: " + generatorProcess.GetElapsedTime());
+                Console.WriteLine("Generator finished. Running time: " + Process.GetElapsedTime());
             }
         }
 
