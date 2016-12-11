@@ -1,5 +1,6 @@
 ﻿
 using UtilsTests.FibHeap;
+using UtilsTests.Matrix;
 
 namespace Runner
 {
@@ -9,17 +10,8 @@ namespace Runner
 
         static void Main(string[] args)
         {
-            var test = new FibGeneratorTests(LogFolderName);
-            test.BalancedTest();
-            test.Dispose();
-
-            test = new FibGeneratorTests(LogFolderName);
-            test.ImbalancedTest();
-            test.Dispose();
-
-            test = new FibGeneratorTests(LogFolderName);
-            test.MaliciousTest();
-            test.Dispose();
+            var test = new MatrixGeneratorTests();
+            test.TestCache();
         }
     }
 }
