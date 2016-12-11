@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Utils.Structures
 {
@@ -14,11 +15,28 @@ namespace Utils.Structures
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public T[] Elements
+        internal T[] Elements
         {
             get { return _elements; }
         }
 
+
+        public Matrix(Matrix<T> other)
+            : this(other._elements, other.Width, other.Height)
+        { }
+
+        internal Matrix(T[] elements, int width, int height)
+            : this(width, height)
+        {
+            if (elements == null)
+                throw new ArgumentNullException("elements");
+
+            if (width * height != elements.Length)
+                throw new ArgumentOutOfRangeException("width", "The provided array has invalid size.");
+
+            Debug.Assert(_elements.Length == elements.Length);
+            Buffer.BlockCopy(elements, 0, _elements, 0, elements.Length * Marshal.SizeOf(typeof(T)));
+        }
 
         public Matrix(int width, int height)
         {
@@ -37,7 +55,7 @@ namespace Utils.Structures
         public T this[int column, int row]
         {
             get { return _elements[row * Width + column]; }
-            protected set { _elements[row * Width + column] = value; }
+            set { _elements[row * Width + column] = value; }
         }
 
         #endregion
@@ -52,7 +70,8 @@ namespace Utils.Structures
 #if __NAIVE
             TransposeInternalNaive();
 #else
-            TransposeInternal();
+            TransposeInternalNaive();
+            //TransposeInternal();
 #endif
         }
 
@@ -60,7 +79,7 @@ namespace Utils.Structures
 
         #region Helpers
 
-        #region Submatrix size helper struct
+        #region Submatrix dims helper struct
 
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         private struct SubmatrixDims
@@ -100,6 +119,15 @@ namespace Utils.Structures
                 // Bottom row
                 a12.Y = a22.Y = Y + halfHeight;
                 a12.Height = a22.Height = Height - halfHeight;
+
+#if VERBOSE
+                Debug.WriteLine("Split: {0},\t\thalf: {1}::{2}", this, halfWidth, halfHeight);
+#endif
+            }
+
+            public override string ToString()
+            {
+                return string.Format("lr: {0}::{1},\t\ttb: {2}::{3}", X, X + Width, Y, Y + Height);
             }
         }
 
@@ -107,10 +135,16 @@ namespace Utils.Structures
 
         #region Complex
 
-        private const int NaiveThreshold = 64;
+        private const int NaiveThreshold = 24;
 
-        private void TransposeInternal()
+        internal void TransposeInternal()
         {
+            if (Width * Height < NaiveThreshold)
+            {
+                TransposeInternalNaive();
+                return;
+            }
+
             var dims = new SubmatrixDims(0, 0, Width, Height);
             TransposeInternal(ref dims);
         }
@@ -127,9 +161,8 @@ namespace Utils.Structures
             if (a11.Width * a11.Height <= NaiveThreshold)
             {
                 TransposeInternalNaive(ref a11);
-                TransposeInternalNaive(ref a21);
-                TransposeInternalNaive(ref a12);
                 TransposeInternalNaive(ref a22);
+                TransposeAndSwapNaive(ref a21, ref a12);
                 return;
             }
 
@@ -141,6 +174,8 @@ namespace Utils.Structures
 
         private void TransposeAndSwap(ref SubmatrixDims a, ref SubmatrixDims b)
         {
+            Debug.Assert(a.Width == b.Height && a.Height == b.Width);
+
             // 1. Prepare the submatrices
             SubmatrixDims a11, a21, a12, a22;
             SubmatrixDims b11, b21, b12, b22;
@@ -148,8 +183,8 @@ namespace Utils.Structures
             b.SplitDims(out b11, out b21, out b12, out b22);
 
             // 2. If the matrices are small, transpose them naively
-            Debug.Assert(a.Width == b.Width && a.Height == b.Height);
-            if (a.Width * a.Height < NaiveThreshold)
+            // Check just the first one; because we have a square matrix, the other sizes should be very similar
+            if (a11.Width * a11.Height < NaiveThreshold)
             {
                 TransposeAndSwapNaive(ref a11, ref b11);
                 TransposeAndSwapNaive(ref a21, ref b12);
@@ -169,7 +204,7 @@ namespace Utils.Structures
 
         #region Naive
 
-        private void TransposeInternalNaive()
+        internal void TransposeInternalNaive()
         {
             var dims = new SubmatrixDims(0, 0, Width, Height);
             TransposeInternalNaive(ref dims);
@@ -181,25 +216,34 @@ namespace Utils.Structures
             Debug.Assert(dims.Width == dims.Height);
 
             int baseOffset = dims.Y * Width + dims.X; // Pointer to the right half (triangle above the diagonal)
-            int baseTransOffset = dims.X * Width + dims.Y; // Pointer to the left half (below the diagonal)
+            int baseTransOffset = baseOffset; // Pointer to the left half (below the diagonal)
             int xSkip = 0; // The amount of columns (rows for the left half) to skip
 
-            for (int y = baseTransOffset; y < baseTransOffset + dims.Height * Width; y += Width) // Iterate over left half's rows
+            for (int y = baseTransOffset + Width; y < baseTransOffset + dims.Height * Width; y += Width) // Iterate over left half's rows 
             {
+                // baseTransOffset starts with the second row, while baseOffset starts at the first row (second element)
+                int transOffset = y + xSkip; // Reset to the next line's beginning; offset the column by on less than the right pointer
                 xSkip++;
-                int transOffset = baseTransOffset; // Reset to the next line's beginning
 
                 for (int offset = baseOffset + xSkip; offset < baseOffset + dims.Width; offset++) // Iterate over right half's columns
                 {
                     Swap(ref _elements[offset], ref _elements[transOffset]);
                     transOffset += Width; // Move by a line
                 }
+
+                baseOffset += Width;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void TransposeAndSwapNaive(ref SubmatrixDims a, ref SubmatrixDims b)
         {
+#if VERBOSE
+            Debug.WriteLine("a: {0}", a);
+            Debug.WriteLine(ToString(a));
+            Debug.WriteLine("b: {0}", b);
+            Debug.WriteLine(ToString(b));
+#endif
             Debug.Assert(a.Width == b.Height && a.Height == b.Width);
 
             int baseOffset = a.Y * Width + a.X; // Pointer to a's top-left corner
@@ -211,6 +255,9 @@ namespace Utils.Structures
 
                 for (int offset = baseOffset; offset < baseOffset + a.Width; offset++) // Iterate over a's columns
                 {
+#if VERBOSE
+                    Debug.WriteLine("Swap: {0}::{1}", offset, transOffset);
+#endif
                     Swap(ref _elements[offset], ref _elements[transOffset]);
                     transOffset += Width; // Move by a line
                 }
@@ -228,6 +275,46 @@ namespace Utils.Structures
             TT tmp = one;
             one = two;
             two = tmp;
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            for (int j = 0; j < Height; j++)
+            {
+                for (int i = 0; i < Width; i++)
+                {
+                    sb.Append(this[i, j]);
+                    sb.Append('\t');
+                }
+
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        private string ToString(SubmatrixDims dims)
+        {
+            var sb = new StringBuilder();
+
+            for (int j = dims.Y; j < dims.Y + dims.Height; j++)
+            {
+                for (int i = dims.X; i < dims.X + dims.Width; i++)
+                {
+                    sb.Append(this[i, j]);
+                    sb.Append('\t');
+                }
+
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
 
         #endregion
