@@ -19,7 +19,7 @@ namespace UtilsTests.SplayTree
         private const int BuilderSizeIncrement = 3000;
         private const int Seed = 82;
 
-        private const string GeneratorName = "generator.exe";
+        private const string GeneratorName = "SplayTreeGenerator.exe";
         private const string LogFileName = "SplayTreeLog";
 
         private const int ConsumerCount = 4;
