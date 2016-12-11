@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,6 +21,18 @@ namespace Utils.Structures
             get { return _elements; }
         }
 
+
+#if NONCLEAN
+        // 
+        internal StreamWriter SwapLog;
+
+        public Matrix(Stream swapLog, int width, int height)
+            : this(width, height)
+        {
+            SwapLog = new StreamWriter(swapLog);
+            SwapLog.WriteLine("N {0}", width); // Width should be height
+        }
+#endif
 
         public Matrix(Matrix<T> other)
             : this(other._elements, other.Width, other.Height)
@@ -141,11 +154,16 @@ namespace Utils.Structures
             if (Width * Height < NaiveThreshold)
             {
                 TransposeInternalNaive();
-                return;
+            }
+            else
+            {
+                var dims = new SubmatrixDims(0, 0, Width, Height);
+                TransposeInternal(ref dims);
             }
 
-            var dims = new SubmatrixDims(0, 0, Width, Height);
-            TransposeInternal(ref dims);
+#if NONCLEAN
+            SwapLog.WriteLine('E');
+#endif
         }
 
         // The recursion ends when the split submatrices are small enough. This saves us
@@ -281,6 +299,13 @@ namespace Utils.Structures
         {
 #if VERBOSE
                     Debug.WriteLine("Swap: {0}::{1}", idxOne, idxTwo);
+#endif
+#if NONCLEAN
+            int r1 = idxOne % Width;
+            int s1 = idxOne / Width;
+            int r2 = idxTwo % Width;
+            int s2 = idxTwo / Width;
+            SwapLog.WriteLine("X {0} {1} {2} {3}", r2, s1, r2, s2);
 #endif
             Swap(ref _elements[idxOne], ref _elements[idxTwo]);
         }
