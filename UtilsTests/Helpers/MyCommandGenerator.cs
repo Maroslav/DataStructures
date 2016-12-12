@@ -45,7 +45,6 @@ namespace UtilsTests.Helpers
             using (Process = new ProcessHelper(
                 verboseLog,
                 (sender, eventArgs) => dataReceivedHandler(eventArgs.Data),
-                //(sender, args) => Console.WriteLine("Error: " + args.Data),
                 (sender, args) => Thread.CurrentThread.Abort(),
                 null))
             {

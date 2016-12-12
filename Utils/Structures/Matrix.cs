@@ -87,6 +87,17 @@ namespace Utils.Structures
             if (Width != Height)
                 throw new NotImplementedException("Cannot transpose non-square matrices.");
 
+            int size = Width * Height;
+
+            if (size == 1)
+                return;
+
+            if (size == 4)
+            {
+                Swap(1, 2);
+                return;
+            }
+
 #if __NAIVE
             TransposeInternalNaive();
 #else
