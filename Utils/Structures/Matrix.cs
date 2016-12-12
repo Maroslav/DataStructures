@@ -115,7 +115,6 @@ namespace Utils.Structures
 
         #region Submatrix dims helper struct
 
-        [StructLayout(LayoutKind.Sequential, Pack = 2)]
         private struct SubmatrixDims
         {
             public int X, Y;
