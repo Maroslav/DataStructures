@@ -154,7 +154,7 @@ namespace Utils.Structures
 
         #region Complex
 
-        private const int NaiveThreshold = 16 * 16;
+        private const int NaiveThreshold = 8 * 8;
 
         internal void TransposeInternal()
         {
