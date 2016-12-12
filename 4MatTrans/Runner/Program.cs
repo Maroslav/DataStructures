@@ -2,7 +2,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using UtilsTests.FibHeap;
 using UtilsTests.Matrix;
 
 namespace Runner
@@ -11,7 +10,14 @@ namespace Runner
     {
         private const string LogFolderName = "Log";
 
+
         static void Main(string[] args)
+        {
+            RunCacheSimTests();
+            RunTimeTests();
+        }
+
+        private static void RunCacheSimTests()
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
@@ -40,6 +46,11 @@ namespace Runner
                     return;
                 }
             }
+        }
+
+        private static void RunTimeTests()
+        {
+
         }
     }
 }

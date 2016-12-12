@@ -1,5 +1,4 @@
-﻿#if NONCLEAN
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +14,6 @@ namespace UtilsTests.Matrix
 {
     [TestClass]
     public class MatrixGeneratorTests
-        : IDisposable
     {
         #region Fields and constants
 
@@ -43,18 +41,6 @@ namespace UtilsTests.Matrix
 
             if (!Directory.Exists(_logFolderName))
                 Directory.CreateDirectory(_logFolderName);
-
-            _cts.Token.Register(Dispose);
-        }
-
-        public void Dispose()
-        {
-            if (_log != null)
-            {
-                Console.WriteLine("Closing log...");
-                _log.Dispose();
-                _log = null;
-            }
         }
 
         #endregion
@@ -85,6 +71,7 @@ namespace UtilsTests.Matrix
 
         #endregion
 
+#if NONCLEAN
         #region Cache testing
 
         private void LogFilteredSimOutput(int matrixSize, int swapCount, string message)
@@ -158,13 +145,22 @@ namespace UtilsTests.Matrix
             }
         }
 
+        #endregion
+#endif // NONCLEAN
+
+
 #if LONG_RUNNING_TESTS
         [TestMethod]
 #endif
         public void TestCacheFirstHalf()
         {
+#if NONCLEAN
             for (int i = 0; i < _blockSizes.Length / 2; i++)
                 TestCache(i);
+#else
+            Assert.Fail("Nothing to test in clean mode...");
+#endif // NONCLEAN
+
         }
 
 #if LONG_RUNNING_TESTS
@@ -172,11 +168,13 @@ namespace UtilsTests.Matrix
 #endif
         public void TestCacheSecondHalf()
         {
+#if NONCLEAN
             for (int i = _blockSizes.Length / 2; i < _blockSizes.Length; i++)
                 TestCache(i);
+#else
+            Assert.Fail("Nothing to test in clean mode...");
+#endif // NONCLEAN
         }
-
-        #endregion
 
 
 #if LONG_RUNNING_TESTS
@@ -184,10 +182,7 @@ namespace UtilsTests.Matrix
 #endif
         public void TestTime()
         {
-
+            // TODO: move to another test class
         }
     }
 }
-
-
-#endif // NONCLEAN
