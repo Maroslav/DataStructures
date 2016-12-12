@@ -35,10 +35,15 @@ namespace UtilsTests.Helpers
 
         #region Generating
 
-        public async Task RunGenerator(string generatorPath, string pars, Action<string> dataReceivedHandler, bool redirectStdIn = false)
+        public async Task RunGenerator(string generatorPath, string pars, Action<string> dataReceivedHandler, bool redirectStdIn = false, bool verbose = true)
         {
+            Action<string> verboseLog = null;
+
+            if (verbose)
+                verboseLog = Console.WriteLine;
+
             using (Process = new ProcessHelper(
-                Console.WriteLine,
+                verboseLog,
                 (sender, eventArgs) => dataReceivedHandler(eventArgs.Data),
                 //(sender, args) => Console.WriteLine("Error: " + args.Data),
                 (sender, args) => Thread.CurrentThread.Abort(),
