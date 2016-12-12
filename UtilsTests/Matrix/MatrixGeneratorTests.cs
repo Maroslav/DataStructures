@@ -108,6 +108,7 @@ namespace UtilsTests.Matrix
 
             Action<string> cacheSimMessageCallback = s => LogFilteredSimOutput(matrixSize, swapCount, s);
 
+            // TODO: Run the cache sim once for all the test...
             var generatorTask = cacheProcess.RunGenerator(
                 Path.Combine(GeneratorTestsBase<object>.ToolsPath, GeneratorName),
                 string.Format("{0} {1}", blockSize, blockCount),
@@ -147,12 +148,13 @@ namespace UtilsTests.Matrix
             string suffix = string.Format("_b-{0}_c-{1}", blockSize, blockCount);
             using (_log = new StreamWriter(Path.Combine(_logFolderName, LogFileName) + suffix + ".txt"))
             {
-                Console.WriteLine("\nBlockSize/BlockCount: {0}/{1}", blockSize, blockCount);
+                Console.WriteLine("\nStarting BlockSize/BlockCount: {0}/{1}", blockSize, blockCount);
 
                 foreach (var matrixSize in GetMatrixSizes())
                     TestCache(matrixSize, blockSize, blockCount);
 
                 LogLine();
+                Console.WriteLine("\nFinished {0}/{1}\n", blockSize, blockCount);
             }
         }
 
