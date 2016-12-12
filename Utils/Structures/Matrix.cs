@@ -92,6 +92,10 @@ namespace Utils.Structures
 #else
             TransposeInternal();
 #endif
+
+#if NONCLEAN
+            SwapCallback("E");
+#endif
         }
 
         #endregion
@@ -167,10 +171,6 @@ namespace Utils.Structures
                 var dims = new SubmatrixDims(0, 0, Width, Height);
                 TransposeInternal(ref dims);
             }
-
-#if NONCLEAN
-            SwapCallback("E");
-#endif
         }
 
         // The recursion ends when the split submatrices are small enough. This saves us
