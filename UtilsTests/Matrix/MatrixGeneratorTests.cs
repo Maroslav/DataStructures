@@ -74,7 +74,7 @@ namespace UtilsTests.Matrix
 #if NONCLEAN
         #region Cache testing
 
-        private void LogFilteredSimOutput(int matrixSize, int swapCount, string message)
+        private void LogFilteredSimOutput(int matrixSize, string message)
         {
             if (message == null)
                 return;
@@ -84,16 +84,15 @@ namespace UtilsTests.Matrix
             if (!message.StartsWith(missesPrefix))
                 return;
 
+            int swapCount = (matrixSize * matrixSize - matrixSize) / 2;
             int misses = int.Parse(message.Substring(missesPrefix.Length));
-            LogLine("{0} {1}", matrixSize, misses / (float)swapCount);
+            LogLine("{0}::{1}", matrixSize, misses / (float)swapCount);
         }
 
         public void TestCache(int matrixSize, int blockSize, int blockCount)
         {
             var cacheProcess = new MyCommandGenerator(_cts);
-            int swapCount = 0;
-
-            Action<string> cacheSimMessageCallback = s => LogFilteredSimOutput(matrixSize, swapCount, s);
+            Action<string> cacheSimMessageCallback = s => LogFilteredSimOutput(matrixSize, s);
 
             // TODO: Run the cache sim once for all the test...
             var generatorTask = cacheProcess.RunGenerator(
@@ -101,6 +100,8 @@ namespace UtilsTests.Matrix
                 string.Format("{0} {1}", blockSize, blockCount),
                 cacheSimMessageCallback,
                 true, false);
+
+            int swapCount = 0;
 
             Action<string> matrixOutputHandler = s =>
             {
@@ -111,6 +112,9 @@ namespace UtilsTests.Matrix
             Matrix<int> m = new Matrix<int>(matrixOutputHandler, matrixSize, matrixSize);
             m.Transpose();
             cacheProcess.Process.WriteLineToStdIn("\0"); // Terminate the program
+
+            swapCount -= 2; // There were two more logs -- N and E
+            Assert.AreEqual(swapCount, (matrixSize * matrixSize - matrixSize) / 2);
 
             generatorTask.Wait(20000, _cts.Token); // Wait for 20 sec
         }
@@ -136,6 +140,7 @@ namespace UtilsTests.Matrix
             using (_log = new StreamWriter(Path.Combine(_logFolderName, LogFileName) + suffix + ".txt"))
             {
                 Console.WriteLine("\nStarting BlockSize/BlockCount: {0}/{1}", blockSize, blockCount);
+                LogLine("Size::miss");
 
                 foreach (var matrixSize in GetMatrixSizes())
                     TestCache(matrixSize, blockSize, blockCount);
